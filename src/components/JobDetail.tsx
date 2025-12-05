@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Job } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -61,6 +61,16 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
 
   const outputContent = job.outputs[selectedOutput];
   const hasOutputs = Object.keys(job.outputs).length > 0;
+
+  const renderedMarkdown = useMemo(() => {
+    if (!outputContent) return "";
+    try {
+      return marked.parse(outputContent, { async: false }) as string;
+    } catch (error) {
+      console.error("Error parsing markdown:", error);
+      return outputContent;
+    }
+  }, [outputContent]);
 
   return (
     <div className="h-full flex flex-col">
@@ -161,7 +171,7 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
                       <div
                         className="markdown-content prose max-w-none"
                         dangerouslySetInnerHTML={{
-                          __html: marked(outputContent),
+                          __html: renderedMarkdown,
                         }}
                       />
                     ) : (
