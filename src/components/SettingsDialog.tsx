@@ -155,7 +155,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] w-[1600px] h-[92vh] p-0 flex flex-col">
+      <DialogContent className="max-w-[98vw] w-[2000px] h-[92vh] p-0 flex flex-col">
         <DialogHeader className="px-6 pt-6 pb-4 border-b shrink-0">
           <DialogTitle>Settings</DialogTitle>
           <DialogDescription>
@@ -268,7 +268,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             </TabsContent>
 
             <TabsContent value="prompts" className="m-0 h-full">
-              <div className="grid grid-cols-[320px_1fr] h-full">
+              <div className="grid grid-cols-[280px_1fr] h-full">
                 <div className="border-r flex flex-col min-h-0">
                   <ScrollArea className="flex-1">
                     <div className="p-4 space-y-1">
@@ -344,7 +344,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                         onChange={(e) =>
                           handlePromptChange(selectedPrompt, e.target.value)
                         }
-                        className="w-full h-[calc(92vh-400px)] min-h-[400px] font-mono text-sm"
+                        className="w-full h-[calc(92vh-380px)] min-h-[500px] font-mono text-sm leading-relaxed"
                         placeholder="Enter custom prompt..."
                       />
 
