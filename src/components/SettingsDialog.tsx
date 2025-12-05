@@ -155,120 +155,122 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl h-[85vh] p-0">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b">
+      <DialogContent className="max-w-[95vw] w-[1600px] h-[92vh] p-0 flex flex-col">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b shrink-0">
           <DialogTitle>Settings</DialogTitle>
           <DialogDescription>
             Configure AI model and customize agent prompts for the pipeline
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="model" className="flex-1 flex flex-col">
-          <TabsList className="w-full justify-start rounded-none border-b px-6">
+        <Tabs defaultValue="model" className="flex-1 flex flex-col min-h-0">
+          <TabsList className="w-full justify-start rounded-none border-b px-6 shrink-0">
             <TabsTrigger value="model">AI Model</TabsTrigger>
             <TabsTrigger value="prompts">Agent Prompts</TabsTrigger>
           </TabsList>
 
-          <div className="flex-1 overflow-auto">
-            <TabsContent value="model" className="m-0 p-6 space-y-6">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Model Selection</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Choose the AI model for pipeline execution. Different models
-                    offer varying capabilities and response times.
-                  </p>
-                </div>
+          <div className="flex-1 min-h-0 overflow-hidden">
+            <TabsContent value="model" className="m-0 h-full overflow-y-auto">
+              <div className="p-6 space-y-6 max-w-3xl">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">Model Selection</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Choose the AI model for pipeline execution. Different models
+                      offer varying capabilities and response times.
+                    </p>
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="model">AI Model</Label>
-                  <Select
-                    value={localModel}
-                    onValueChange={(value: AIModel) => {
-                      setLocalModel(value);
-                      setHasChanges(true);
-                    }}
-                  >
-                    <SelectTrigger id="model" className="w-full max-w-md">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="gpt-4o">
-                        <div className="flex flex-col items-start">
-                          <span className="font-medium">GPT-4o</span>
-                          <span className="text-xs text-muted-foreground">
-                            Most capable - Best for complex analysis
-                          </span>
+                  <div className="space-y-2">
+                    <Label htmlFor="model">AI Model</Label>
+                    <Select
+                      value={localModel}
+                      onValueChange={(value: AIModel) => {
+                        setLocalModel(value);
+                        setHasChanges(true);
+                      }}
+                    >
+                      <SelectTrigger id="model" className="w-full max-w-md">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="gpt-4o">
+                          <div className="flex flex-col items-start">
+                            <span className="font-medium">GPT-4o</span>
+                            <span className="text-xs text-muted-foreground">
+                              Most capable - Best for complex analysis
+                            </span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="gpt-4o-mini">
+                          <div className="flex flex-col items-start">
+                            <span className="font-medium">GPT-4o Mini</span>
+                            <span className="text-xs text-muted-foreground">
+                              Faster and more efficient - Good for most tasks
+                            </span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="gemini-pro">
+                          <div className="flex flex-col items-start">
+                            <span className="font-medium">Gemini Pro</span>
+                            <span className="text-xs text-muted-foreground">
+                              Google's advanced model - Strong reasoning
+                            </span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="gemini-flash">
+                          <div className="flex flex-col items-start">
+                            <span className="font-medium">Gemini Flash</span>
+                            <span className="text-xs text-muted-foreground">
+                              Fast responses - Cost effective
+                            </span>
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    {(localModel === "gemini-pro" || localModel === "gemini-flash") && (
+                      <div className="mt-4 p-4 border-2 border-destructive/50 rounded-lg bg-destructive/5">
+                        <h4 className="font-semibold text-sm mb-2 flex items-center gap-2 text-destructive">
+                          <span>⚠️</span> Gemini Not Currently Supported
+                        </h4>
+                        <div className="text-sm space-y-3">
+                          <p className="text-foreground">
+                            Gemini models are not currently supported by the Spark runtime SDK.
+                            The built-in <code className="bg-muted px-1.5 py-0.5 rounded text-xs">spark.llm</code> API 
+                            only supports <strong>GPT-4o</strong> and <strong>GPT-4o-mini</strong>.
+                          </p>
+                          <div className="bg-background/50 p-3 rounded border">
+                            <p className="font-medium text-foreground mb-2">Future Implementation Options:</p>
+                            <ul className="list-disc list-inside space-y-1 text-muted-foreground text-xs ml-2">
+                              <li>Use Google's Gemini API directly with API keys</li>
+                              <li>Integrate with Vertex AI through REST APIs</li>
+                              <li>Use gcloud CLI as a subprocess (requires Node.js backend)</li>
+                            </ul>
+                          </div>
+                          <p className="text-muted-foreground text-xs italic">
+                            For now, please select GPT-4o or GPT-4o-mini to run the pipeline.
+                          </p>
                         </div>
-                      </SelectItem>
-                      <SelectItem value="gpt-4o-mini">
-                        <div className="flex flex-col items-start">
-                          <span className="font-medium">GPT-4o Mini</span>
-                          <span className="text-xs text-muted-foreground">
-                            Faster and more efficient - Good for most tasks
-                          </span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="gemini-pro">
-                        <div className="flex flex-col items-start">
-                          <span className="font-medium">Gemini Pro</span>
-                          <span className="text-xs text-muted-foreground">
-                            Google's advanced model - Strong reasoning
-                          </span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="gemini-flash">
-                        <div className="flex flex-col items-start">
-                          <span className="font-medium">Gemini Flash</span>
-                          <span className="text-xs text-muted-foreground">
-                            Fast responses - Cost effective
-                          </span>
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  
-                  {(localModel === "gemini-pro" || localModel === "gemini-flash") && (
-                    <div className="mt-4 p-4 border-2 border-destructive/50 rounded-lg bg-destructive/5">
-                      <h4 className="font-semibold text-sm mb-2 flex items-center gap-2 text-destructive">
-                        <span>⚠️</span> Gemini Not Currently Supported
-                      </h4>
-                      <div className="text-sm space-y-3">
-                        <p className="text-foreground">
-                          Gemini models are not currently supported by the Spark runtime SDK.
-                          The built-in <code className="bg-muted px-1.5 py-0.5 rounded text-xs">spark.llm</code> API 
-                          only supports <strong>GPT-4o</strong> and <strong>GPT-4o-mini</strong>.
-                        </p>
-                        <div className="bg-background/50 p-3 rounded border">
-                          <p className="font-medium text-foreground mb-2">Future Implementation Options:</p>
-                          <ul className="list-disc list-inside space-y-1 text-muted-foreground text-xs ml-2">
-                            <li>Use Google's Gemini API directly with API keys</li>
-                            <li>Integrate with Vertex AI through REST APIs</li>
-                            <li>Use gcloud CLI as a subprocess (requires Node.js backend)</li>
-                          </ul>
-                        </div>
-                        <p className="text-muted-foreground text-xs italic">
-                          For now, please select GPT-4o or GPT-4o-mini to run the pipeline.
-                        </p>
                       </div>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
 
-                <div className="bg-muted p-4 rounded-lg space-y-2">
-                  <h4 className="font-medium text-sm">Current Configuration</h4>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">Model:</span>
-                    <Badge variant="secondary">{localModel}</Badge>
+                  <div className="bg-muted p-4 rounded-lg space-y-2">
+                    <h4 className="font-medium text-sm">Current Configuration</h4>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">Model:</span>
+                      <Badge variant="secondary">{localModel}</Badge>
+                    </div>
                   </div>
                 </div>
               </div>
             </TabsContent>
 
             <TabsContent value="prompts" className="m-0 h-full">
-              <div className="grid grid-cols-[280px_1fr] h-full">
-                <div className="border-r">
-                  <ScrollArea className="h-[calc(85vh-180px)]">
+              <div className="grid grid-cols-[320px_1fr] h-full">
+                <div className="border-r flex flex-col min-h-0">
+                  <ScrollArea className="flex-1">
                     <div className="p-4 space-y-1">
                       {promptSteps.map((step) => (
                         <button
@@ -301,7 +303,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   </ScrollArea>
                 </div>
 
-                <div className="flex flex-col h-full">
+                <div className="flex flex-col min-h-0">
                   <div className="p-6 border-b shrink-0">
                     <div className="flex items-start justify-between mb-2">
                       <div>
@@ -335,18 +337,18 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     )}
                   </div>
 
-                  <ScrollArea className="flex-1 h-[calc(85vh-280px)]">
-                    <div className="p-6">
+                  <div className="flex-1 min-h-0 overflow-y-auto">
+                    <div className="p-6 space-y-4">
                       <Textarea
                         value={getCurrentPrompt(selectedPrompt)}
                         onChange={(e) =>
                           handlePromptChange(selectedPrompt, e.target.value)
                         }
-                        className="min-h-[500px] font-mono text-sm resize-none"
+                        className="w-full h-[calc(92vh-400px)] min-h-[400px] font-mono text-sm"
                         placeholder="Enter custom prompt..."
                       />
 
-                      <div className="mt-4 p-4 bg-muted rounded-lg">
+                      <div className="p-4 bg-muted rounded-lg">
                         <h4 className="text-sm font-semibold mb-2">
                           Available Variables
                         </h4>
@@ -392,16 +394,16 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                         </div>
                       </div>
                     </div>
-                  </ScrollArea>
+                  </div>
                 </div>
               </div>
             </TabsContent>
           </div>
         </Tabs>
 
-        <Separator />
+        <Separator className="shrink-0" />
 
-        <div className="px-6 py-4 flex items-center justify-between">
+        <div className="px-6 py-4 flex items-center justify-between shrink-0">
           <Button
             variant="outline"
             onClick={handleResetAllPrompts}
