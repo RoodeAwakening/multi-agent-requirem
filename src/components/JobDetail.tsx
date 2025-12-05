@@ -7,11 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Play, FolderOpen } from "@phosphor-icons/react";
+import { Play, FolderOpen, ArrowsClockwise } from "@phosphor-icons/react";
 import { PipelineOrchestrator } from "@/lib/pipeline";
 import { OUTPUT_FILES } from "@/lib/constants";
 import { toast } from "sonner";
 import { marked } from "marked";
+import { NewVersionDialog } from "./NewVersionDialog";
 
 interface JobDetailProps {
   job: Job;
@@ -25,6 +26,7 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
   const [selectedOutput, setSelectedOutput] = useState<string>(
     OUTPUT_FILES[0].filename
   );
+  const [isNewVersionDialogOpen, setIsNewVersionDialogOpen] = useState(false);
 
   const handleRunPipeline = async () => {
     if (isRunning) return;
@@ -57,6 +59,11 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
       setProgress(0);
       setCurrentStep("");
     }
+  };
+
+  const handleVersionCreated = (newVersionJob: Job) => {
+    onJobUpdated(newVersionJob);
+    toast.success(`Version ${newVersionJob.version} created successfully!`);
   };
 
   const outputContent = job.outputs[selectedOutput];
@@ -121,6 +128,18 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
               </>
             )}
           </Button>
+
+          {job.status === "completed" && (
+            <Button
+              onClick={() => setIsNewVersionDialogOpen(true)}
+              disabled={isRunning}
+              size="lg"
+              variant="outline"
+            >
+              <ArrowsClockwise className="mr-2" />
+              Create New Version
+            </Button>
+          )}
 
           {isRunning && (
             <div className="flex-1">
@@ -202,6 +221,13 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
           </div>
         )}
       </div>
+
+      <NewVersionDialog
+        open={isNewVersionDialogOpen}
+        onOpenChange={setIsNewVersionDialogOpen}
+        currentJob={job}
+        onVersionCreated={handleVersionCreated}
+      />
     </div>
   );
 }

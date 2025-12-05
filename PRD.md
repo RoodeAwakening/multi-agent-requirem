@@ -47,6 +47,13 @@ A local-first multi-agent pipeline system that orchestrates specialized AI agent
 - **Progression**: Click Settings → Select AI model → Edit agent prompts → Save changes → Settings persist for future pipeline runs
 - **Success criteria**: Model selection persists, custom prompts override defaults, changes apply to subsequent pipeline executions
 
+### Version Creation
+- **Functionality**: Create a new version of a completed task with updated requirements and additional reference materials
+- **Purpose**: Enable iterative refinement by incorporating new insights, feedback, or changed requirements without losing previous analysis
+- **Trigger**: User clicks "Create New Version" button on a completed task
+- **Progression**: Click Create New Version → Review original task → Add version updates and details → Add new reference files/folders → Submit → New version created with incremented version number and fresh pipeline state
+- **Success criteria**: New version inherits previous context, combines all reference materials, maintains version history, starts in "new" status ready for pipeline execution
+
 ## Edge Case Handling
 - **Empty job list**: Show helpful empty state with "Create your first task" prompt
 - **Pipeline failure**: Display error message, preserve partial outputs, allow retry
@@ -55,6 +62,9 @@ A local-first multi-agent pipeline system that orchestrates specialized AI agent
 - **Invalid markdown**: Gracefully handle malformed output, show raw text if needed
 - **Settings changes during pipeline**: Block settings changes when pipeline is running
 - **Invalid custom prompts**: Validate prompt templates contain required variables before saving
+- **Version creation on non-completed tasks**: Hide version button until task reaches completed status
+- **Duplicate reference materials**: Prevent duplicate paths when adding new references in version updates
+- **Empty version updates**: Require at least some new information before allowing version creation
 
 ## Design Direction
 The design should evoke a sense of professional tooling—like a sophisticated IDE or analysis dashboard. It should feel serious and purposeful, with clear information hierarchy and a focus on content readability.
@@ -111,7 +121,7 @@ Animations should be subtle and functional—communicating state changes and gui
   - Settings icon accessible at all times in sidebar header
   - Prompt items show customization indicator badge
 - **Icon Selection**: 
-  - Phosphor icons: Plus for new task, Play for run pipeline, File for outputs, FolderOpen for references, Check for completed, X for failed, Spinner for running, Gear for settings, FloppyDisk for save, ArrowCounterClockwise for reset
+  - Phosphor icons: Plus for new task, Play for run pipeline, File for outputs, FolderOpen for references, Check for completed, X for failed, Spinner for running, Gear for settings, FloppyDisk for save, ArrowCounterClockwise for reset, ArrowsClockwise for new version
 - **Spacing**: 
   - Container padding: p-6
   - Card spacing: p-4
