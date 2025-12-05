@@ -194,7 +194,7 @@ export function NewVersionDialog({
             <input
               ref={folderInputRef}
               type="file"
-              webkitdirectory=""
+              {...({ webkitdirectory: '' } as any)}
               className="hidden"
               onChange={handleFolderSelect}
             />
