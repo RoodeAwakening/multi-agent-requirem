@@ -10,11 +10,19 @@ export type PipelineStepId =
   | "product_owner"
   | "executive_assistant";
 
+export interface ReferenceFile {
+  name: string;
+  path: string;
+  content: string;
+  type: string;
+}
+
 export interface Job {
   id: string;
   title: string;
   description: string;
   referenceFolders: string[];
+  referenceFiles?: ReferenceFile[];
   createdAt: string;
   updatedAt: string;
   status: JobStatus;
