@@ -12,6 +12,7 @@ import {
   setGeminiCLIProjectId,
   getGeminiCLILocation,
   setGeminiCLILocation,
+  checkBackendStatus,
 } from "@/lib/ai-client";
 import {
   Dialog,
@@ -79,6 +80,13 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [geminiAuthMode, setGeminiAuthModeState] = useState<GeminiAuthMode>(getGeminiAuthMode());
   const [geminiProjectId, setGeminiProjectId] = useState<string>(getGeminiCLIProjectId() || "");
   const [geminiLocation, setGeminiLocation] = useState<string>(getGeminiCLILocation());
+  
+  // Backend status for CLI auth
+  const [backendStatus, setBackendStatus] = useState<{
+    running: boolean;
+    projectId: string | null;
+    authenticated: boolean;
+  } | null>(null);
 
   useEffect(() => {
     setLocalModel(aiSettings?.model || "gemini-flash");
@@ -87,6 +95,13 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   useEffect(() => {
     setLocalPrompts(customPrompts || {});
   }, [customPrompts]);
+  
+  // Check backend status when CLI auth is selected
+  useEffect(() => {
+    if (geminiAuthMode === "cli-auth" && open) {
+      checkBackendStatus().then(setBackendStatus);
+    }
+  }, [geminiAuthMode, open]);
 
   const handleSaveSettings = () => {
     setAISettings({ model: localModel, geminiAuthMode: geminiAuthMode });
@@ -308,7 +323,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     <div>
                       <Label className="text-base font-semibold">Gemini Authentication</Label>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Choose how to authenticate with Gemini. CLI auth uses your gcloud project configuration.
+                        Choose how to authenticate with Gemini. API Key is recommended for local development.
                       </p>
                     </div>
                     
@@ -329,7 +344,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                             <div className="flex flex-col items-start">
                               <span className="font-medium">CLI Authentication (Recommended)</span>
                               <span className="text-xs text-muted-foreground">
-                                Uses gcloud project config from .bashrc/.zshrc
+                                Uses gcloud from your shell profile - requires backend server
                               </span>
                             </div>
                           </SelectItem>
@@ -337,7 +352,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                             <div className="flex flex-col items-start">
                               <span className="font-medium">API Key</span>
                               <span className="text-xs text-muted-foreground">
-                                Use a Gemini API key directly
+                                Use a Gemini API key from Google AI Studio
                               </span>
                             </div>
                           </SelectItem>
@@ -347,8 +362,49 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
                     {geminiAuthMode === "cli-auth" && (
                       <div className="space-y-4 p-4 border rounded-lg bg-muted/50">
+                        {/* Backend Status */}
+                        <div className="p-3 rounded-lg border bg-background">
+                          <h4 className="font-medium text-sm mb-2">Backend Server Status</h4>
+                          {backendStatus === null ? (
+                            <p className="text-sm text-muted-foreground">Checking...</p>
+                          ) : backendStatus.running ? (
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                                <span className="text-sm text-green-600 dark:text-green-400">Server running</span>
+                              </div>
+                              {backendStatus.projectId && (
+                                <p className="text-xs text-muted-foreground">
+                                  Project from gcloud: <code className="bg-muted px-1 rounded">{backendStatus.projectId}</code>
+                                </p>
+                              )}
+                              {backendStatus.authenticated ? (
+                                <div className="flex items-center gap-2">
+                                  <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                                  <span className="text-xs text-green-600 dark:text-green-400">gcloud authenticated</span>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2">
+                                  <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                                  <span className="text-xs text-amber-600 dark:text-amber-400">Run: gcloud auth application-default login</span>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                                <span className="text-sm text-red-600 dark:text-red-400">Server not running</span>
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                Start with: <code className="bg-muted px-1 rounded">npm run start</code>
+                              </p>
+                            </div>
+                          )}
+                        </div>
+
                         <div className="space-y-2">
-                          <Label htmlFor="gemini-project-id">Google Cloud Project ID</Label>
+                          <Label htmlFor="gemini-project-id">Google Cloud Project ID (optional)</Label>
                           <Input
                             id="gemini-project-id"
                             value={geminiProjectId}
@@ -356,11 +412,11 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                               setGeminiProjectId(e.target.value);
                               setHasChanges(true);
                             }}
-                            placeholder="your-project-id"
+                            placeholder={backendStatus?.projectId || "your-project-id"}
                             className="max-w-md"
                           />
                           <p className="text-xs text-muted-foreground">
-                            The Google Cloud project ID where Vertex AI is enabled
+                            Leave empty to use project from your shell profile (GOOGLE_CLOUD_PROJECT)
                           </p>
                         </div>
                         
@@ -388,35 +444,22 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                           </Select>
                         </div>
 
-                        <div className="mt-4 p-4 border-2 border-amber-500/50 rounded-lg bg-amber-50 dark:bg-amber-900/10">
-                          <h4 className="font-semibold text-sm mb-2 flex items-center gap-2 text-amber-700 dark:text-amber-400">
-                            <span>⚠️</span> Important Note
-                          </h4>
-                          <div className="text-sm space-y-2">
-                            <p className="text-foreground">
-                              CLI authentication works best in <strong>Google Cloud Shell</strong> or with an auth proxy.
-                            </p>
-                            <p className="text-muted-foreground text-xs">
-                              For local development, we recommend using <strong>API Key</strong> mode. 
-                              Get an API key from Google AI Studio linked to your Google Cloud project for billing.
-                            </p>
-                          </div>
-                        </div>
-
                         <div className="mt-4 p-4 border-2 border-green-500/50 rounded-lg bg-green-50 dark:bg-green-900/10">
                           <h4 className="font-semibold text-sm mb-2 flex items-center gap-2 text-green-700 dark:text-green-400">
-                            <span>✓</span> CLI Setup Instructions
+                            <span>✓</span> Setup Instructions
                           </h4>
-                          <div className="text-sm space-y-2 font-mono text-xs">
-                            <p className="text-foreground">Add to your <code>.bashrc</code> or <code>.zshrc</code>:</p>
+                          <div className="text-sm space-y-2">
+                            <p className="text-foreground">1. Add to your <code className="bg-background px-1 rounded">.bashrc</code> or <code className="bg-background px-1 rounded">.zshrc</code>:</p>
                             <pre className="bg-background p-2 rounded text-xs overflow-x-auto">
-{`export GOOGLE_CLOUD_PROJECT="${geminiProjectId || 'your-project-id'}"
-export CLOUDSDK_CORE_PROJECT="${geminiProjectId || 'your-project-id'}"`}
+{`export GOOGLE_CLOUD_PROJECT="your-project-id"`}
                             </pre>
-                            <p className="text-foreground mt-2">Then run:</p>
+                            <p className="text-foreground">2. Authenticate with gcloud:</p>
                             <pre className="bg-background p-2 rounded text-xs overflow-x-auto">
-{`gcloud auth application-default login
-gcloud config set project ${geminiProjectId || 'your-project-id'}`}
+{`gcloud auth application-default login`}
+                            </pre>
+                            <p className="text-foreground">3. Start the app with the backend server:</p>
+                            <pre className="bg-background p-2 rounded text-xs overflow-x-auto">
+{`npm run start`}
                             </pre>
                           </div>
                         </div>

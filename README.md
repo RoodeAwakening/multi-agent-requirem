@@ -17,7 +17,13 @@ A multi-agent orchestration system for generating comprehensive requirements doc
    npm install
    ```
 
-2. Start the development server:
+2. Start the application:
+   ```bash
+   npm run start
+   ```
+   This starts both the frontend (Vite) and backend server (Node.js) needed for CLI authentication.
+
+   Or run just the frontend:
    ```bash
    npm run dev
    ```
@@ -30,21 +36,25 @@ I.A.N. defaults to **Gemini Flash** for optimal performance and cost-effectivene
 
 #### Option 1: CLI Authentication (Recommended)
 
-This method uses your gcloud project configuration, which is typically set up in your `.bashrc` or `.zshrc` files.
+This method uses your gcloud project configuration from your `.bashrc` or `.zshrc` files. The backend server reads the `GOOGLE_CLOUD_PROJECT` environment variable and uses gcloud CLI for authentication.
 
 1. Install the [Google Cloud CLI](https://cloud.google.com/sdk/docs/install)
 2. Add to your `.bashrc` or `.zshrc`:
    ```bash
    export GOOGLE_CLOUD_PROJECT="your-project-id"
-   export CLOUDSDK_CORE_PROJECT="your-project-id"
    ```
 3. Authenticate:
    ```bash
    gcloud auth application-default login
-   gcloud config set project your-project-id
    ```
 4. Enable Vertex AI API in your project
-5. Open Settings in I.A.N., select "CLI Authentication" and enter your project ID
+5. Start the app with the backend server:
+   ```bash
+   npm run start
+   ```
+6. Open Settings in I.A.N. and select "CLI Authentication"
+
+The backend server will automatically detect your project from the environment variable.
 
 #### Option 2: API Key Authentication
 
@@ -67,9 +77,22 @@ If you prefer to use OpenAI models instead:
 
 ## Development
 
-- `npm run dev` - Start development server
+- `npm run start` - Start both frontend and backend (recommended)
+- `npm run dev` - Start frontend only (Vite dev server)
+- `npm run server` - Start backend only (Node.js server)
 - `npm run build` - Build for production
 - `npm run lint` - Run ESLint
+
+## Architecture
+
+The application consists of:
+- **Frontend**: React + Vite application
+- **Backend**: Node.js Express server for CLI authentication
+
+The backend server (`server/index.js`) provides:
+- Access to gcloud CLI for authentication
+- Reading `GOOGLE_CLOUD_PROJECT` from environment
+- Proxying requests to Vertex AI with proper credentials
 
 ## License
 

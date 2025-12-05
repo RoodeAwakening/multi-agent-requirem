@@ -9,6 +9,9 @@ export interface AISettings {
   geminiAuthMode?: GeminiAuthMode;
 }
 
+// Backend server URL for CLI authentication
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+
 // Map our model names to actual API model names
 const GEMINI_MODEL_MAP: Record<string, string> = {
   "gemini-pro": "gemini-1.5-pro",
@@ -65,89 +68,89 @@ async function callGemini(prompt: string, model: AIModel, authMode?: GeminiAuthM
 }
 
 /**
- * Call Gemini using CLI-based authentication (gcloud auth)
+ * Call Gemini using CLI-based authentication via the backend server
  * 
- * IMPORTANT: Browser-based apps cannot directly access local gcloud credentials.
- * This feature works in specific environments:
- * - Google Cloud Shell (browser has session credentials)
- * - Environments where a proxy server handles authentication
+ * The backend server (server/index.js) has access to gcloud CLI and can:
+ * - Read GOOGLE_CLOUD_PROJECT from environment variables
+ * - Execute gcloud auth print-access-token to get credentials
+ * - Make authenticated requests to Vertex AI
  * 
- * For most local development, use API key authentication instead.
- * The API key can be associated with your Google Cloud project for billing purposes.
- * 
- * This uses the Vertex AI REST API with Application Default Credentials
+ * Run with: npm run start (or npm run dev:full)
  */
 async function callGeminiWithCLIAuth(prompt: string, model: AIModel): Promise<string> {
-  // Get project ID and location from localStorage
-  const projectId = localStorage.getItem("gemini-cli-project-id");
+  // Get project ID and location from localStorage (optional - backend can auto-detect)
+  const projectId = localStorage.getItem("gemini-cli-project-id") || undefined;
   const location = localStorage.getItem("gemini-cli-location") || "us-central1";
-  
-  if (!projectId) {
-    throw new Error(
-      "Gemini CLI authentication requires a Google Cloud Project ID. Please configure it in Settings."
-    );
-  }
-
-  const modelName = GEMINI_MODEL_MAP[model] || "gemini-1.5-flash";
-  
-  // Use Vertex AI REST API endpoint
-  const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${modelName}:generateContent`;
 
   try {
-    // Note: In a browser context, this requires valid credentials to be available
-    // This works in Google Cloud Shell or with a properly configured auth proxy
-    const response = await fetch(endpoint, {
-      method: "POST",
+    const response = await fetch(`${BACKEND_URL}/api/gemini/generate`, {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
-      credentials: "include",
       body: JSON.stringify({
-        contents: [
-          {
-            role: "user",
-            parts: [{ text: prompt }],
-          },
-        ],
-        generationConfig: {
-          temperature: 0.7,
-        },
+        prompt,
+        model,
+        projectId,
+        location,
       }),
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       
-      // Provide helpful error message based on status
-      if (response.status === 401 || response.status === 403) {
+      if (response.status === 0 || errorData.error?.includes('ECONNREFUSED')) {
         throw new Error(
-          "Authentication failed. Browser-based CLI auth only works in Google Cloud Shell or with an auth proxy.\n\n" +
-          "For local development, please switch to API Key authentication mode in Settings.\n" +
-          "You can get an API key from Google AI Studio that's linked to your Google Cloud project for billing."
+          "Cannot connect to backend server.\n\n" +
+          "Make sure to start the app with: npm run start\n" +
+          "This runs both the frontend and backend server needed for CLI authentication."
         );
       }
       
       throw new Error(
-        `Vertex AI API error: ${response.status} ${response.statusText}` +
-        (errorData.error?.message ? ` - ${errorData.error.message}` : "")
+        errorData.error || `Backend error: ${response.status} ${response.statusText}`
       );
     }
 
     const data = await response.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    return data.text || '';
   } catch (error) {
-    console.error("Gemini CLI auth error:", error);
+    console.error('Gemini CLI auth error:', error);
     
-    // Re-throw if it's already our formatted error
-    if (error instanceof Error && error.message.includes("Authentication failed")) {
-      throw error;
+    // Check if it's a network error (backend not running)
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error(
+        "Cannot connect to backend server.\n\n" +
+        "Make sure to start the app with: npm run start\n" +
+        "This runs both the frontend and backend server needed for CLI authentication."
+      );
     }
     
-    throw new Error(
-      `Gemini CLI authentication failed: ${error instanceof Error ? error.message : String(error)}\n\n` +
-      "Note: Browser-based CLI auth only works in Google Cloud Shell.\n" +
-      "For local development, switch to API Key mode in Settings."
-    );
+    throw error;
+  }
+}
+
+/**
+ * Check if the backend server is running and gcloud is configured
+ */
+export async function checkBackendStatus(): Promise<{
+  running: boolean;
+  projectId: string | null;
+  authenticated: boolean;
+}> {
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/gcloud/config`);
+    if (!response.ok) {
+      return { running: true, projectId: null, authenticated: false };
+    }
+    const data = await response.json();
+    return {
+      running: true,
+      projectId: data.projectId || null,
+      authenticated: data.authenticated || false,
+    };
+  } catch {
+    return { running: false, projectId: null, authenticated: false };
   }
 }
 
@@ -249,7 +252,10 @@ export function isModelConfigured(model: AIModel): boolean {
  */
 export function getGeminiAuthMode(): GeminiAuthMode {
   const mode = localStorage.getItem("gemini-auth-mode");
-  return (mode === "cli-auth" ? "cli-auth" : "api-key") as GeminiAuthMode;
+  if (mode === "cli-auth" || mode === "api-key") {
+    return mode;
+  }
+  return "api-key"; // default to api-key if invalid/missing
 }
 
 /**

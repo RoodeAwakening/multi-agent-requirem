@@ -83,7 +83,7 @@ I.A.N. defaults to **Gemini Flash** for optimal performance. There are two ways 
 
 ### Option 1: CLI Authentication (Recommended)
 
-This method uses your gcloud project configuration set up in your `.bashrc` or `.zshrc` files.
+This method uses your gcloud project configuration from your `.bashrc` or `.zshrc` files. The backend server reads the `GOOGLE_CLOUD_PROJECT` environment variable and uses gcloud CLI for authentication.
 
 1. **Install Google Cloud CLI** (if not already installed):
    ```bash
@@ -97,25 +97,26 @@ This method uses your gcloud project configuration set up in your `.bashrc` or `
 2. **Add to your `.bashrc` or `.zshrc`**:
    ```bash
    export GOOGLE_CLOUD_PROJECT="your-project-id"
-   export CLOUDSDK_CORE_PROJECT="your-project-id"
    ```
 
-3. **Authenticate and configure**:
+3. **Authenticate with gcloud**:
    ```bash
-   # Login to Google Cloud
    gcloud auth application-default login
-   
-   # Set your project
-   gcloud config set project your-project-id
    ```
 
 4. **Enable Vertex AI API** in your Google Cloud Console
 
-5. **Configure I.A.N.**:
+5. **Start I.A.N. with the backend server**:
+   ```bash
+   npm run start
+   ```
+   This command starts both the frontend and the Node.js backend server that handles CLI authentication.
+
+6. **Configure I.A.N.**:
    - Open Settings (gear icon)
    - Select "CLI Authentication" mode
-   - Enter your Google Cloud Project ID
-   - Select your preferred region
+   - The backend will automatically detect your project from the environment variable
+   - Optionally override the project ID or select a different region
 
 ### Option 2: API Key Authentication
 
@@ -143,6 +144,12 @@ If you prefer GPT models:
 - **Shadcn UI** components for consistent design
 - **Spark KV Store** for data persistence
 
+### Backend (Node.js + Express)
+- **Express server** for CLI authentication proxy
+- **gcloud CLI integration** for Vertex AI authentication
+- Reads `GOOGLE_CLOUD_PROJECT` from environment variables
+- Handles token generation via `gcloud auth print-access-token`
+
 ### Key Files
 - `src/lib/types.ts` - TypeScript type definitions
 - `src/lib/constants.ts` - Pipeline configuration
@@ -154,6 +161,7 @@ If you prefer GPT models:
 - `src/components/JobList.tsx` - Task list sidebar
 - `src/components/NewJobDialog.tsx` - Task creation dialog
 - `src/components/SettingsDialog.tsx` - AI configuration settings
+- `server/index.js` - Backend server for CLI authentication
 
 ### Data Storage
 
