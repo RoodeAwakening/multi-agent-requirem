@@ -78,7 +78,9 @@ export function NewJobDialog({
     setSelectedPaths(prev => prev.filter(path => path !== pathToRemove));
     // Also remove associated files
     setReferenceFiles(prev => 
-      prev.filter(file => !file.path.startsWith(pathToRemove))
+      prev.filter(file => 
+        !file.path.startsWith(pathToRemove + "/") && file.path !== pathToRemove
+      )
     );
   };
 
