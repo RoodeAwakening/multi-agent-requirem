@@ -155,7 +155,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[98vw] w-[4000px] h-[92vh] p-0 flex flex-col">
+      <DialogContent className="!max-w-[95vw] w-[1400px] h-[92vh] p-0 flex flex-col">
         <DialogHeader className="px-6 pt-6 pb-4 border-b shrink-0">
           <DialogTitle>Settings</DialogTitle>
           <DialogDescription>
@@ -230,26 +230,25 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     </Select>
                     
                     {(localModel === "gemini-pro" || localModel === "gemini-flash") && (
-                      <div className="mt-4 p-4 border-2 border-destructive/50 rounded-lg bg-destructive/5">
-                        <h4 className="font-semibold text-sm mb-2 flex items-center gap-2 text-destructive">
-                          <span>⚠️</span> Gemini Not Currently Supported
+                      <div className="mt-4 p-4 border-2 border-primary/50 rounded-lg bg-primary/5">
+                        <h4 className="font-semibold text-sm mb-2 flex items-center gap-2 text-primary">
+                          <span>ℹ️</span> Gemini Configuration Required
                         </h4>
                         <div className="text-sm space-y-3">
                           <p className="text-foreground">
-                            Gemini models are not currently supported by the Spark runtime SDK.
-                            The built-in <code className="bg-muted px-1.5 py-0.5 rounded text-xs">spark.llm</code> API 
-                            only supports <strong>GPT-4o</strong> and <strong>GPT-4o-mini</strong>.
+                            To use Gemini models, you need to configure access via the Google Cloud CLI.
                           </p>
                           <div className="bg-background/50 p-3 rounded border">
-                            <p className="font-medium text-foreground mb-2">Future Implementation Options:</p>
-                            <ul className="list-disc list-inside space-y-1 text-muted-foreground text-xs ml-2">
-                              <li>Use Google's Gemini API directly with API keys</li>
-                              <li>Integrate with Vertex AI through REST APIs</li>
-                              <li>Use gcloud CLI as a subprocess (requires Node.js backend)</li>
-                            </ul>
+                            <p className="font-medium text-foreground mb-2">Setup Steps:</p>
+                            <ol className="list-decimal list-inside space-y-1 text-muted-foreground text-xs ml-2">
+                              <li>Install the Google Cloud CLI (<code className="bg-muted px-1 py-0.5 rounded">gcloud</code>)</li>
+                              <li>Run <code className="bg-muted px-1 py-0.5 rounded">gcloud auth login</code> to authenticate</li>
+                              <li>Select a project with Gemini API access: <code className="bg-muted px-1 py-0.5 rounded">gcloud config set project YOUR_PROJECT_ID</code></li>
+                              <li>Enable the Gemini API for your project</li>
+                            </ol>
                           </div>
-                          <p className="text-muted-foreground text-xs italic">
-                            For now, please select GPT-4o or GPT-4o-mini to run the pipeline.
+                          <p className="text-muted-foreground text-xs">
+                            See the README for detailed setup instructions.
                           </p>
                         </div>
                       </div>
