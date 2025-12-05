@@ -1,14 +1,8 @@
 import { Job, PipelineStepId } from "./types";
 import { PIPELINE_STEPS } from "./constants";
 import { getPromptTemplate, fillPromptTemplate } from "./prompts";
-
-type AIModel = "gpt-4o" | "gpt-4o-mini" | "gemini-pro" | "gemini-flash";
-
-interface AISettings {
-  model: AIModel;
-  temperature?: number;
-  useLocalGemini?: boolean;
-}
+import { callAI, AIModel, AISettings } from "./ai-client";
+import { getStoredValue } from "./storage";
 
 export class PipelineOrchestrator {
   private job: Job;
@@ -58,9 +52,10 @@ export class PipelineOrchestrator {
     const promptTemplate = await getPromptTemplate(stepId);
     const prompt = fillPromptTemplate(promptTemplate, variables);
 
+    // Get AI settings from storage
     let aiSettings: AISettings = { model: "gpt-4o" };
     try {
-      const savedSettings = await window.spark.kv.get<AISettings>("ai-settings");
+      const savedSettings = getStoredValue<AISettings>("ai-settings");
       if (savedSettings) {
         aiSettings = savedSettings;
       }
@@ -69,22 +64,8 @@ export class PipelineOrchestrator {
     }
 
     try {
-      // For Gemini models, the integration depends on external gcloud CLI configuration
-      // The Spark runtime SDK doesn't natively support Gemini, so this requires
-      // the user to have properly configured their gcloud project with Gemini API access
-      if (aiSettings.model === "gemini-pro" || aiSettings.model === "gemini-flash") {
-        // Currently, the Spark SDK only supports GPT models natively
-        // Gemini support requires external integration via gcloud CLI
-        // For now, fall back to GPT-4o with a warning
-        console.warn(
-          `Gemini model ${aiSettings.model} selected but Spark SDK only supports GPT models natively. ` +
-          `Using GPT-4o as fallback. Configure external Gemini integration for full support.`
-        );
-        const result = await window.spark.llm(prompt, "gpt-4o");
-        return result;
-      }
-      
-      const result = await window.spark.llm(prompt, aiSettings.model);
+      // Call the AI using our unified client
+      const result = await callAI(prompt, aiSettings.model);
       return result;
     } catch (error) {
       console.error(`Failed to execute step ${stepId}:`, error);

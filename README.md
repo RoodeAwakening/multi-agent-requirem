@@ -23,48 +23,23 @@ A multi-agent orchestration system for generating comprehensive requirements doc
 
 ## AI Model Configuration
 
+Configure your API keys in the Settings dialog (click the gear icon).
+
 ### Using OpenAI Models (GPT-4o, GPT-4o Mini)
 
-OpenAI models work out of the box with the default configuration.
+1. Get an API key from [OpenAI Platform](https://platform.openai.com/api-keys)
+2. Open Settings in the application
+3. Enter your OpenAI API key
+4. Select GPT-4o or GPT-4o Mini as your model
 
 ### Using Gemini Models (Gemini Pro, Gemini Flash)
 
-To use Google's Gemini models, you need to configure access via the Google Cloud CLI:
+1. Get an API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
+2. Open Settings in the application
+3. Enter your Gemini API key
+4. Select Gemini Pro or Gemini Flash as your model
 
-1. **Install the Google Cloud CLI**
-   
-   Follow the installation instructions at: https://cloud.google.com/sdk/docs/install
-
-2. **Authenticate with Google Cloud**
-   ```bash
-   gcloud auth login
-   ```
-
-3. **Select a Project with Gemini API Access**
-   
-   List your available projects:
-   ```bash
-   gcloud projects list
-   ```
-   
-   Set your project (use a project that has Gemini API enabled):
-   ```bash
-   gcloud config set project YOUR_PROJECT_ID
-   ```
-
-4. **Enable the Gemini API**
-   
-   If not already enabled, enable the Gemini API for your project:
-   ```bash
-   gcloud services enable aiplatform.googleapis.com
-   ```
-
-5. **Verify Your Configuration**
-   ```bash
-   gcloud config list
-   ```
-
-Once configured, select Gemini Pro or Gemini Flash in the Settings dialog within the application.
+**Note:** Your API keys are stored locally in your browser and are only sent directly to the respective AI provider's API.
 
 ## Development
 

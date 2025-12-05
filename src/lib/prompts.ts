@@ -1,4 +1,5 @@
 import { PipelineStepId } from "./types";
+import { getStoredValue } from "./storage";
 
 export const PROMPTS: Record<PipelineStepId, string> = {
   tech_lead_initial: `You are a Senior Engineering Tech Lead conducting an initial technical assessment.
@@ -393,9 +394,7 @@ export async function getPromptTemplate(
   stepId: PipelineStepId
 ): Promise<string> {
   try {
-    const customPrompts = await window.spark.kv.get<
-      Partial<Record<PipelineStepId, string>>
-    >("custom-prompts");
+    const customPrompts = getStoredValue<Partial<Record<PipelineStepId, string>>>("custom-prompts");
     
     if (customPrompts && customPrompts[stepId]) {
       return customPrompts[stepId];
