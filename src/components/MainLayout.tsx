@@ -34,10 +34,10 @@ export function MainLayout() {
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1">
               <h1 className="text-2xl font-bold tracking-tight mb-2">
-                Agent Pipeline
+                I.A.N.
               </h1>
               <p className="text-sm text-muted-foreground">
-                Multi-agent task orchestration
+                Intelligent Analysis Navigator
               </p>
             </div>
             <Button

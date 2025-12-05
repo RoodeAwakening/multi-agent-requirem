@@ -53,7 +53,7 @@ export class PipelineOrchestrator {
     const prompt = fillPromptTemplate(promptTemplate, variables);
 
     // Get AI settings from storage
-    let aiSettings: AISettings = { model: "gpt-4o" };
+    let aiSettings: AISettings = { model: "gemini-flash" };
     try {
       const savedSettings = getStoredValue<AISettings>("ai-settings");
       if (savedSettings) {
