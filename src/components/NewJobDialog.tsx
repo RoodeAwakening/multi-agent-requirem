@@ -158,6 +158,7 @@ export function NewJobDialog({
             <input
               ref={folderInputRef}
               type="file"
+              webkitdirectory=""
               className="hidden"
               onChange={handleFolderSelect}
             />
