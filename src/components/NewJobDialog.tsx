@@ -186,7 +186,10 @@ export function NewJobDialog({
             <input
               ref={folderInputRef}
               type="file"
-              {...({ webkitdirectory: true } as any)}
+              // @ts-expect-error - webkitdirectory is a valid HTML attribute for folder selection
+              webkitdirectory=""
+              directory=""
+              multiple
               className="hidden"
               onChange={handleFolderSelect}
             />
