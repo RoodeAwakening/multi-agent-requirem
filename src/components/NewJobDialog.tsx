@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,8 +11,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Job } from "@/lib/types";
 import { generateJobId } from "@/lib/constants";
+import { FolderOpen, File, X } from "@phosphor-icons/react";
 
 interface NewJobDialogProps {
   open: boolean;
@@ -27,7 +30,40 @@ export function NewJobDialog({
 }: NewJobDialogProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [references, setReferences] = useState("");
+  const [selectedPaths, setSelectedPaths] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      const newPaths = Array.from(files).map((file) => {
+        return (file as any).path || file.name;
+      });
+      setSelectedPaths((prev) => [...prev, ...newPaths]);
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleFolderSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      const folderPath = (file as any).path || file.webkitRelativePath.split("/")[0];
+      if (folderPath && !selectedPaths.includes(folderPath)) {
+        setSelectedPaths((prev) => [...prev, folderPath]);
+      }
+    }
+    if (folderInputRef.current) {
+      folderInputRef.current.value = "";
+    }
+  };
+
+  const removePath = (pathToRemove: string) => {
+    setSelectedPaths((prev) => prev.filter((path) => path !== pathToRemove));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,10 +72,7 @@ export function NewJobDialog({
       id: generateJobId(),
       title,
       description,
-      referenceFolders: references
-        .split("\n")
-        .map((line) => line.trim())
-        .filter((line) => line.length > 0),
+      referenceFolders: selectedPaths,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       status: "new",
@@ -52,7 +85,7 @@ export function NewJobDialog({
 
     setTitle("");
     setDescription("");
-    setReferences("");
+    setSelectedPaths([]);
   };
 
   return (
@@ -91,22 +124,72 @@ export function NewJobDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="references">
-              Reference Materials (one path or description per line)
-            </Label>
-            <Textarea
-              id="references"
-              value={references}
-              onChange={(e) => setReferences(e.target.value)}
-              placeholder="e.g.,
-Design doc: /docs/tier-selector-spec.md
-User research: /research/tier-interviews.pdf
-Current implementation: /src/components/TierSelector"
-              rows={5}
+            <Label>Reference Materials</Label>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-2"
+              >
+                <File />
+                Add File
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => folderInputRef.current?.click()}
+                className="flex items-center gap-2"
+              >
+                <FolderOpen />
+                Add Folder
+              </Button>
+            </div>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              className="hidden"
+              onChange={handleFileSelect}
             />
+            <input
+              ref={folderInputRef}
+              type="file"
+              className="hidden"
+              onChange={handleFolderSelect}
+            />
+
+            {selectedPaths.length > 0 && (
+              <ScrollArea className="h-40 rounded-md border border-input bg-background p-3">
+                <div className="space-y-2">
+                  {selectedPaths.map((path, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between gap-2 rounded-md bg-secondary px-3 py-2"
+                    >
+                      <span className="text-sm font-mono text-foreground truncate flex-1">
+                        {path}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removePath(path)}
+                        className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive"
+                      >
+                        <X size={14} />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            )}
+
             <p className="text-xs text-muted-foreground">
-              Optional: Provide paths, URLs, or descriptions of reference
-              materials
+              Optional: Add files or folders to provide context for the analysis
             </p>
           </div>
 
