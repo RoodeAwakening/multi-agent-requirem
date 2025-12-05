@@ -35,11 +35,12 @@ interface SettingsDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-type AIModel = "gpt-4o" | "gpt-4o-mini";
+type AIModel = "gpt-4o" | "gpt-4o-mini" | "gemini-pro" | "gemini-flash";
 
 interface AISettings {
   model: AIModel;
   temperature?: number;
+  useLocalGemini?: boolean;
 }
 
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
@@ -154,7 +155,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl h-[80vh] p-0">
+      <DialogContent className="max-w-6xl h-[85vh] p-0">
         <DialogHeader className="px-6 pt-6 pb-4 border-b">
           <DialogTitle>Settings</DialogTitle>
           <DialogDescription>
@@ -208,8 +209,50 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                           </span>
                         </div>
                       </SelectItem>
+                      <SelectItem value="gemini-pro">
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">Gemini Pro</span>
+                          <span className="text-xs text-muted-foreground">
+                            Google's advanced model - Strong reasoning
+                          </span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="gemini-flash">
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">Gemini Flash</span>
+                          <span className="text-xs text-muted-foreground">
+                            Fast responses - Cost effective
+                          </span>
+                        </div>
+                      </SelectItem>
                     </SelectContent>
                   </Select>
+                  
+                  {(localModel === "gemini-pro" || localModel === "gemini-flash") && (
+                    <div className="mt-4 p-4 border-2 border-destructive/50 rounded-lg bg-destructive/5">
+                      <h4 className="font-semibold text-sm mb-2 flex items-center gap-2 text-destructive">
+                        <span>⚠️</span> Gemini Not Currently Supported
+                      </h4>
+                      <div className="text-sm space-y-3">
+                        <p className="text-foreground">
+                          Gemini models are not currently supported by the Spark runtime SDK.
+                          The built-in <code className="bg-muted px-1.5 py-0.5 rounded text-xs">spark.llm</code> API 
+                          only supports <strong>GPT-4o</strong> and <strong>GPT-4o-mini</strong>.
+                        </p>
+                        <div className="bg-background/50 p-3 rounded border">
+                          <p className="font-medium text-foreground mb-2">Future Implementation Options:</p>
+                          <ul className="list-disc list-inside space-y-1 text-muted-foreground text-xs ml-2">
+                            <li>Use Google's Gemini API directly with API keys</li>
+                            <li>Integrate with Vertex AI through REST APIs</li>
+                            <li>Use gcloud CLI as a subprocess (requires Node.js backend)</li>
+                          </ul>
+                        </div>
+                        <p className="text-muted-foreground text-xs italic">
+                          For now, please select GPT-4o or GPT-4o-mini to run the pipeline.
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="bg-muted p-4 rounded-lg space-y-2">
@@ -223,9 +266,9 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             </TabsContent>
 
             <TabsContent value="prompts" className="m-0 h-full">
-              <div className="grid grid-cols-[300px_1fr] h-full">
+              <div className="grid grid-cols-[280px_1fr] h-full">
                 <div className="border-r">
-                  <ScrollArea className="h-full">
+                  <ScrollArea className="h-[calc(85vh-180px)]">
                     <div className="p-4 space-y-1">
                       {promptSteps.map((step) => (
                         <button
@@ -258,8 +301,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   </ScrollArea>
                 </div>
 
-                <div className="flex flex-col">
-                  <div className="p-6 border-b">
+                <div className="flex flex-col h-full">
+                  <div className="p-6 border-b shrink-0">
                     <div className="flex items-start justify-between mb-2">
                       <div>
                         <h3 className="text-lg font-semibold">
@@ -292,14 +335,14 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     )}
                   </div>
 
-                  <ScrollArea className="flex-1">
+                  <ScrollArea className="flex-1 h-[calc(85vh-280px)]">
                     <div className="p-6">
                       <Textarea
                         value={getCurrentPrompt(selectedPrompt)}
                         onChange={(e) =>
                           handlePromptChange(selectedPrompt, e.target.value)
                         }
-                        className="min-h-[400px] font-mono text-sm"
+                        className="min-h-[500px] font-mono text-sm resize-none"
                         placeholder="Enter custom prompt..."
                       />
 

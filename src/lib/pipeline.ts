@@ -2,11 +2,12 @@ import { Job, PipelineStepId } from "./types";
 import { PIPELINE_STEPS } from "./constants";
 import { getPromptTemplate, fillPromptTemplate } from "./prompts";
 
-type AIModel = "gpt-4o" | "gpt-4o-mini";
+type AIModel = "gpt-4o" | "gpt-4o-mini" | "gemini-pro" | "gemini-flash";
 
 interface AISettings {
   model: AIModel;
   temperature?: number;
+  useLocalGemini?: boolean;
 }
 
 export class PipelineOrchestrator {
@@ -68,6 +69,14 @@ export class PipelineOrchestrator {
     }
 
     try {
+      if (aiSettings.model === "gemini-pro" || aiSettings.model === "gemini-flash") {
+        throw new Error(
+          "Gemini models are currently not supported by the Spark runtime. " +
+          "The Spark SDK only supports GPT-4o and GPT-4o-mini. " +
+          "Please select a supported model in Settings or implement a custom Gemini integration using external APIs."
+        );
+      }
+      
       const result = await window.spark.llm(prompt, aiSettings.model);
       return result;
     } catch (error) {
