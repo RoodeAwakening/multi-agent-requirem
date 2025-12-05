@@ -56,7 +56,7 @@ To use Google's Gemini models, you need to configure access via the Google Cloud
    
    If not already enabled, enable the Gemini API for your project:
    ```bash
-   gcloud services enable generativelanguage.googleapis.com
+   gcloud services enable aiplatform.googleapis.com
    ```
 
 5. **Verify Your Configuration**
