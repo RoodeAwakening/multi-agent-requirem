@@ -88,35 +88,37 @@ export const processFolderFiles = async (
   files: FileList,
   existingPaths: string[]
 ): Promise<{ folderName: string; referenceFiles: ReferenceFile[] }> => {
-  const newFiles: ReferenceFile[] = [];
   const addedPaths = new Set<string>();
   
   // Get folder name from first file's relative path
   const firstFile = files[0];
   const folderName = firstFile.webkitRelativePath.split("/")[0];
   
-  for (const file of Array.from(files)) {
+  const filePromises = Array.from(files).map(async (file) => {
     const relativePath = file.webkitRelativePath;
-    
     // Skip if already processed
-    if (addedPaths.has(relativePath)) continue;
+    if (addedPaths.has(relativePath)) return null;
     addedPaths.add(relativePath);
-    
     // Only read text files
     if (isTextFile(file.name)) {
       try {
         const content = await readFileContent(file);
-        newFiles.push({
+        return {
           name: file.name,
           path: relativePath,
           content: content,
           type: file.type || 'text/plain'
-        });
+        } as ReferenceFile;
       } catch (err) {
         console.warn(`Could not read file ${file.name}:`, err);
+        return null;
       }
     }
-  }
+    return null;
+  });
+
+  const results = await Promise.all(filePromises);
+  const newFiles: ReferenceFile[] = results.filter((r): r is ReferenceFile => r !== null);
   
   return { folderName, referenceFiles: newFiles };
 };
