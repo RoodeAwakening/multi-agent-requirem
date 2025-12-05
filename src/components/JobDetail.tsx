@@ -7,12 +7,20 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Play, FolderOpen, ArrowsClockwise } from "@phosphor-icons/react";
+import { Play, FolderOpen, ArrowsClockwise, FilePdf, DownloadSimple } from "@phosphor-icons/react";
 import { PipelineOrchestrator } from "@/lib/pipeline";
 import { OUTPUT_FILES } from "@/lib/constants";
 import { toast } from "sonner";
 import { marked } from "marked";
 import { NewVersionDialog } from "./NewVersionDialog";
+import { exportJobToPDF } from "@/lib/pdf-export";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 interface JobDetailProps {
   job: Job;
@@ -64,6 +72,36 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
   const handleVersionCreated = (newVersionJob: Job) => {
     onJobUpdated(newVersionJob);
     toast.success(`Version ${newVersionJob.version} created successfully!`);
+  };
+
+  const handleExportCurrentTab = () => {
+    try {
+      exportJobToPDF(job, selectedOutput);
+      toast.success(`PDF exported: ${selectedOutput}`);
+    } catch (error) {
+      toast.error("Failed to export PDF");
+      console.error(error);
+    }
+  };
+
+  const handleExportFullReport = () => {
+    try {
+      exportJobToPDF(job);
+      toast.success("Full report exported as PDF");
+    } catch (error) {
+      toast.error("Failed to export PDF");
+      console.error(error);
+    }
+  };
+
+  const handleExportSpecificDocument = (filename: string) => {
+    try {
+      exportJobToPDF(job, filename);
+      toast.success(`PDF exported: ${filename}`);
+    } catch (error) {
+      toast.error("Failed to export PDF");
+      console.error(error);
+    }
   };
 
   const outputContent = job.outputs[selectedOutput];
@@ -130,15 +168,50 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
           </Button>
 
           {job.status === "completed" && (
-            <Button
-              onClick={() => setIsNewVersionDialogOpen(true)}
-              disabled={isRunning}
-              size="lg"
-              variant="outline"
-            >
-              <ArrowsClockwise className="mr-2" />
-              Create New Version
-            </Button>
+            <>
+              <Button
+                onClick={() => setIsNewVersionDialogOpen(true)}
+                disabled={isRunning}
+                size="lg"
+                variant="outline"
+              >
+                <ArrowsClockwise className="mr-2" />
+                Create New Version
+              </Button>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    disabled={isRunning || !hasOutputs}
+                    size="lg"
+                    variant="secondary"
+                  >
+                    <FilePdf className="mr-2" />
+                    Export PDF
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-64">
+                  <DropdownMenuItem onClick={handleExportFullReport}>
+                    <DownloadSimple className="mr-2" />
+                    Full Report (All Outputs)
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  {OUTPUT_FILES.map((file) => {
+                    const hasOutput = !!job.outputs[file.filename];
+                    return (
+                      <DropdownMenuItem
+                        key={file.filename}
+                        onClick={() => handleExportSpecificDocument(file.filename)}
+                        disabled={!hasOutput}
+                      >
+                        {file.label}
+                        {hasOutput && <span className="ml-auto text-green-600">✓</span>}
+                      </DropdownMenuItem>
+                    );
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
           )}
 
           {isRunning && (
@@ -159,27 +232,40 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
             onValueChange={setSelectedOutput}
             className="h-full flex flex-col"
           >
-            <TabsList className="w-full justify-start rounded-none border-b px-6 h-auto py-2">
-              {OUTPUT_FILES.map((file) => {
-                const hasOutput = !!job.outputs[file.filename];
-                return (
-                  <TabsTrigger
-                    key={file.filename}
-                    value={file.filename}
-                    disabled={!hasOutput}
-                    className="data-[state=active]:border-b-2 data-[state=active]:border-accent"
-                  >
-                    {file.label}
-                    {hasOutput && (
-                      <span className="ml-2 text-green-600">✓</span>
-                    )}
-                  </TabsTrigger>
-                );
-              })}
-            </TabsList>
+            <div className="flex items-center justify-between border-b px-6 py-2">
+              <TabsList className="justify-start rounded-none border-none h-auto p-0">
+                {OUTPUT_FILES.map((file) => {
+                  const hasOutput = !!job.outputs[file.filename];
+                  return (
+                    <TabsTrigger
+                      key={file.filename}
+                      value={file.filename}
+                      disabled={!hasOutput}
+                      className="data-[state=active]:border-b-2 data-[state=active]:border-accent"
+                    >
+                      {file.label}
+                      {hasOutput && (
+                        <span className="ml-2 text-green-600">✓</span>
+                      )}
+                    </TabsTrigger>
+                  );
+                })}
+              </TabsList>
+              
+              {outputContent && (
+                <Button
+                  onClick={handleExportCurrentTab}
+                  size="sm"
+                  variant="ghost"
+                  className="shrink-0"
+                >
+                  <FilePdf className="mr-2" size={16} />
+                  Export This Page
+                </Button>
+              )}
+            </div>
 
-            <div className="flex-1 overflow-auto">
-              {OUTPUT_FILES.map((file) => (
+            <div className="flex-1 overflow-auto">{OUTPUT_FILES.map((file) => (
                 <TabsContent
                   key={file.filename}
                   value={file.filename}

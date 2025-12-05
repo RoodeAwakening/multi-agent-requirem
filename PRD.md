@@ -54,6 +54,13 @@ A local-first multi-agent pipeline system that orchestrates specialized AI agent
 - **Progression**: Click Create New Version → Review original task → Add version updates and details → Add new reference files/folders → Submit → New version created with incremented version number and fresh pipeline state
 - **Success criteria**: New version inherits previous context, combines all reference materials, maintains version history, starts in "new" status ready for pipeline execution
 
+### PDF Export
+- **Functionality**: Export job outputs as formatted PDF documents for sharing and archiving
+- **Purpose**: Enable easy distribution of analysis results to stakeholders who may not have access to the app
+- **Trigger**: User clicks "Export PDF" dropdown button on a completed task, or clicks "Export This Page" button while viewing a specific output
+- **Progression**: Click Export PDF → Select full report or specific output document → PDF downloads with formatted content, metadata, and version info
+- **Success criteria**: PDF contains properly formatted content with job title, description, version, status, and selected output(s); filename includes job title and version number; toast notification confirms successful export
+
 ## Edge Case Handling
 - **Empty job list**: Show helpful empty state with "Create your first task" prompt
 - **Pipeline failure**: Display error message, preserve partial outputs, allow retry
@@ -65,6 +72,8 @@ A local-first multi-agent pipeline system that orchestrates specialized AI agent
 - **Version creation on non-completed tasks**: Hide version button until task reaches completed status
 - **Duplicate reference materials**: Prevent duplicate paths when adding new references in version updates
 - **Empty version updates**: Require at least some new information before allowing version creation
+- **PDF export without outputs**: Disable PDF export button until at least one output is generated
+- **Large PDF content**: Strip markdown formatting and truncate very long outputs to prevent PDF generation errors
 
 ## Design Direction
 The design should evoke a sense of professional tooling—like a sophisticated IDE or analysis dashboard. It should feel serious and purposeful, with clear information hierarchy and a focus on content readability.
@@ -101,13 +110,14 @@ Animations should be subtle and functional—communicating state changes and gui
   - Sidebar for job navigation with collapsible sections
   - Card for job details header with metadata
   - Tabs for switching between agent outputs and settings categories
-  - Button for primary actions (Run Pipeline, New Task, Save Settings)
+  - Button for primary actions (Run Pipeline, New Task, Save Settings, Export PDF)
   - Dialog for new task creation form and settings panel
   - Badge for status indicators (new/running/completed/failed) and customization markers
   - ScrollArea for job lists, markdown content, and prompt editor
   - Separator to divide UI sections
   - Input and Textarea for form fields and prompt editing
   - Select dropdown for AI model selection
+  - DropdownMenu for PDF export options (full report or individual documents)
 - **Customizations**: 
   - Custom markdown renderer for agent outputs with syntax highlighting
   - Custom progress indicator showing which agent is currently running
@@ -121,7 +131,7 @@ Animations should be subtle and functional—communicating state changes and gui
   - Settings icon accessible at all times in sidebar header
   - Prompt items show customization indicator badge
 - **Icon Selection**: 
-  - Phosphor icons: Plus for new task, Play for run pipeline, File for outputs, FolderOpen for references, Check for completed, X for failed, Spinner for running, Gear for settings, FloppyDisk for save, ArrowCounterClockwise for reset, ArrowsClockwise for new version
+  - Phosphor icons: Plus for new task, Play for run pipeline, File for outputs, FolderOpen for references, Check for completed, X for failed, Spinner for running, Gear for settings, FloppyDisk for save, ArrowCounterClockwise for reset, ArrowsClockwise for new version, FilePdf for PDF export, DownloadSimple for download actions
 - **Spacing**: 
   - Container padding: p-6
   - Card spacing: p-4
