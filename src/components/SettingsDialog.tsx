@@ -155,7 +155,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="!max-w-[95vw] w-[1400px] h-[92vh] p-0 flex flex-col">
+      <DialogContent className="max-w-[95vw] w-full lg:w-[1400px] h-[92vh] p-0 flex flex-col">
         <DialogHeader className="px-6 pt-6 pb-4 border-b shrink-0">
           <DialogTitle>Settings</DialogTitle>
           <DialogDescription>
@@ -230,13 +230,13 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     </Select>
                     
                     {(localModel === "gemini-pro" || localModel === "gemini-flash") && (
-                      <div className="mt-4 p-4 border-2 border-primary/50 rounded-lg bg-primary/5">
-                        <h4 className="font-semibold text-sm mb-2 flex items-center gap-2 text-primary">
-                          <span>ℹ️</span> Gemini Configuration Required
+                      <div className="mt-4 p-4 border-2 border-amber-500/50 rounded-lg bg-amber-50 dark:bg-amber-900/10">
+                        <h4 className="font-semibold text-sm mb-2 flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                          <span>⚠️</span> Gemini Configuration Required
                         </h4>
                         <div className="text-sm space-y-3">
                           <p className="text-foreground">
-                            To use Gemini models, you need to configure access via the Google Cloud CLI.
+                            Gemini models require external configuration. Until configured, the pipeline will fall back to GPT-4o.
                           </p>
                           <div className="bg-background/50 p-3 rounded border">
                             <p className="font-medium text-foreground mb-2">Setup Steps:</p>

@@ -69,16 +69,18 @@ export class PipelineOrchestrator {
     }
 
     try {
-      // For Gemini models, use the configured gcloud CLI integration
+      // For Gemini models, the integration depends on external gcloud CLI configuration
+      // The Spark runtime SDK doesn't natively support Gemini, so this requires
+      // the user to have properly configured their gcloud project with Gemini API access
       if (aiSettings.model === "gemini-pro" || aiSettings.model === "gemini-flash") {
-        // Gemini models are accessed via the Google Cloud CLI
-        // The user must have gcloud configured with a project that has Gemini API access
-        // Map model names to Gemini model identifiers
-        const geminiModel = aiSettings.model === "gemini-pro" 
-          ? "gemini-1.5-pro" 
-          : "gemini-1.5-flash";
-        
-        const result = await window.spark.llm(prompt, geminiModel as "gpt-4o");
+        // Currently, the Spark SDK only supports GPT models natively
+        // Gemini support requires external integration via gcloud CLI
+        // For now, fall back to GPT-4o with a warning
+        console.warn(
+          `Gemini model ${aiSettings.model} selected but Spark SDK only supports GPT models natively. ` +
+          `Using GPT-4o as fallback. Configure external Gemini integration for full support.`
+        );
+        const result = await window.spark.llm(prompt, "gpt-4o");
         return result;
       }
       
