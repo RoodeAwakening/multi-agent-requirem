@@ -1,6 +1,13 @@
 import { Job, PipelineStepId } from "./types";
 import { PIPELINE_STEPS } from "./constants";
-import { fillPromptTemplate } from "./prompts";
+import { getPromptTemplate, fillPromptTemplate } from "./prompts";
+
+type AIModel = "gpt-4o" | "gpt-4o-mini";
+
+interface AISettings {
+  model: AIModel;
+  temperature?: number;
+}
 
 export class PipelineOrchestrator {
   private job: Job;
@@ -47,10 +54,21 @@ export class PipelineOrchestrator {
 
   private async executeStep(stepId: PipelineStepId): Promise<string> {
     const variables = this.buildVariables(stepId);
-    const prompt = fillPromptTemplate(stepId, variables);
+    const promptTemplate = await getPromptTemplate(stepId);
+    const prompt = fillPromptTemplate(promptTemplate, variables);
+
+    let aiSettings: AISettings = { model: "gpt-4o" };
+    try {
+      const savedSettings = await window.spark.kv.get<AISettings>("ai-settings");
+      if (savedSettings) {
+        aiSettings = savedSettings;
+      }
+    } catch (error) {
+      console.warn("Failed to load AI settings, using defaults:", error);
+    }
 
     try {
-      const result = await window.spark.llm(prompt, "gpt-4o");
+      const result = await window.spark.llm(prompt, aiSettings.model);
       return result;
     } catch (error) {
       console.error(`Failed to execute step ${stepId}:`, error);

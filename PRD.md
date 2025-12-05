@@ -40,12 +40,21 @@ A local-first multi-agent pipeline system that orchestrates specialized AI agent
 - **Progression**: Select job → Click output tab → View formatted markdown
 - **Success criteria**: All outputs readable, proper markdown rendering, tab navigation works smoothly
 
+### Settings & Customization
+- **Functionality**: Configure AI model and customize agent prompts via a settings panel
+- **Purpose**: Allow users to optimize performance/cost and tailor agent behavior for specific needs
+- **Trigger**: User clicks gear icon in sidebar header
+- **Progression**: Click Settings → Select AI model → Edit agent prompts → Save changes → Settings persist for future pipeline runs
+- **Success criteria**: Model selection persists, custom prompts override defaults, changes apply to subsequent pipeline executions
+
 ## Edge Case Handling
 - **Empty job list**: Show helpful empty state with "Create your first task" prompt
 - **Pipeline failure**: Display error message, preserve partial outputs, allow retry
 - **Missing reference files**: Warn user during creation, validate paths exist
 - **Long-running operations**: Show progress indicator, prevent duplicate runs
 - **Invalid markdown**: Gracefully handle malformed output, show raw text if needed
+- **Settings changes during pipeline**: Block settings changes when pipeline is running
+- **Invalid custom prompts**: Validate prompt templates contain required variables before saving
 
 ## Design Direction
 The design should evoke a sense of professional tooling—like a sophisticated IDE or analysis dashboard. It should feel serious and purposeful, with clear information hierarchy and a focus on content readability.
@@ -81,32 +90,38 @@ Animations should be subtle and functional—communicating state changes and gui
 - **Components**: 
   - Sidebar for job navigation with collapsible sections
   - Card for job details header with metadata
-  - Tabs for switching between agent outputs
-  - Button for primary actions (Run Pipeline, New Task)
-  - Dialog for new task creation form
-  - Badge for status indicators (new/running/completed/failed)
-  - ScrollArea for job lists and markdown content
+  - Tabs for switching between agent outputs and settings categories
+  - Button for primary actions (Run Pipeline, New Task, Save Settings)
+  - Dialog for new task creation form and settings panel
+  - Badge for status indicators (new/running/completed/failed) and customization markers
+  - ScrollArea for job lists, markdown content, and prompt editor
   - Separator to divide UI sections
-  - Input and Textarea for form fields
+  - Input and Textarea for form fields and prompt editing
+  - Select dropdown for AI model selection
 - **Customizations**: 
   - Custom markdown renderer for agent outputs with syntax highlighting
   - Custom progress indicator showing which agent is currently running
   - File tree component for reference folder display
+  - Split-pane settings dialog with prompt list and editor
 - **States**: 
-  - Buttons show loading spinner when pipeline running, disabled state when no job selected
+  - Buttons show loading spinner when pipeline running, disabled state when no job selected or no changes made
   - Tabs highlight active output, show completion checkmarks
   - Job list items show hover state, selected state with accent border
   - Status badges use color coding: gray (new), teal (running), green (completed), red (failed)
+  - Settings icon accessible at all times in sidebar header
+  - Prompt items show customization indicator badge
 - **Icon Selection**: 
-  - Phosphor icons: Plus for new task, Play for run pipeline, File for outputs, FolderOpen for references, Check for completed, X for failed, Spinner for running
+  - Phosphor icons: Plus for new task, Play for run pipeline, File for outputs, FolderOpen for references, Check for completed, X for failed, Spinner for running, Gear for settings, FloppyDisk for save, ArrowCounterClockwise for reset
 - **Spacing**: 
   - Container padding: p-6
   - Card spacing: p-4
   - List item gaps: gap-2
   - Section margins: mb-6
   - Form field spacing: space-y-4
+  - Settings dialog: max-w-5xl with split layout
 - **Mobile**: 
   - Sidebar collapses to hamburger menu below 768px
   - Tabs switch to dropdown selector on mobile
   - Two-column layout becomes single column stacked
   - Markdown content gets full width with reduced side padding (p-4)
+  - Settings dialog becomes full-screen on mobile with stacked layout

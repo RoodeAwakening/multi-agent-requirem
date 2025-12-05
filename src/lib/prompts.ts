@@ -389,15 +389,33 @@ What should happen immediately following this analysis?
 Generate your executive summary now. Be concise, clear, and focused on business impact.`,
 };
 
-export function fillPromptTemplate(
-  stepId: PipelineStepId,
-  variables: Record<string, string>
-): string {
-  let prompt = PROMPTS[stepId];
-  
-  for (const [key, value] of Object.entries(variables)) {
-    prompt = prompt.replace(new RegExp(`{{${key}}}`, "g"), value);
+export async function getPromptTemplate(
+  stepId: PipelineStepId
+): Promise<string> {
+  try {
+    const customPrompts = await window.spark.kv.get<
+      Partial<Record<PipelineStepId, string>>
+    >("custom-prompts");
+    
+    if (customPrompts && customPrompts[stepId]) {
+      return customPrompts[stepId];
+    }
+  } catch (error) {
+    console.warn("Failed to load custom prompts:", error);
   }
   
-  return prompt;
+  return PROMPTS[stepId];
+}
+
+export function fillPromptTemplate(
+  prompt: string,
+  variables: Record<string, string>
+): string {
+  let filledPrompt = prompt;
+  
+  for (const [key, value] of Object.entries(variables)) {
+    filledPrompt = filledPrompt.replace(new RegExp(`{{${key}}}`, "g"), value);
+  }
+  
+  return filledPrompt;
 }

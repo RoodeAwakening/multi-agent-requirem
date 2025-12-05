@@ -4,13 +4,15 @@ import { Job } from "@/lib/types";
 import { JobList } from "./JobList";
 import { JobDetail } from "./JobDetail";
 import { NewJobDialog } from "./NewJobDialog";
+import { SettingsDialog } from "./SettingsDialog";
 import { Button } from "@/components/ui/button";
-import { Plus } from "@phosphor-icons/react";
+import { Plus, Gear } from "@phosphor-icons/react";
 
 export function MainLayout() {
   const [jobs, setJobs] = useKV<Job[]>("jobs", []);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [isNewJobDialogOpen, setIsNewJobDialogOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const selectedJob = jobs?.find((job) => job.id === selectedJobId);
 
@@ -29,12 +31,24 @@ export function MainLayout() {
     <div className="flex h-screen bg-background">
       <aside className="w-80 border-r border-border bg-secondary flex flex-col">
         <div className="p-6 border-b border-border">
-          <h1 className="text-2xl font-bold tracking-tight mb-2">
-            Agent Pipeline
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Multi-agent task orchestration
-          </p>
+          <div className="flex items-start justify-between mb-2">
+            <div className="flex-1">
+              <h1 className="text-2xl font-bold tracking-tight mb-2">
+                Agent Pipeline
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Multi-agent task orchestration
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsSettingsOpen(true)}
+              className="shrink-0"
+            >
+              <Gear size={20} />
+            </Button>
+          </div>
         </div>
 
         <div className="flex-1 overflow-auto p-4">
@@ -82,6 +96,11 @@ export function MainLayout() {
         open={isNewJobDialogOpen}
         onOpenChange={setIsNewJobDialogOpen}
         onJobCreated={handleJobCreated}
+      />
+
+      <SettingsDialog
+        open={isSettingsOpen}
+        onOpenChange={setIsSettingsOpen}
       />
     </div>
   );
