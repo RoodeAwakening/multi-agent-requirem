@@ -66,8 +66,16 @@ async function callGemini(prompt: string, model: AIModel, authMode?: GeminiAuthM
 
 /**
  * Call Gemini using CLI-based authentication (gcloud auth)
+ * 
+ * IMPORTANT: Browser-based apps cannot directly access local gcloud credentials.
+ * This feature works in specific environments:
+ * - Google Cloud Shell (browser has session credentials)
+ * - Environments where a proxy server handles authentication
+ * 
+ * For most local development, use API key authentication instead.
+ * The API key can be associated with your Google Cloud project for billing purposes.
+ * 
  * This uses the Vertex AI REST API with Application Default Credentials
- * Requires gcloud CLI to be configured with proper authentication
  */
 async function callGeminiWithCLIAuth(prompt: string, model: AIModel): Promise<string> {
   // Get project ID and location from localStorage
@@ -86,15 +94,12 @@ async function callGeminiWithCLIAuth(prompt: string, model: AIModel): Promise<st
   const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${modelName}:generateContent`;
 
   try {
-    // Note: In a browser context, this requires the browser to have valid ADC tokens
-    // This typically works when running in an environment where gcloud auth is configured
-    // and passed through (e.g., when running on Cloud Shell or with proper proxy setup)
+    // Note: In a browser context, this requires valid credentials to be available
+    // This works in Google Cloud Shell or with a properly configured auth proxy
     const response = await fetch(endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        // The browser will need to have credentials available
-        // This works with Google Cloud Shell or environments with ADC configured
       },
       credentials: "include",
       body: JSON.stringify({
@@ -112,10 +117,19 @@ async function callGeminiWithCLIAuth(prompt: string, model: AIModel): Promise<st
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      
+      // Provide helpful error message based on status
+      if (response.status === 401 || response.status === 403) {
+        throw new Error(
+          "Authentication failed. Browser-based CLI auth only works in Google Cloud Shell or with an auth proxy.\n\n" +
+          "For local development, please switch to API Key authentication mode in Settings.\n" +
+          "You can get an API key from Google AI Studio that's linked to your Google Cloud project for billing."
+        );
+      }
+      
       throw new Error(
         `Vertex AI API error: ${response.status} ${response.statusText}` +
-        (errorData.error?.message ? ` - ${errorData.error.message}` : "") +
-        "\n\nMake sure gcloud is authenticated with: gcloud auth application-default login"
+        (errorData.error?.message ? ` - ${errorData.error.message}` : "")
       );
     }
 
@@ -123,13 +137,16 @@ async function callGeminiWithCLIAuth(prompt: string, model: AIModel): Promise<st
     return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
   } catch (error) {
     console.error("Gemini CLI auth error:", error);
+    
+    // Re-throw if it's already our formatted error
+    if (error instanceof Error && error.message.includes("Authentication failed")) {
+      throw error;
+    }
+    
     throw new Error(
       `Gemini CLI authentication failed: ${error instanceof Error ? error.message : String(error)}\n\n` +
-      "Make sure you have:\n" +
-      "1. gcloud CLI installed and configured\n" +
-      "2. Run: gcloud auth application-default login\n" +
-      "3. Set your project: gcloud config set project YOUR_PROJECT_ID\n" +
-      "4. Enabled the Vertex AI API in your project"
+      "Note: Browser-based CLI auth only works in Google Cloud Shell.\n" +
+      "For local development, switch to API Key mode in Settings."
     );
   }
 }

@@ -388,6 +388,21 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                           </Select>
                         </div>
 
+                        <div className="mt-4 p-4 border-2 border-amber-500/50 rounded-lg bg-amber-50 dark:bg-amber-900/10">
+                          <h4 className="font-semibold text-sm mb-2 flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                            <span>⚠️</span> Important Note
+                          </h4>
+                          <div className="text-sm space-y-2">
+                            <p className="text-foreground">
+                              CLI authentication works best in <strong>Google Cloud Shell</strong> or with an auth proxy.
+                            </p>
+                            <p className="text-muted-foreground text-xs">
+                              For local development, we recommend using <strong>API Key</strong> mode. 
+                              Get an API key from Google AI Studio linked to your Google Cloud project for billing.
+                            </p>
+                          </div>
+                        </div>
+
                         <div className="mt-4 p-4 border-2 border-green-500/50 rounded-lg bg-green-50 dark:bg-green-900/10">
                           <h4 className="font-semibold text-sm mb-2 flex items-center gap-2 text-green-700 dark:text-green-400">
                             <span>✓</span> CLI Setup Instructions
