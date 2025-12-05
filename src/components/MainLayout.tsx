@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useKV } from "@github/spark/hooks";
+import { useStoredValue } from "@/lib/storage";
 import { Job } from "@/lib/types";
 import { JobList } from "./JobList";
 import { JobDetail } from "./JobDetail";
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Gear } from "@phosphor-icons/react";
 
 export function MainLayout() {
-  const [jobs, setJobs] = useKV<Job[]>("jobs", []);
+  const [jobs, setJobs] = useStoredValue<Job[]>("jobs", []);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [isNewJobDialogOpen, setIsNewJobDialogOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);

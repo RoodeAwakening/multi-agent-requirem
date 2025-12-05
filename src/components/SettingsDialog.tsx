@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { useKV } from "@github/spark/hooks";
+import { useStoredValue } from "@/lib/storage";
+import { AIModel, AISettings, setApiKey, getApiKey } from "@/lib/ai-client";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -28,6 +30,8 @@ import {
   CheckCircle,
   ArrowCounterClockwise,
   FloppyDisk,
+  Eye,
+  EyeSlash,
 } from "@phosphor-icons/react";
 
 interface SettingsDialogProps {
@@ -35,19 +39,11 @@ interface SettingsDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-type AIModel = "gpt-4o" | "gpt-4o-mini" | "gemini-pro" | "gemini-flash";
-
-interface AISettings {
-  model: AIModel;
-  temperature?: number;
-  useLocalGemini?: boolean;
-}
-
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
-  const [aiSettings, setAISettings] = useKV<AISettings>("ai-settings", {
+  const [aiSettings, setAISettings] = useStoredValue<AISettings>("ai-settings", {
     model: "gpt-4o",
   });
-  const [customPrompts, setCustomPrompts] = useKV<
+  const [customPrompts, setCustomPrompts] = useStoredValue<
     Partial<Record<PipelineStepId, string>>
   >("custom-prompts", {});
 
@@ -60,6 +56,12 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [selectedPrompt, setSelectedPrompt] =
     useState<PipelineStepId>("tech_lead_initial");
   const [hasChanges, setHasChanges] = useState(false);
+  
+  // API Key states
+  const [openaiKey, setOpenaiKey] = useState<string>(getApiKey("openai") || "");
+  const [geminiKey, setGeminiKey] = useState<string>(getApiKey("gemini") || "");
+  const [showOpenaiKey, setShowOpenaiKey] = useState(false);
+  const [showGeminiKey, setShowGeminiKey] = useState(false);
 
   useEffect(() => {
     setLocalModel(aiSettings?.model || "gpt-4o");
@@ -72,6 +74,11 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const handleSaveSettings = () => {
     setAISettings({ model: localModel });
     setCustomPrompts(localPrompts);
+    
+    // Save API keys (save even if empty to allow clearing)
+    setApiKey("openai", openaiKey);
+    setApiKey("gemini", geminiKey);
+    
     setHasChanges(false);
     toast.success("Settings saved successfully");
   };
@@ -155,7 +162,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[98vw] w-[4000px] h-[92vh] p-0 flex flex-col">
+      <DialogContent className="max-w-[95vw] w-full lg:w-[1400px] h-[92vh] p-0 flex flex-col">
         <DialogHeader className="px-6 pt-6 pb-4 border-b shrink-0">
           <DialogTitle>Settings</DialogTitle>
           <DialogDescription>
@@ -228,39 +235,120 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                         </SelectItem>
                       </SelectContent>
                     </Select>
-                    
-                    {(localModel === "gemini-pro" || localModel === "gemini-flash") && (
-                      <div className="mt-4 p-4 border-2 border-destructive/50 rounded-lg bg-destructive/5">
-                        <h4 className="font-semibold text-sm mb-2 flex items-center gap-2 text-destructive">
-                          <span>⚠️</span> Gemini Not Currently Supported
-                        </h4>
-                        <div className="text-sm space-y-3">
-                          <p className="text-foreground">
-                            Gemini models are not currently supported by the Spark runtime SDK.
-                            The built-in <code className="bg-muted px-1.5 py-0.5 rounded text-xs">spark.llm</code> API 
-                            only supports <strong>GPT-4o</strong> and <strong>GPT-4o-mini</strong>.
-                          </p>
-                          <div className="bg-background/50 p-3 rounded border">
-                            <p className="font-medium text-foreground mb-2">Future Implementation Options:</p>
-                            <ul className="list-disc list-inside space-y-1 text-muted-foreground text-xs ml-2">
-                              <li>Use Google's Gemini API directly with API keys</li>
-                              <li>Integrate with Vertex AI through REST APIs</li>
-                              <li>Use gcloud CLI as a subprocess (requires Node.js backend)</li>
-                            </ul>
-                          </div>
-                          <p className="text-muted-foreground text-xs italic">
-                            For now, please select GPT-4o or GPT-4o-mini to run the pipeline.
-                          </p>
-                        </div>
-                      </div>
-                    )}
                   </div>
+
+                  <Separator />
+
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">API Keys</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Configure API keys for the AI providers you want to use.
+                    </p>
+                  </div>
+
+                  {/* OpenAI API Key */}
+                  <div className="space-y-2">
+                    <Label htmlFor="openai-key">OpenAI API Key</Label>
+                    <div className="flex gap-2 max-w-md">
+                      <div className="relative flex-1">
+                        <Input
+                          id="openai-key"
+                          type={showOpenaiKey ? "text" : "password"}
+                          value={openaiKey}
+                          onChange={(e) => {
+                            setOpenaiKey(e.target.value);
+                            setHasChanges(true);
+                          }}
+                          placeholder="sk-..."
+                          className="pr-10"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-0 top-0 h-full px-3"
+                          onClick={() => setShowOpenaiKey(!showOpenaiKey)}
+                        >
+                          {showOpenaiKey ? <EyeSlash size={16} /> : <Eye size={16} />}
+                        </Button>
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Required for GPT-4o and GPT-4o Mini models.{" "}
+                      <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-primary underline">
+                        Get an API key
+                      </a>
+                    </p>
+                  </div>
+
+                  {/* Gemini API Key */}
+                  <div className="space-y-2">
+                    <Label htmlFor="gemini-key">Gemini API Key</Label>
+                    <div className="flex gap-2 max-w-md">
+                      <div className="relative flex-1">
+                        <Input
+                          id="gemini-key"
+                          type={showGeminiKey ? "text" : "password"}
+                          value={geminiKey}
+                          onChange={(e) => {
+                            setGeminiKey(e.target.value);
+                            setHasChanges(true);
+                          }}
+                          placeholder="Enter your Gemini API key"
+                          className="pr-10"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-0 top-0 h-full px-3"
+                          onClick={() => setShowGeminiKey(!showGeminiKey)}
+                        >
+                          {showGeminiKey ? <EyeSlash size={16} /> : <Eye size={16} />}
+                        </Button>
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Required for Gemini Pro and Gemini Flash models.{" "}
+                      <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-primary underline">
+                        Get an API key
+                      </a>
+                    </p>
+                  </div>
+
+                  {(localModel === "gemini-pro" || localModel === "gemini-flash") && !geminiKey && (
+                    <div className="mt-4 p-4 border-2 border-blue-500/50 rounded-lg bg-blue-50 dark:bg-blue-900/10">
+                      <h4 className="font-semibold text-sm mb-2 flex items-center gap-2 text-blue-700 dark:text-blue-400">
+                        <span>ℹ️</span> Gemini Setup
+                      </h4>
+                      <div className="text-sm space-y-2">
+                        <p className="text-foreground">
+                          To use Gemini models, enter your API key above. You can get one from Google AI Studio.
+                        </p>
+                        <p className="text-muted-foreground text-xs">
+                          Your API key is stored locally and never sent to any server other than Google's API.
+                        </p>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="bg-muted p-4 rounded-lg space-y-2">
                     <h4 className="font-medium text-sm">Current Configuration</h4>
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-muted-foreground">Model:</span>
                       <Badge variant="secondary">{localModel}</Badge>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">OpenAI Key:</span>
+                      <Badge variant={openaiKey ? "default" : "outline"}>
+                        {openaiKey ? "Configured" : "Not set"}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">Gemini Key:</span>
+                      <Badge variant={geminiKey ? "default" : "outline"}>
+                        {geminiKey ? "Configured" : "Not set"}
+                      </Badge>
                     </div>
                   </div>
                 </div>

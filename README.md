@@ -1,23 +1,52 @@
-# ✨ Welcome to Your Spark Template!
-You've just launched your brand-new Spark Template Codespace — everything’s fired up and ready for you to explore, build, and create with Spark!
+# Multi-Agent Requirements Pipeline
 
-This template is your blank canvas. It comes with a minimal setup to help you get started quickly with Spark development.
+A multi-agent orchestration system for generating comprehensive requirements documentation from task descriptions. This application uses AI-powered agents to analyze tasks from multiple perspectives (Tech Lead, Business Analyst, Product Owner, etc.) and produce structured requirements documents.
 
-🚀 What's Inside?
-- A clean, minimal Spark environment
-- Pre-configured for local development
-- Ready to scale with your ideas
-  
-🧠 What Can You Do?
+## Features
 
-Right now, this is just a starting point — the perfect place to begin building and testing your Spark applications.
+- **Multi-agent pipeline**: Sequential processing through specialized AI agents
+- **AI Model Selection**: Support for GPT-4o, GPT-4o Mini, Gemini Pro, and Gemini Flash
+- **Customizable prompts**: Modify agent prompts to fit your workflow
+- **Document generation**: Produces technical specs, business analysis, requirements, and product backlogs
 
-🧹 Just Exploring?
-No problem! If you were just checking things out and don’t need to keep this code:
+## Getting Started
 
-- Simply delete your Spark.
-- Everything will be cleaned up — no traces left behind.
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-📄 License For Spark Template Resources 
+2. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-The Spark Template files and resources from GitHub are licensed under the terms of the MIT license, Copyright GitHub, Inc.
+## AI Model Configuration
+
+Configure your API keys in the Settings dialog (click the gear icon).
+
+### Using OpenAI Models (GPT-4o, GPT-4o Mini)
+
+1. Get an API key from [OpenAI Platform](https://platform.openai.com/api-keys)
+2. Open Settings in the application
+3. Enter your OpenAI API key
+4. Select GPT-4o or GPT-4o Mini as your model
+
+### Using Gemini Models (Gemini Pro, Gemini Flash)
+
+1. Get an API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
+2. Open Settings in the application
+3. Enter your Gemini API key
+4. Select Gemini Pro or Gemini Flash as your model
+
+**Note:** Your API keys are stored locally in your browser and are only sent directly to the respective AI provider's API.
+
+## Development
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run lint` - Run ESLint
+
+## License
+
+This project is licensed under the MIT license.

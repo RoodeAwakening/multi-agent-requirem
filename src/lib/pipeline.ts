@@ -1,14 +1,8 @@
 import { Job, PipelineStepId } from "./types";
 import { PIPELINE_STEPS } from "./constants";
 import { getPromptTemplate, fillPromptTemplate } from "./prompts";
-
-type AIModel = "gpt-4o" | "gpt-4o-mini" | "gemini-pro" | "gemini-flash";
-
-interface AISettings {
-  model: AIModel;
-  temperature?: number;
-  useLocalGemini?: boolean;
-}
+import { callAI, AIModel, AISettings } from "./ai-client";
+import { getStoredValue } from "./storage";
 
 export class PipelineOrchestrator {
   private job: Job;
@@ -58,9 +52,10 @@ export class PipelineOrchestrator {
     const promptTemplate = await getPromptTemplate(stepId);
     const prompt = fillPromptTemplate(promptTemplate, variables);
 
+    // Get AI settings from storage
     let aiSettings: AISettings = { model: "gpt-4o" };
     try {
-      const savedSettings = await window.spark.kv.get<AISettings>("ai-settings");
+      const savedSettings = getStoredValue<AISettings>("ai-settings");
       if (savedSettings) {
         aiSettings = savedSettings;
       }
@@ -69,15 +64,8 @@ export class PipelineOrchestrator {
     }
 
     try {
-      if (aiSettings.model === "gemini-pro" || aiSettings.model === "gemini-flash") {
-        throw new Error(
-          "Gemini models are currently not supported by the Spark runtime. " +
-          "The Spark SDK only supports GPT-4o and GPT-4o-mini. " +
-          "Please select a supported model in Settings or implement a custom Gemini integration using external APIs."
-        );
-      }
-      
-      const result = await window.spark.llm(prompt, aiSettings.model);
+      // Call the AI using our unified client
+      const result = await callAI(prompt, aiSettings.model);
       return result;
     } catch (error) {
       console.error(`Failed to execute step ${stepId}:`, error);
