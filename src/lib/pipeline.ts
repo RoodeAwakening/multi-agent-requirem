@@ -144,6 +144,15 @@ export class PipelineOrchestrator {
   }
 
   private formatReferences(): string {
+    // First, try to use the actual file contents
+    if (this.job.referenceFiles && this.job.referenceFiles.length > 0) {
+      const formattedFiles = this.job.referenceFiles.map((file) => {
+        return `--- File: ${file.path} ---\n${file.content}\n--- End of ${file.name} ---`;
+      });
+      return formattedFiles.join("\n\n");
+    }
+    
+    // Fallback to just listing folders if no file contents available
     if (!this.job.referenceFolders || this.job.referenceFolders.length === 0) {
       return "No reference materials provided.";
     }

@@ -199,7 +199,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] w-full lg:w-[1400px] h-[92vh] p-0 flex flex-col">
+      <DialogContent className="max-w-[95vw] sm:max-w-[95vw] lg:max-w-[1400px] w-full lg:w-[1400px] h-[92vh] p-0 flex flex-col">
         <DialogHeader className="px-6 pt-6 pb-4 border-b shrink-0">
           <DialogTitle>Settings</DialogTitle>
           <DialogDescription>
@@ -323,7 +323,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     <div>
                       <Label className="text-base font-semibold">Gemini Authentication</Label>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Choose how to authenticate with Gemini. API Key is recommended for local development.
+                        Choose how to authenticate with Gemini. API Key is recommended as it doesn't require Vertex AI API.
                       </p>
                     </div>
                     
@@ -340,19 +340,19 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="cli-auth">
+                          <SelectItem value="api-key">
                             <div className="flex flex-col items-start">
-                              <span className="font-medium">CLI Authentication (Recommended)</span>
+                              <span className="font-medium">API Key (Recommended)</span>
                               <span className="text-xs text-muted-foreground">
-                                Uses gcloud from your shell profile - requires backend server
+                                Uses Google AI Studio - No Vertex AI API required
                               </span>
                             </div>
                           </SelectItem>
-                          <SelectItem value="api-key">
+                          <SelectItem value="cli-auth">
                             <div className="flex flex-col items-start">
-                              <span className="font-medium">API Key</span>
+                              <span className="font-medium">CLI Auth (Vertex AI)</span>
                               <span className="text-xs text-muted-foreground">
-                                Use a Gemini API key from Google AI Studio
+                                Requires Vertex AI API enabled & backend server
                               </span>
                             </div>
                           </SelectItem>
@@ -403,66 +403,71 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                           )}
                         </div>
 
-                        <div className="space-y-2">
-                          <Label htmlFor="gemini-project-id">Google Cloud Project ID (optional)</Label>
-                          <Input
-                            id="gemini-project-id"
-                            value={geminiProjectId}
-                            onChange={(e) => {
-                              setGeminiProjectId(e.target.value);
-                              setHasChanges(true);
-                            }}
-                            placeholder={backendStatus?.projectId || "your-project-id"}
-                            className="max-w-md"
-                          />
-                          <p className="text-xs text-muted-foreground">
-                            Leave empty to use project from your shell profile (GOOGLE_CLOUD_PROJECT)
-                          </p>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="gemini-location">Region</Label>
-                          <Select
-                            value={geminiLocation}
-                            onValueChange={(value) => {
-                              setGeminiLocation(value);
-                              setHasChanges(true);
-                            }}
-                          >
-                            <SelectTrigger id="gemini-location" className="w-full max-w-md">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="us-central1">us-central1 (Iowa)</SelectItem>
-                              <SelectItem value="us-east4">us-east4 (Virginia)</SelectItem>
-                              <SelectItem value="us-west1">us-west1 (Oregon)</SelectItem>
-                              <SelectItem value="europe-west1">europe-west1 (Belgium)</SelectItem>
-                              <SelectItem value="europe-west4">europe-west4 (Netherlands)</SelectItem>
-                              <SelectItem value="asia-northeast1">asia-northeast1 (Tokyo)</SelectItem>
-                              <SelectItem value="asia-southeast1">asia-southeast1 (Singapore)</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+                        {geminiAuthMode === "cli-auth" && (
+                          <>
+                            <div className="space-y-2">
+                              <Label htmlFor="gemini-project-id">Google Cloud Project ID (optional)</Label>
+                              <Input
+                                id="gemini-project-id"
+                                value={geminiProjectId}
+                                onChange={(e) => {
+                                  setGeminiProjectId(e.target.value);
+                                  setHasChanges(true);
+                                }}
+                                placeholder={backendStatus?.projectId || "your-project-id"}
+                                className="max-w-md"
+                              />
+                              <p className="text-xs text-muted-foreground">
+                                Leave empty to use project from your shell profile (GOOGLE_CLOUD_PROJECT)
+                              </p>
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <Label htmlFor="gemini-location">Region</Label>
+                              <Select
+                                value={geminiLocation}
+                                onValueChange={(value) => {
+                                  setGeminiLocation(value);
+                                  setHasChanges(true);
+                                }}
+                              >
+                                <SelectTrigger id="gemini-location" className="w-full max-w-md">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="us-central1">us-central1 (Iowa)</SelectItem>
+                                  <SelectItem value="us-east4">us-east4 (Virginia)</SelectItem>
+                                  <SelectItem value="us-west1">us-west1 (Oregon)</SelectItem>
+                                  <SelectItem value="europe-west1">europe-west1 (Belgium)</SelectItem>
+                                  <SelectItem value="europe-west4">europe-west4 (Netherlands)</SelectItem>
+                                  <SelectItem value="asia-northeast1">asia-northeast1 (Tokyo)</SelectItem>
+                                  <SelectItem value="asia-southeast1">asia-southeast1 (Singapore)</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
 
-                        <div className="mt-4 p-4 border-2 border-green-500/50 rounded-lg bg-green-50 dark:bg-green-900/10">
-                          <h4 className="font-semibold text-sm mb-2 flex items-center gap-2 text-green-700 dark:text-green-400">
-                            <span>✓</span> Setup Instructions
-                          </h4>
-                          <div className="text-sm space-y-2">
-                            <p className="text-foreground">1. Add to your <code className="bg-background px-1 rounded">.bashrc</code> or <code className="bg-background px-1 rounded">.zshrc</code>:</p>
-                            <pre className="bg-background p-2 rounded text-xs overflow-x-auto">
+                            <div className="mt-4 p-4 border-2 border-green-500/50 rounded-lg bg-green-50 dark:bg-green-900/10">
+                              <h4 className="font-semibold text-sm mb-2 flex items-center gap-2 text-green-700 dark:text-green-400">
+                                <span>✓</span> Setup Instructions
+                              </h4>
+                              <div className="text-sm space-y-2">
+                                <p className="text-foreground">1. Add to your <code className="bg-background px-1 rounded">.bashrc</code> or <code className="bg-background px-1 rounded">.zshrc</code>:</p>
+                                <pre className="bg-background p-2 rounded text-xs overflow-x-auto">
 {`export GOOGLE_CLOUD_PROJECT="your-project-id"`}
-                            </pre>
-                            <p className="text-foreground">2. Authenticate with gcloud:</p>
-                            <pre className="bg-background p-2 rounded text-xs overflow-x-auto">
+                                </pre>
+                                <p className="text-foreground">2. Authenticate with gcloud:</p>
+                                <pre className="bg-background p-2 rounded text-xs overflow-x-auto">
 {`gcloud auth application-default login`}
-                            </pre>
-                            <p className="text-foreground">3. Start the app with the backend server:</p>
-                            <pre className="bg-background p-2 rounded text-xs overflow-x-auto">
+                                </pre>
+                                <p className="text-foreground">3. Start the app with the backend server:</p>
+                                <pre className="bg-background p-2 rounded text-xs overflow-x-auto">
 {`npm run start`}
-                            </pre>
-                          </div>
-                        </div>
+                                </pre>
+                                <p className="text-foreground text-amber-600 dark:text-amber-400">⚠️ Requires Vertex AI API to be enabled in your project</p>
+                              </div>
+                            </div>
+                          </>
+                        )}
                       </div>
                     )}
 
@@ -518,7 +523,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-muted-foreground">Gemini Auth:</span>
                       <Badge variant="secondary">
-                        {geminiAuthMode === "cli-auth" ? "CLI Auth" : "API Key"}
+                        {geminiAuthMode === "cli-auth" ? "CLI (Vertex AI)" : "API Key"}
                       </Badge>
                       {geminiAuthMode === "cli-auth" ? (
                         <Badge variant={geminiProjectId ? "default" : "outline"}>

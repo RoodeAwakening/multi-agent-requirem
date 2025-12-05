@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Job } from "@/lib/types";
+import { Job, ReferenceFile } from "@/lib/types";
+import { processFiles, processFolderFiles } from "@/lib/file-utils";
 import { FolderOpen, File, X } from "@phosphor-icons/react";
 
 interface NewVersionDialogProps {
@@ -29,42 +30,67 @@ export function NewVersionDialog({
 }: NewVersionDialogProps) {
   const [additionalDetails, setAdditionalDetails] = useState("");
   const [selectedPaths, setSelectedPaths] = useState<string[]>([]);
+  const [referenceFiles, setReferenceFiles] = useState<ReferenceFile[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (files) {
-      const newPaths = Array.from(files).map((file) => {
-        return (file as any).path || file.name;
-      });
-      setSelectedPaths((prev) => [...prev, ...newPaths]);
-    }
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+    if (!files || files.length === 0) return;
+    
+    setIsLoading(true);
+    try {
+      const result = await processFiles(files, selectedPaths);
+      setSelectedPaths(prev => [...prev, ...result.paths]);
+      setReferenceFiles(prev => [...prev, ...result.referenceFiles]);
+    } finally {
+      setIsLoading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
-  const handleFolderSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFolderSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (files && files.length > 0) {
-      const file = files[0];
-      const folderPath = (file as any).path || file.webkitRelativePath.split("/")[0];
-      if (folderPath && !selectedPaths.includes(folderPath)) {
-        setSelectedPaths((prev) => [...prev, folderPath]);
+    if (!files || files.length === 0) return;
+    
+    setIsLoading(true);
+    try {
+      const result = await processFolderFiles(files, selectedPaths);
+      
+      if (!selectedPaths.includes(result.folderName)) {
+        setSelectedPaths(prev => [...prev, result.folderName]);
       }
-    }
-    if (folderInputRef.current) {
-      folderInputRef.current.value = "";
+      
+      setReferenceFiles(prev => [...prev, ...result.referenceFiles]);
+    } finally {
+      setIsLoading(false);
+      if (folderInputRef.current) {
+        folderInputRef.current.value = "";
+      }
     }
   };
 
   const removePath = (pathToRemove: string) => {
-    setSelectedPaths((prev) => prev.filter((path) => path !== pathToRemove));
+    setSelectedPaths(prev => prev.filter(path => path !== pathToRemove));
+    // Also remove associated files
+    setReferenceFiles(prev => 
+      prev.filter(file => 
+        !file.path.startsWith(pathToRemove + "/") && file.path !== pathToRemove
+      )
+    );
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Combine existing reference files with new ones
+    const combinedReferenceFiles = [
+      ...(currentJob.referenceFiles || []),
+      ...referenceFiles,
+    ];
 
     const newVersion: Job = {
       ...currentJob,
@@ -76,6 +102,7 @@ export function NewVersionDialog({
         ...currentJob.referenceFolders,
         ...selectedPaths,
       ],
+      referenceFiles: combinedReferenceFiles,
       updatedAt: new Date().toISOString(),
       status: "new",
       outputs: {},
@@ -86,6 +113,7 @@ export function NewVersionDialog({
 
     setAdditionalDetails("");
     setSelectedPaths([]);
+    setReferenceFiles([]);
   };
 
   return (
@@ -135,6 +163,7 @@ export function NewVersionDialog({
                 size="sm"
                 onClick={() => fileInputRef.current?.click()}
                 className="flex items-center gap-2"
+                disabled={isLoading}
               >
                 <File />
                 Add File
@@ -145,10 +174,16 @@ export function NewVersionDialog({
                 size="sm"
                 onClick={() => folderInputRef.current?.click()}
                 className="flex items-center gap-2"
+                disabled={isLoading}
               >
                 <FolderOpen />
                 Add Folder
               </Button>
+              {isLoading && (
+                <span className="text-sm text-muted-foreground animate-pulse">
+                  Reading files...
+                </span>
+              )}
             </div>
 
             <input
@@ -161,6 +196,7 @@ export function NewVersionDialog({
             <input
               ref={folderInputRef}
               type="file"
+              {...({ webkitdirectory: '' } as any)}
               className="hidden"
               onChange={handleFolderSelect}
             />
@@ -206,6 +242,12 @@ export function NewVersionDialog({
                   ))}
                 </div>
               </ScrollArea>
+            )}
+
+            {referenceFiles.length > 0 && (
+              <p className="text-xs text-green-600 dark:text-green-400">
+                ✓ {referenceFiles.length} new file{referenceFiles.length !== 1 ? 's' : ''} loaded with content
+              </p>
             )}
 
             <p className="text-xs text-muted-foreground">
