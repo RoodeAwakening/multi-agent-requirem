@@ -211,6 +211,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
           <TabsList className="w-full justify-start rounded-none border-b px-6 shrink-0">
             <TabsTrigger value="model">AI Model</TabsTrigger>
             <TabsTrigger value="prompts">Agent Prompts</TabsTrigger>
+            <TabsTrigger value="storage">Data Storage</TabsTrigger>
           </TabsList>
 
           <div className="flex-1 min-h-0 overflow-hidden">
@@ -667,6 +668,75 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                         </div>
                       </div>
                     </div>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="storage" className="m-0 h-full overflow-y-auto">
+              <div className="p-6 space-y-6 max-w-3xl">
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Data Storage Location</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Understanding where your task data and generated outputs are stored.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="p-4 bg-muted rounded-lg space-y-3">
+                    <h4 className="font-medium">Browser Local Storage</h4>
+                    <p className="text-sm text-muted-foreground">
+                      All your tasks, settings, and generated outputs are stored in your browser's 
+                      local storage. This means:
+                    </p>
+                    <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1 ml-2">
+                      <li>Data persists between sessions on the same browser</li>
+                      <li>Data is specific to this browser and device</li>
+                      <li>Clearing browser data will remove all saved tasks</li>
+                      <li>Data is not synced across devices</li>
+                    </ul>
+                  </div>
+
+                  <div className="p-4 border rounded-lg space-y-3">
+                    <h4 className="font-medium flex items-center gap-2">
+                      <span>📁</span> Storage Keys
+                    </h4>
+                    <div className="text-sm space-y-2">
+                      <div className="flex items-center gap-2">
+                        <code className="bg-muted px-2 py-1 rounded text-xs">multi-agent-pipeline:jobs</code>
+                        <span className="text-muted-foreground">- All tasks and their outputs</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <code className="bg-muted px-2 py-1 rounded text-xs">multi-agent-pipeline:ai-settings</code>
+                        <span className="text-muted-foreground">- AI model configuration</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <code className="bg-muted px-2 py-1 rounded text-xs">multi-agent-pipeline:custom-prompts</code>
+                        <span className="text-muted-foreground">- Customized agent prompts</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 border-2 border-blue-500/50 rounded-lg bg-blue-50 dark:bg-blue-900/10">
+                    <h4 className="font-semibold text-sm mb-2 flex items-center gap-2 text-blue-700 dark:text-blue-400">
+                      <span>💡</span> Tip: Exporting Your Work
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      To save your generated outputs permanently, use the "Export PDF" feature 
+                      available for completed tasks. This allows you to download your analysis 
+                      results as PDF files that can be stored anywhere.
+                    </p>
+                  </div>
+
+                  <div className="p-4 border-2 border-amber-500/50 rounded-lg bg-amber-50 dark:bg-amber-900/10">
+                    <h4 className="font-semibold text-sm mb-2 flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                      <span>⚠️</span> Important Notes
+                    </h4>
+                    <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                      <li>Browser storage has size limits (typically 5-10MB)</li>
+                      <li>Using "Clear browsing data" in your browser settings will delete all saved tasks</li>
+                      <li>Private/Incognito browsing mode will not persist data</li>
+                    </ul>
                   </div>
                 </div>
               </div>
