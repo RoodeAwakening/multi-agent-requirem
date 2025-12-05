@@ -3,6 +3,8 @@
  * Replaces the spark KV storage functionality
  */
 
+import { useState, useEffect, useCallback } from "react";
+
 const STORAGE_PREFIX = "multi-agent-pipeline:";
 
 /**
@@ -47,8 +49,6 @@ export function removeStoredValue(key: string): void {
  * React hook for using stored values
  * Similar to useState but persists to localStorage
  */
-import { useState, useEffect, useCallback } from "react";
-
 export function useStoredValue<T>(
   key: string,
   defaultValue: T

@@ -75,13 +75,9 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     setAISettings({ model: localModel });
     setCustomPrompts(localPrompts);
     
-    // Save API keys
-    if (openaiKey) {
-      setApiKey("openai", openaiKey);
-    }
-    if (geminiKey) {
-      setApiKey("gemini", geminiKey);
-    }
+    // Save API keys (save even if empty to allow clearing)
+    setApiKey("openai", openaiKey);
+    setApiKey("gemini", geminiKey);
     
     setHasChanges(false);
     toast.success("Settings saved successfully");

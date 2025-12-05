@@ -15,8 +15,9 @@ const GEMINI_MODEL_MAP: Record<string, string> = {
 
 /**
  * Call the AI model with the given prompt
- * For Gemini models, uses the Google Generative AI SDK with Application Default Credentials
- * For OpenAI models, uses the OpenAI API
+ * For Gemini models, uses the Google Generative AI SDK
+ * For OpenAI models, uses the OpenAI API directly
+ * API keys are configured via the Settings dialog and stored in localStorage
  */
 export async function callAI(prompt: string, model: AIModel): Promise<string> {
   if (model === "gemini-pro" || model === "gemini-flash") {
@@ -28,19 +29,14 @@ export async function callAI(prompt: string, model: AIModel): Promise<string> {
 
 /**
  * Call Gemini using the Google Generative AI SDK
- * Credentials are loaded automatically from:
- * 1. GOOGLE_API_KEY environment variable, or
- * 2. Application Default Credentials (gcloud auth application-default login)
+ * API key is loaded from localStorage (configured via Settings dialog)
  */
 async function callGemini(prompt: string, model: AIModel): Promise<string> {
-  // Get API key from environment or use ADC
   const apiKey = getGeminiApiKey();
   
   if (!apiKey) {
     throw new Error(
-      "Gemini API key not found. Please set up Gemini access by either:\n" +
-      "1. Setting GOOGLE_API_KEY environment variable, or\n" +
-      "2. Running 'gcloud auth application-default login' and configuring a project with Gemini API access"
+      "Gemini API key not configured. Please add your Gemini API key in the Settings dialog."
     );
   }
 
@@ -60,14 +56,14 @@ async function callGemini(prompt: string, model: AIModel): Promise<string> {
 
 /**
  * Call OpenAI API
- * This uses fetch to call the OpenAI API directly
+ * API key is loaded from localStorage (configured via Settings dialog)
  */
 async function callOpenAI(prompt: string, model: AIModel): Promise<string> {
   const apiKey = getOpenAIApiKey();
   
   if (!apiKey) {
     throw new Error(
-      "OpenAI API key not found. Please set the OPENAI_API_KEY environment variable."
+      "OpenAI API key not configured. Please add your OpenAI API key in the Settings dialog."
     );
   }
 
@@ -107,32 +103,19 @@ async function callOpenAI(prompt: string, model: AIModel): Promise<string> {
 }
 
 /**
- * Get Gemini API key from environment or stored settings
+ * Get Gemini API key from localStorage (configured via Settings dialog)
  */
 function getGeminiApiKey(): string | null {
-  // Check for API key in localStorage (set via settings)
   const storedKey = localStorage.getItem("gemini-api-key");
-  if (storedKey) {
-    return storedKey;
-  }
-  
-  // In a browser environment, we can't directly access environment variables
-  // The API key should be provided via settings or a backend proxy
-  // For now, return null to indicate no key is available
-  return null;
+  return storedKey || null;
 }
 
 /**
- * Get OpenAI API key from environment or stored settings
+ * Get OpenAI API key from localStorage (configured via Settings dialog)
  */
 function getOpenAIApiKey(): string | null {
-  // Check for API key in localStorage (set via settings)
   const storedKey = localStorage.getItem("openai-api-key");
-  if (storedKey) {
-    return storedKey;
-  }
-  
-  return null;
+  return storedKey || null;
 }
 
 /**
