@@ -1,4 +1,4 @@
-# Planning Guide
+# I.A.N. - Intelligent Analysis Navigator
 
 A local-first multi-agent pipeline system that orchestrates specialized AI agents to analyze tasks from initial technical and business perspectives through to executive summaries, requiring minimal user interaction and zero cloud dependencies.
 

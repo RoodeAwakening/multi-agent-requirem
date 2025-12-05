@@ -1,6 +1,19 @@
 import { useState, useEffect } from "react";
 import { useStoredValue } from "@/lib/storage";
-import { AIModel, AISettings, setApiKey, getApiKey } from "@/lib/ai-client";
+import { 
+  AIModel, 
+  AISettings, 
+  GeminiAuthMode,
+  setApiKey, 
+  getApiKey,
+  getGeminiAuthMode,
+  setGeminiAuthMode,
+  getGeminiCLIProjectId,
+  setGeminiCLIProjectId,
+  getGeminiCLILocation,
+  setGeminiCLILocation,
+  checkBackendStatus,
+} from "@/lib/ai-client";
 import {
   Dialog,
   DialogContent,
@@ -41,14 +54,14 @@ interface SettingsDialogProps {
 
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [aiSettings, setAISettings] = useStoredValue<AISettings>("ai-settings", {
-    model: "gpt-4o",
+    model: "gemini-flash",
   });
   const [customPrompts, setCustomPrompts] = useStoredValue<
     Partial<Record<PipelineStepId, string>>
   >("custom-prompts", {});
 
   const [localModel, setLocalModel] = useState<AIModel>(
-    aiSettings?.model || "gpt-4o"
+    aiSettings?.model || "gemini-flash"
   );
   const [localPrompts, setLocalPrompts] = useState<
     Partial<Record<PipelineStepId, string>>
@@ -62,22 +75,46 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [geminiKey, setGeminiKey] = useState<string>(getApiKey("gemini") || "");
   const [showOpenaiKey, setShowOpenaiKey] = useState(false);
   const [showGeminiKey, setShowGeminiKey] = useState(false);
+  
+  // Gemini CLI auth states
+  const [geminiAuthMode, setGeminiAuthModeState] = useState<GeminiAuthMode>(getGeminiAuthMode());
+  const [geminiProjectId, setGeminiProjectId] = useState<string>(getGeminiCLIProjectId() || "");
+  const [geminiLocation, setGeminiLocation] = useState<string>(getGeminiCLILocation());
+  
+  // Backend status for CLI auth
+  const [backendStatus, setBackendStatus] = useState<{
+    running: boolean;
+    projectId: string | null;
+    authenticated: boolean;
+  } | null>(null);
 
   useEffect(() => {
-    setLocalModel(aiSettings?.model || "gpt-4o");
+    setLocalModel(aiSettings?.model || "gemini-flash");
   }, [aiSettings]);
 
   useEffect(() => {
     setLocalPrompts(customPrompts || {});
   }, [customPrompts]);
+  
+  // Check backend status when CLI auth is selected
+  useEffect(() => {
+    if (geminiAuthMode === "cli-auth" && open) {
+      checkBackendStatus().then(setBackendStatus);
+    }
+  }, [geminiAuthMode, open]);
 
   const handleSaveSettings = () => {
-    setAISettings({ model: localModel });
+    setAISettings({ model: localModel, geminiAuthMode: geminiAuthMode });
     setCustomPrompts(localPrompts);
     
     // Save API keys (save even if empty to allow clearing)
     setApiKey("openai", openaiKey);
     setApiKey("gemini", geminiKey);
+    
+    // Save Gemini CLI auth settings
+    setGeminiAuthMode(geminiAuthMode);
+    setGeminiCLIProjectId(geminiProjectId);
+    setGeminiCLILocation(geminiLocation);
     
     setHasChanges(false);
     toast.success("Settings saved successfully");
@@ -281,56 +318,190 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     </p>
                   </div>
 
-                  {/* Gemini API Key */}
-                  <div className="space-y-2">
-                    <Label htmlFor="gemini-key">Gemini API Key</Label>
-                    <div className="flex gap-2 max-w-md">
-                      <div className="relative flex-1">
-                        <Input
-                          id="gemini-key"
-                          type={showGeminiKey ? "text" : "password"}
-                          value={geminiKey}
-                          onChange={(e) => {
-                            setGeminiKey(e.target.value);
-                            setHasChanges(true);
-                          }}
-                          placeholder="Enter your Gemini API key"
-                          className="pr-10"
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="absolute right-0 top-0 h-full px-3"
-                          onClick={() => setShowGeminiKey(!showGeminiKey)}
-                        >
-                          {showGeminiKey ? <EyeSlash size={16} /> : <Eye size={16} />}
-                        </Button>
-                      </div>
+                  {/* Gemini Authentication */}
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-base font-semibold">Gemini Authentication</Label>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Choose how to authenticate with Gemini. API Key is recommended for local development.
+                      </p>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      Required for Gemini Pro and Gemini Flash models.{" "}
-                      <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-primary underline">
-                        Get an API key
-                      </a>
-                    </p>
-                  </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="gemini-auth-mode">Authentication Mode</Label>
+                      <Select
+                        value={geminiAuthMode}
+                        onValueChange={(value: GeminiAuthMode) => {
+                          setGeminiAuthModeState(value);
+                          setHasChanges(true);
+                        }}
+                      >
+                        <SelectTrigger id="gemini-auth-mode" className="w-full max-w-md">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="cli-auth">
+                            <div className="flex flex-col items-start">
+                              <span className="font-medium">CLI Authentication (Recommended)</span>
+                              <span className="text-xs text-muted-foreground">
+                                Uses gcloud from your shell profile - requires backend server
+                              </span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="api-key">
+                            <div className="flex flex-col items-start">
+                              <span className="font-medium">API Key</span>
+                              <span className="text-xs text-muted-foreground">
+                                Use a Gemini API key from Google AI Studio
+                              </span>
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                  {(localModel === "gemini-pro" || localModel === "gemini-flash") && !geminiKey && (
-                    <div className="mt-4 p-4 border-2 border-blue-500/50 rounded-lg bg-blue-50 dark:bg-blue-900/10">
-                      <h4 className="font-semibold text-sm mb-2 flex items-center gap-2 text-blue-700 dark:text-blue-400">
-                        <span>ℹ️</span> Gemini Setup
-                      </h4>
-                      <div className="text-sm space-y-2">
-                        <p className="text-foreground">
-                          To use Gemini models, enter your API key above. You can get one from Google AI Studio.
-                        </p>
-                        <p className="text-muted-foreground text-xs">
-                          Your API key is stored locally and never sent to any server other than Google's API.
+                    {geminiAuthMode === "cli-auth" && (
+                      <div className="space-y-4 p-4 border rounded-lg bg-muted/50">
+                        {/* Backend Status */}
+                        <div className="p-3 rounded-lg border bg-background">
+                          <h4 className="font-medium text-sm mb-2">Backend Server Status</h4>
+                          {backendStatus === null ? (
+                            <p className="text-sm text-muted-foreground">Checking...</p>
+                          ) : backendStatus.running ? (
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                                <span className="text-sm text-green-600 dark:text-green-400">Server running</span>
+                              </div>
+                              {backendStatus.projectId && (
+                                <p className="text-xs text-muted-foreground">
+                                  Project from gcloud: <code className="bg-muted px-1 rounded">{backendStatus.projectId}</code>
+                                </p>
+                              )}
+                              {backendStatus.authenticated ? (
+                                <div className="flex items-center gap-2">
+                                  <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                                  <span className="text-xs text-green-600 dark:text-green-400">gcloud authenticated</span>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2">
+                                  <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                                  <span className="text-xs text-amber-600 dark:text-amber-400">Run: gcloud auth application-default login</span>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                                <span className="text-sm text-red-600 dark:text-red-400">Server not running</span>
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                Start with: <code className="bg-muted px-1 rounded">npm run start</code>
+                              </p>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="gemini-project-id">Google Cloud Project ID (optional)</Label>
+                          <Input
+                            id="gemini-project-id"
+                            value={geminiProjectId}
+                            onChange={(e) => {
+                              setGeminiProjectId(e.target.value);
+                              setHasChanges(true);
+                            }}
+                            placeholder={backendStatus?.projectId || "your-project-id"}
+                            className="max-w-md"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Leave empty to use project from your shell profile (GOOGLE_CLOUD_PROJECT)
+                          </p>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="gemini-location">Region</Label>
+                          <Select
+                            value={geminiLocation}
+                            onValueChange={(value) => {
+                              setGeminiLocation(value);
+                              setHasChanges(true);
+                            }}
+                          >
+                            <SelectTrigger id="gemini-location" className="w-full max-w-md">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="us-central1">us-central1 (Iowa)</SelectItem>
+                              <SelectItem value="us-east4">us-east4 (Virginia)</SelectItem>
+                              <SelectItem value="us-west1">us-west1 (Oregon)</SelectItem>
+                              <SelectItem value="europe-west1">europe-west1 (Belgium)</SelectItem>
+                              <SelectItem value="europe-west4">europe-west4 (Netherlands)</SelectItem>
+                              <SelectItem value="asia-northeast1">asia-northeast1 (Tokyo)</SelectItem>
+                              <SelectItem value="asia-southeast1">asia-southeast1 (Singapore)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="mt-4 p-4 border-2 border-green-500/50 rounded-lg bg-green-50 dark:bg-green-900/10">
+                          <h4 className="font-semibold text-sm mb-2 flex items-center gap-2 text-green-700 dark:text-green-400">
+                            <span>✓</span> Setup Instructions
+                          </h4>
+                          <div className="text-sm space-y-2">
+                            <p className="text-foreground">1. Add to your <code className="bg-background px-1 rounded">.bashrc</code> or <code className="bg-background px-1 rounded">.zshrc</code>:</p>
+                            <pre className="bg-background p-2 rounded text-xs overflow-x-auto">
+{`export GOOGLE_CLOUD_PROJECT="your-project-id"`}
+                            </pre>
+                            <p className="text-foreground">2. Authenticate with gcloud:</p>
+                            <pre className="bg-background p-2 rounded text-xs overflow-x-auto">
+{`gcloud auth application-default login`}
+                            </pre>
+                            <p className="text-foreground">3. Start the app with the backend server:</p>
+                            <pre className="bg-background p-2 rounded text-xs overflow-x-auto">
+{`npm run start`}
+                            </pre>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {geminiAuthMode === "api-key" && (
+                      <div className="space-y-2">
+                        <Label htmlFor="gemini-key">Gemini API Key</Label>
+                        <div className="flex gap-2 max-w-md">
+                          <div className="relative flex-1">
+                            <Input
+                              id="gemini-key"
+                              type={showGeminiKey ? "text" : "password"}
+                              value={geminiKey}
+                              onChange={(e) => {
+                                setGeminiKey(e.target.value);
+                                setHasChanges(true);
+                              }}
+                              placeholder="Enter your Gemini API key"
+                              className="pr-10"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="absolute right-0 top-0 h-full px-3"
+                              onClick={() => setShowGeminiKey(!showGeminiKey)}
+                            >
+                              {showGeminiKey ? <EyeSlash size={16} /> : <Eye size={16} />}
+                            </Button>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Required for Gemini Pro and Gemini Flash models.{" "}
+                          <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-primary underline">
+                            Get an API key
+                          </a>
                         </p>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
 
                   <div className="bg-muted p-4 rounded-lg space-y-2">
                     <h4 className="font-medium text-sm">Current Configuration</h4>
@@ -345,10 +516,19 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                       </Badge>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">Gemini Key:</span>
-                      <Badge variant={geminiKey ? "default" : "outline"}>
-                        {geminiKey ? "Configured" : "Not set"}
+                      <span className="text-sm text-muted-foreground">Gemini Auth:</span>
+                      <Badge variant="secondary">
+                        {geminiAuthMode === "cli-auth" ? "CLI Auth" : "API Key"}
                       </Badge>
+                      {geminiAuthMode === "cli-auth" ? (
+                        <Badge variant={geminiProjectId ? "default" : "outline"}>
+                          {geminiProjectId ? "Project Configured" : "Project Not Set"}
+                        </Badge>
+                      ) : (
+                        <Badge variant={geminiKey ? "default" : "outline"}>
+                          {geminiKey ? "Key Configured" : "Key Not Set"}
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 </div>

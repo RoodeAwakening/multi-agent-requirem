@@ -53,7 +53,7 @@ export class PipelineOrchestrator {
     const prompt = fillPromptTemplate(promptTemplate, variables);
 
     // Get AI settings from storage
-    let aiSettings: AISettings = { model: "gpt-4o" };
+    let aiSettings: AISettings = { model: "gemini-flash" };
     try {
       const savedSettings = getStoredValue<AISettings>("ai-settings");
       if (savedSettings) {
@@ -64,8 +64,8 @@ export class PipelineOrchestrator {
     }
 
     try {
-      // Call the AI using our unified client
-      const result = await callAI(prompt, aiSettings.model);
+      // Call the AI using our unified client, passing the auth mode for Gemini
+      const result = await callAI(prompt, aiSettings.model, aiSettings.geminiAuthMode);
       return result;
     } catch (error) {
       console.error(`Failed to execute step ${stepId}:`, error);

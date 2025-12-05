@@ -1,4 +1,4 @@
-# Agent Pipeline Orchestrator
+# I.A.N. - Intelligent Analysis Navigator
 
 A local-first multi-agent pipeline system that orchestrates specialized AI agents to analyze tasks from initial technical and business perspectives through to executive summaries.
 
@@ -29,6 +29,7 @@ This application runs a fixed pipeline of 8 AI agents that analyze your tasks:
 - Node.js 18 or higher
 - npm or yarn
 - Modern web browser
+- For Gemini CLI auth: Google Cloud CLI (gcloud)
 
 ## Installation
 
@@ -76,26 +77,64 @@ npm run dev
   - Product backlog with user stories
   - Executive summary for leadership
 
-## Customizing the AI Model
+## Configuring Gemini (Default AI Model)
 
-This application uses the Spark LLM API which defaults to GPT-4. To use **Gemini** instead:
+I.A.N. defaults to **Gemini Flash** for optimal performance. There are two ways to authenticate:
 
-1. Open `src/lib/pipeline.ts`
-2. Find the `executeStep` method
-3. Change the model parameter:
+### Option 1: CLI Authentication (Recommended)
 
-```typescript
-// Current (GPT-4):
-const result = await window.spark.llm(prompt, "gpt-4o");
+This method uses your gcloud project configuration from your `.bashrc` or `.zshrc` files. The backend server reads the `GOOGLE_CLOUD_PROJECT` environment variable and uses gcloud CLI for authentication.
 
-// For Gemini (when supported by Spark):
-const result = await window.spark.llm(prompt, "gemini-2.0-pro");
-```
+1. **Install Google Cloud CLI** (if not already installed):
+   ```bash
+   # macOS
+   brew install google-cloud-sdk
+   
+   # Ubuntu/Debian
+   sudo apt-get install google-cloud-cli
+   ```
 
-**Note**: The current Spark runtime may not support Gemini directly. For full Gemini integration, you would need to:
-- Set up a backend server with Gemini API access
-- Modify the pipeline orchestrator to call your backend
-- Handle file uploads for reference materials
+2. **Add to your `.bashrc` or `.zshrc`**:
+   ```bash
+   export GOOGLE_CLOUD_PROJECT="your-project-id"
+   ```
+
+3. **Authenticate with gcloud**:
+   ```bash
+   gcloud auth application-default login
+   ```
+
+4. **Enable Vertex AI API** in your Google Cloud Console
+
+5. **Start I.A.N. with the backend server**:
+   ```bash
+   npm run start
+   ```
+   This command starts both the frontend and the Node.js backend server that handles CLI authentication.
+
+6. **Configure I.A.N.**:
+   - Open Settings (gear icon)
+   - Select "CLI Authentication" mode
+   - The backend will automatically detect your project from the environment variable
+   - Optionally override the project ID or select a different region
+
+### Option 2: API Key Authentication
+
+1. Get an API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
+2. Open Settings in I.A.N.
+3. Select "API Key" authentication mode
+4. Enter your Gemini API key
+
+## Using OpenAI Models (Alternative)
+
+If you prefer GPT models:
+
+1. Open `Settings` (gear icon in sidebar)
+2. Select **GPT-4o** or **GPT-4o Mini** as your model
+3. Enter your OpenAI API key
+4. The key will be stored locally in your browser
+
+**Note**: The default Gemini models are recommended for cost-effectiveness and performance.
 
 ## Architecture
 
@@ -105,15 +144,24 @@ const result = await window.spark.llm(prompt, "gemini-2.0-pro");
 - **Shadcn UI** components for consistent design
 - **Spark KV Store** for data persistence
 
+### Backend (Node.js + Express)
+- **Express server** for CLI authentication proxy
+- **gcloud CLI integration** for Vertex AI authentication
+- Reads `GOOGLE_CLOUD_PROJECT` from environment variables
+- Handles token generation via `gcloud auth print-access-token`
+
 ### Key Files
 - `src/lib/types.ts` - TypeScript type definitions
 - `src/lib/constants.ts` - Pipeline configuration
 - `src/lib/prompts.ts` - Agent prompt templates
 - `src/lib/pipeline.ts` - Pipeline orchestration logic
+- `src/lib/ai-client.ts` - AI provider integration (Gemini & OpenAI)
 - `src/components/MainLayout.tsx` - Main application layout
 - `src/components/JobDetail.tsx` - Task detail and output viewer
 - `src/components/JobList.tsx` - Task list sidebar
 - `src/components/NewJobDialog.tsx` - Task creation dialog
+- `src/components/SettingsDialog.tsx` - AI configuration settings
+- `server/index.js` - Backend server for CLI authentication
 
 ### Data Storage
 
@@ -146,8 +194,15 @@ export const PROMPTS: Record<PipelineStepId, string> = {
 
 ### Pipeline Fails
 - Check browser console for errors
-- Verify AI model is accessible
+- Verify AI credentials are configured correctly
+- For CLI auth: ensure `gcloud auth application-default login` was run
 - Ensure task description is clear and detailed
+
+### Gemini CLI Auth Not Working
+- Verify gcloud is installed: `gcloud --version`
+- Check authentication: `gcloud auth list`
+- Verify project: `gcloud config get project`
+- Ensure Vertex AI API is enabled in your project
 
 ### Outputs Not Showing
 - Wait for pipeline to complete (check status badge)
@@ -185,6 +240,7 @@ export const PROMPTS: Record<PipelineStepId, string> = {
 - **Spark Runtime** - LLM integration and storage
 - **Marked** - Markdown rendering
 - **Phosphor Icons** - Icons
+- **Google Generative AI SDK** - Gemini integration
 
 ## License
 

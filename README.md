@@ -1,11 +1,12 @@
-# Multi-Agent Requirements Pipeline
+# I.A.N. - Intelligent Analysis Navigator
 
 A multi-agent orchestration system for generating comprehensive requirements documentation from task descriptions. This application uses AI-powered agents to analyze tasks from multiple perspectives (Tech Lead, Business Analyst, Product Owner, etc.) and produce structured requirements documents.
 
 ## Features
 
 - **Multi-agent pipeline**: Sequential processing through specialized AI agents
-- **AI Model Selection**: Support for GPT-4o, GPT-4o Mini, Gemini Pro, and Gemini Flash
+- **AI Model Selection**: Support for Gemini Flash (default), Gemini Pro, GPT-4o, and GPT-4o Mini
+- **Flexible Gemini Authentication**: Use CLI-based auth (gcloud) or API key
 - **Customizable prompts**: Modify agent prompts to fit your workflow
 - **Document generation**: Produces technical specs, business analysis, requirements, and product backlogs
 
@@ -16,36 +17,82 @@ A multi-agent orchestration system for generating comprehensive requirements doc
    npm install
    ```
 
-2. Start the development server:
+2. Start the application:
+   ```bash
+   npm run start
+   ```
+   This starts both the frontend (Vite) and backend server (Node.js) needed for CLI authentication.
+
+   Or run just the frontend:
    ```bash
    npm run dev
    ```
 
 ## AI Model Configuration
 
-Configure your API keys in the Settings dialog (click the gear icon).
+I.A.N. defaults to **Gemini Flash** for optimal performance and cost-effectiveness.
+
+### Using Gemini Models (Default - Recommended)
+
+#### Option 1: CLI Authentication (Recommended)
+
+This method uses your gcloud project configuration from your `.bashrc` or `.zshrc` files. The backend server reads the `GOOGLE_CLOUD_PROJECT` environment variable and uses gcloud CLI for authentication.
+
+1. Install the [Google Cloud CLI](https://cloud.google.com/sdk/docs/install)
+2. Add to your `.bashrc` or `.zshrc`:
+   ```bash
+   export GOOGLE_CLOUD_PROJECT="your-project-id"
+   ```
+3. Authenticate:
+   ```bash
+   gcloud auth application-default login
+   ```
+4. Enable Vertex AI API in your project
+5. Start the app with the backend server:
+   ```bash
+   npm run start
+   ```
+6. Open Settings in I.A.N. and select "CLI Authentication"
+
+The backend server will automatically detect your project from the environment variable.
+
+#### Option 2: API Key Authentication
+
+1. Get an API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
+2. Open Settings in I.A.N.
+3. Select "API Key" authentication mode
+4. Enter your Gemini API key
+5. Select Gemini Pro or Gemini Flash as your model
 
 ### Using OpenAI Models (GPT-4o, GPT-4o Mini)
 
+If you prefer to use OpenAI models instead:
+
 1. Get an API key from [OpenAI Platform](https://platform.openai.com/api-keys)
-2. Open Settings in the application
+2. Open Settings in I.A.N.
 3. Enter your OpenAI API key
 4. Select GPT-4o or GPT-4o Mini as your model
-
-### Using Gemini Models (Gemini Pro, Gemini Flash)
-
-1. Get an API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
-2. Open Settings in the application
-3. Enter your Gemini API key
-4. Select Gemini Pro or Gemini Flash as your model
 
 **Note:** Your API keys are stored locally in your browser and are only sent directly to the respective AI provider's API.
 
 ## Development
 
-- `npm run dev` - Start development server
+- `npm run start` - Start both frontend and backend (recommended)
+- `npm run dev` - Start frontend only (Vite dev server)
+- `npm run server` - Start backend only (Node.js server)
 - `npm run build` - Build for production
 - `npm run lint` - Run ESLint
+
+## Architecture
+
+The application consists of:
+- **Frontend**: React + Vite application
+- **Backend**: Node.js Express server for CLI authentication
+
+The backend server (`server/index.js`) provides:
+- Access to gcloud CLI for authentication
+- Reading `GOOGLE_CLOUD_PROJECT` from environment
+- Proxying requests to Vertex AI with proper credentials
 
 ## License
 
