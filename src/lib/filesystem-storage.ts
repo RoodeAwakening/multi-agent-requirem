@@ -307,7 +307,7 @@ export async function saveJobToFileSystem(job: Job): Promise<void> {
 
   const hasPermission = await verifyPermission(cachedDirectoryHandle);
   if (!hasPermission) {
-    throw new Error("Permission denied to write to storage directory");
+    throw new Error("Permission denied. Please re-select your storage folder in Settings.");
   }
 
   const jobPath = ["jobs", job.id];
