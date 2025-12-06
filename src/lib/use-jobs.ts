@@ -47,28 +47,39 @@ export function useJobs(): {
     : localStorageJobs || [];
 
   // Load jobs from file system on mount if configured
-  const loadFileSystemJobs = useCallback(async () => {
-    if (currentStorageMode === "fileSystem" && getCachedDirectoryHandle()) {
-      setIsLoading(true);
-      try {
-        const loadedJobs = await loadAllJobsFromFileSystem();
-        setFileSystemJobs(loadedJobs);
-      } catch (error) {
-        console.error("Failed to load jobs from file system:", error);
-        // Fall back to localStorage
-        setCurrentStorageMode("localStorage");
-      } finally {
+  // Load jobs from file system on mount if configured
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      if (currentStorageMode === "fileSystem" && getCachedDirectoryHandle()) {
+        setIsLoading(true);
+        try {
+          const loadedJobs = await loadAllJobsFromFileSystem();
+          if (!cancelled) {
+            setFileSystemJobs(loadedJobs);
+          }
+        } catch (error) {
+          if (!cancelled) {
+            console.error("Failed to load jobs from file system:", error);
+            setCurrentStorageMode("localStorage");
+          }
+        } finally {
+          if (!cancelled) {
+            setIsLoading(false);
+          }
+        }
+      } else {
         setIsLoading(false);
       }
-    } else {
-      setIsLoading(false);
-    }
+    };
+
+    load();
+
+    return () => {
+      cancelled = true;
+    };
   }, [currentStorageMode]);
-
-  useEffect(() => {
-    loadFileSystemJobs();
-  }, [loadFileSystemJobs]);
-
   // Add a new job
   const addJob = useCallback(async (job: Job) => {
     if (currentStorageMode === "fileSystem" && getCachedDirectoryHandle()) {
