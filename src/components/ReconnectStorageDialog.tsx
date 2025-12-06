@@ -72,8 +72,12 @@ export function ReconnectStorageDialog({
   };
 
   const handleUseBrowserStorage = () => {
+    const confirmed = window.confirm(
+      "Switching to browser storage will make your previously saved file system tasks inaccessible. Are you sure you want to continue?"
+    );
+    if (!confirmed) return;
     clearStorageConfig();
-    toast.info("Switched to browser storage");
+    toast.info("Switched to browser storage. File system tasks won't be loaded.");
     onUseBrowserStorage();
   };
 
