@@ -18,7 +18,7 @@ export function MainLayout() {
   const [storageConfigured, setStorageConfigured] = useState(false);
   
   // Use the new jobs hook for hybrid storage
-  const { jobs, isLoading, storageMode, addJob, updateJob, refreshJobs, setStorageMode } = useJobs();
+  const { jobs, storageMode, addJob, updateJob, refreshJobs, setStorageMode } = useJobs();
   
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [isNewJobDialogOpen, setIsNewJobDialogOpen] = useState(false);
