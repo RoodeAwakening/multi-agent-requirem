@@ -1,30 +1,58 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useStoredValue } from "@/lib/storage";
 import { Job } from "@/lib/types";
 import { JobList } from "./JobList";
 import { JobDetail } from "./JobDetail";
 import { NewJobDialog } from "./NewJobDialog";
 import { SettingsDialog } from "./SettingsDialog";
+import { StorageSetupDialog, isStorageSetupComplete, markStorageSetupComplete } from "./StorageSetupDialog";
 import { Button } from "@/components/ui/button";
 import { Plus, Gear } from "@phosphor-icons/react";
+import { StorageMode, getStorageMode, getCachedDirectoryHandle } from "@/lib/filesystem-storage";
+import { useJobs } from "@/lib/use-jobs";
 
 export function MainLayout() {
-  const [jobs, setJobs] = useStoredValue<Job[]>("jobs", []);
+  // Check if storage setup needs to be shown
+  const [showStorageSetup, setShowStorageSetup] = useState(false);
+  const [storageConfigured, setStorageConfigured] = useState(false);
+  
+  // Use the new jobs hook for hybrid storage
+  const { jobs, isLoading, storageMode, addJob, updateJob, refreshJobs, setStorageMode } = useJobs();
+  
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [isNewJobDialogOpen, setIsNewJobDialogOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
+  // Check if we need to show storage setup on mount
+  useEffect(() => {
+    const setupComplete = isStorageSetupComplete();
+    if (!setupComplete) {
+      setShowStorageSetup(true);
+    } else {
+      setStorageConfigured(true);
+    }
+  }, []);
+
   const selectedJob = jobs?.find((job) => job.id === selectedJobId);
 
-  const handleJobCreated = (newJob: Job) => {
-    setJobs((current) => [newJob, ...(current || [])]);
+  const handleJobCreated = async (newJob: Job) => {
+    await addJob(newJob);
     setSelectedJobId(newJob.id);
   };
 
-  const handleJobUpdated = (updatedJob: Job) => {
-    setJobs((current) =>
-      (current || []).map((job) => (job.id === updatedJob.id ? updatedJob : job))
-    );
+  const handleJobUpdated = async (updatedJob: Job) => {
+    await updateJob(updatedJob);
+  };
+  
+  const handleStorageSetupComplete = (mode: StorageMode, directoryName?: string) => {
+    setStorageMode(mode);
+    setShowStorageSetup(false);
+    setStorageConfigured(true);
+  };
+  
+  const handleStorageModeChange = (mode: StorageMode) => {
+    setStorageMode(mode);
+    refreshJobs();
   };
 
   return (
@@ -101,6 +129,12 @@ export function MainLayout() {
       <SettingsDialog
         open={isSettingsOpen}
         onOpenChange={setIsSettingsOpen}
+        onStorageModeChange={handleStorageModeChange}
+      />
+      
+      <StorageSetupDialog
+        open={showStorageSetup}
+        onComplete={handleStorageSetupComplete}
       />
     </div>
   );

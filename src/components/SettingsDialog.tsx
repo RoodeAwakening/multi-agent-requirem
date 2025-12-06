@@ -15,6 +15,16 @@ import {
   checkBackendStatus,
 } from "@/lib/ai-client";
 import {
+  isFileSystemAccessSupported,
+  selectStorageDirectory,
+  getStorageMode,
+  isFileSystemStorageConfigured,
+  getStoredDirectoryName,
+  getCachedDirectoryName,
+  clearStorageConfig,
+  StorageMode,
+} from "@/lib/filesystem-storage";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -45,14 +55,19 @@ import {
   FloppyDisk,
   Eye,
   EyeSlash,
+  FolderOpen,
+  HardDrives,
+  Browser,
+  Warning,
 } from "@phosphor-icons/react";
 
 interface SettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onStorageModeChange?: (mode: StorageMode) => void;
 }
 
-export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
+export function SettingsDialog({ open, onOpenChange, onStorageModeChange }: SettingsDialogProps) {
   const [aiSettings, setAISettings] = useStoredValue<AISettings>("ai-settings", {
     model: "gemini-flash",
   });
@@ -87,6 +102,14 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     projectId: string | null;
     authenticated: boolean;
   } | null>(null);
+  
+  // Storage mode states
+  const [storageMode, setLocalStorageMode] = useState<StorageMode>(getStorageMode());
+  const [directoryName, setDirectoryName] = useState<string | null>(
+    getCachedDirectoryName() || getStoredDirectoryName()
+  );
+  const [isSelectingDirectory, setIsSelectingDirectory] = useState(false);
+  const fsSupported = isFileSystemAccessSupported();
 
   useEffect(() => {
     setLocalModel(aiSettings?.model || "gemini-flash");
@@ -115,6 +138,11 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     setGeminiAuthMode(geminiAuthMode);
     setGeminiCLIProjectId(geminiProjectId);
     setGeminiCLILocation(geminiLocation);
+    
+    // Notify parent of storage mode change if callback provided
+    if (onStorageModeChange) {
+      onStorageModeChange(storageMode);
+    }
     
     setHasChanges(false);
     toast.success("Settings saved successfully");
@@ -678,54 +706,230 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Data Storage Location</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Understanding where your task data and generated outputs are stored.
+                    Choose where to store your task data and generated outputs. File system storage
+                    reduces browser memory usage and prevents slowdowns with many tasks.
                   </p>
                 </div>
 
                 <div className="space-y-4">
-                  <div className="p-4 bg-muted rounded-lg space-y-3">
-                    <h4 className="font-medium">Browser Local Storage</h4>
-                    <p className="text-sm text-muted-foreground">
-                      All your tasks, settings, and generated outputs are stored in your browser's 
-                      local storage. This means:
-                    </p>
-                    <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1 ml-2">
-                      <li>Data persists between sessions on the same browser</li>
-                      <li>Data is specific to this browser and device</li>
-                      <li>Clearing browser data will remove all saved tasks</li>
-                      <li>Data is not synced across devices</li>
-                    </ul>
-                  </div>
+                  {/* Storage Mode Selection */}
+                  <div className="space-y-3">
+                    <Label>Storage Mode</Label>
+                    
+                    {/* Browser Storage Option */}
+                    <div
+                      className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                        storageMode === "localStorage"
+                          ? "border-accent bg-accent/5"
+                          : "border-border hover:border-accent/50"
+                      }`}
+                      onClick={() => {
+                        setLocalStorageMode("localStorage");
+                        setHasChanges(true);
+                      }}
+                    >
+                      <div className="flex items-start gap-3">
+                        <Browser size={24} className="text-muted-foreground mt-0.5" />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-medium">Browser Storage</h4>
+                            {storageMode === "localStorage" && (
+                              <Badge variant="secondary" className="text-xs">Current</Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Store data in your browser's localStorage. Simple and works everywhere,
+                            but limited to ~5-10MB and can slow down with many tasks.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
 
-                  <div className="p-4 border rounded-lg space-y-3">
-                    <h4 className="font-medium flex items-center gap-2">
-                      <span>📁</span> Storage Keys
-                    </h4>
-                    <div className="text-sm space-y-2">
-                      <div className="flex items-center gap-2">
-                        <code className="bg-muted px-2 py-1 rounded text-xs">multi-agent-pipeline:jobs</code>
-                        <span className="text-muted-foreground">- All tasks and their outputs</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <code className="bg-muted px-2 py-1 rounded text-xs">multi-agent-pipeline:ai-settings</code>
-                        <span className="text-muted-foreground">- AI model configuration</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <code className="bg-muted px-2 py-1 rounded text-xs">multi-agent-pipeline:custom-prompts</code>
-                        <span className="text-muted-foreground">- Customized agent prompts</span>
+                    {/* File System Storage Option */}
+                    <div
+                      className={`p-4 border-2 rounded-lg transition-colors ${
+                        fsSupported
+                          ? `cursor-pointer ${
+                              storageMode === "fileSystem"
+                                ? "border-accent bg-accent/5"
+                                : "border-border hover:border-accent/50"
+                            }`
+                          : "border-border opacity-60"
+                      }`}
+                      onClick={() => {
+                        if (fsSupported) {
+                          setLocalStorageMode("fileSystem");
+                          setHasChanges(true);
+                        }
+                      }}
+                    >
+                      <div className="flex items-start gap-3">
+                        <HardDrives size={24} className="text-muted-foreground mt-0.5" />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-medium">Local File System</h4>
+                            {storageMode === "fileSystem" && (
+                              <Badge variant="secondary" className="text-xs">Current</Badge>
+                            )}
+                            {!fsSupported && (
+                              <Badge variant="outline" className="text-xs">Not Supported</Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Store data in a folder on your computer. Better performance with many tasks,
+                            no size limits, and files can be accessed directly.
+                          </p>
+                          {!fsSupported && (
+                            <p className="text-xs text-amber-600 dark:text-amber-400 mt-2 flex items-center gap-1">
+                              <Warning size={14} />
+                              Your browser doesn't support the File System Access API. Try Chrome, Edge, or Opera.
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
 
+                  {/* File System Configuration */}
+                  {fsSupported && storageMode === "fileSystem" && (
+                    <div className="p-4 border rounded-lg space-y-4 bg-muted/30">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-medium flex items-center gap-2">
+                            <FolderOpen size={18} />
+                            Storage Directory
+                          </h4>
+                          {directoryName ? (
+                            <p className="text-sm text-muted-foreground mt-1">
+                              Selected: <code className="bg-background px-2 py-0.5 rounded">{directoryName}</code>
+                            </p>
+                          ) : (
+                            <p className="text-sm text-amber-600 dark:text-amber-400 mt-1">
+                              No directory selected. Please select a folder to store your data.
+                            </p>
+                          )}
+                        </div>
+                        <Button
+                          variant={directoryName ? "outline" : "default"}
+                          onClick={async () => {
+                            setIsSelectingDirectory(true);
+                            try {
+                              const handle = await selectStorageDirectory();
+                              if (handle) {
+                                setDirectoryName(handle.name);
+                                setHasChanges(true);
+                                toast.success(`Storage directory set to: ${handle.name}`);
+                              }
+                            } catch (error) {
+                              toast.error(`Failed to select directory: ${error}`);
+                            } finally {
+                              setIsSelectingDirectory(false);
+                            }
+                          }}
+                          disabled={isSelectingDirectory}
+                        >
+                          {isSelectingDirectory ? (
+                            "Selecting..."
+                          ) : directoryName ? (
+                            "Change Directory"
+                          ) : (
+                            "Select Directory"
+                          )}
+                        </Button>
+                      </div>
+
+                      {directoryName && (
+                        <div className="p-3 bg-background rounded-lg">
+                          <h5 className="text-sm font-medium mb-2">Directory Structure</h5>
+                          <pre className="text-xs text-muted-foreground font-mono">
+{`${directoryName}/
+├── .ian-config.json    # Configuration
+├── jobs/               # All your tasks
+│   └── JOB-YYYYMMDD-HHMMSS/
+│       ├── job.json    # Task metadata
+│       ├── outputs/    # Generated documents
+│       └── references/ # Reference files
+└── settings/           # App settings`}
+                          </pre>
+                        </div>
+                      )}
+
+                      <div className="flex items-center gap-2 pt-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            clearStorageConfig();
+                            setLocalStorageMode("localStorage");
+                            setDirectoryName(null);
+                            setHasChanges(true);
+                            toast.success("Switched back to browser storage");
+                          }}
+                        >
+                          Switch to Browser Storage
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  <Separator />
+
+                  {/* Info about current storage */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium">Storage Information</h4>
+                    
+                    {storageMode === "localStorage" && (
+                      <div className="p-4 border rounded-lg space-y-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground">Storage Keys:</span>
+                        </div>
+                        <div className="text-sm space-y-2">
+                          <div className="flex items-center gap-2">
+                            <code className="bg-muted px-2 py-1 rounded text-xs">multi-agent-pipeline:jobs</code>
+                            <span className="text-muted-foreground">- All tasks and outputs</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <code className="bg-muted px-2 py-1 rounded text-xs">multi-agent-pipeline:ai-settings</code>
+                            <span className="text-muted-foreground">- AI model settings</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {storageMode === "fileSystem" && directoryName && (
+                      <div className="p-4 border rounded-lg space-y-3">
+                        <div className="text-sm space-y-2">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle size={16} className="text-green-600" />
+                            <span>Files stored directly on your computer</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <CheckCircle size={16} className="text-green-600" />
+                            <span>No browser storage limits</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <CheckCircle size={16} className="text-green-600" />
+                            <span>Access files directly in your file manager</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <CheckCircle size={16} className="text-green-600" />
+                            <span>Better performance with many tasks</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Tips */}
                   <div className="p-4 border-2 border-blue-500/50 rounded-lg bg-blue-50 dark:bg-blue-900/10">
                     <h4 className="font-semibold text-sm mb-2 flex items-center gap-2 text-blue-700 dark:text-blue-400">
-                      <span>💡</span> Tip: Exporting Your Work
+                      <span>💡</span> Tips
                     </h4>
-                    <p className="text-sm text-muted-foreground">
-                      To save your generated outputs permanently, use the "Export PDF" feature 
-                      available for completed tasks. This allows you to download your analysis 
-                      results as PDF files that can be stored anywhere.
-                    </p>
+                    <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                      <li>Use "Export PDF" to create permanent backups of your analysis results</li>
+                      <li>File system storage keeps each task in its own folder for easy organization</li>
+                      <li>Browser storage is simpler but may slow down with 20+ tasks</li>
+                    </ul>
                   </div>
 
                   <div className="p-4 border-2 border-amber-500/50 rounded-lg bg-amber-50 dark:bg-amber-900/10">
@@ -733,9 +937,19 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                       <span>⚠️</span> Important Notes
                     </h4>
                     <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
-                      <li>Browser storage has size limits (typically 5-10MB)</li>
-                      <li>Using "Clear browsing data" in your browser settings will delete all saved tasks</li>
-                      <li>Private/Incognito browsing mode will not persist data</li>
+                      {storageMode === "localStorage" ? (
+                        <>
+                          <li>Browser storage has size limits (typically 5-10MB)</li>
+                          <li>Clearing browser data will delete all saved tasks</li>
+                          <li>Private/Incognito mode will not persist data</li>
+                        </>
+                      ) : (
+                        <>
+                          <li>You'll need to re-select the directory each browser session</li>
+                          <li>Don't delete or move the storage folder while the app is open</li>
+                          <li>The app needs permission to access the selected folder</li>
+                        </>
+                      )}
                     </ul>
                   </div>
                 </div>
