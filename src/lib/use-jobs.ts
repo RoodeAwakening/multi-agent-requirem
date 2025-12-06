@@ -31,7 +31,10 @@ export function useJobs(): {
   setStorageMode: (mode: StorageMode) => void;
 } {
   // Always use localStorage as a fallback/primary source
-  const [localStorageJobs, setLocalStorageJobs] = useStoredValue<Job[]>("jobs", []);
+  const [localStorageJobs, setLocalStorageJobs] = useStoredValue<Job[]>(
+    "jobs",
+    currentStorageMode === "localStorage" ? [] : undefined
+  );
   
   // State for file system jobs
   const [fileSystemJobs, setFileSystemJobs] = useState<Job[]>([]);
