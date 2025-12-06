@@ -327,12 +327,13 @@ export async function saveJobToFileSystem(job: Job): Promise<void> {
     JSON.stringify(jobMetadata, null, 2)
   );
 
-  // Save each output file separately
-  for (const [filename, content] of Object.entries(job.outputs)) {
-    if (content) {
-      await writeFile(cachedDirectoryHandle, [...jobPath, "outputs"], filename, content);
-    }
-  }
+  // Save each output file separately (concurrent writes for better performance)
+  const outputWrites = Object.entries(job.outputs)
+    .filter(([, content]) => content)
+    .map(([filename, content]) =>
+      writeFile(cachedDirectoryHandle!, [...jobPath, "outputs"], filename, content)
+    );
+  await Promise.all(outputWrites);
 
   // Save reference files if present
   if (job.referenceFiles && job.referenceFiles.length > 0) {
@@ -405,14 +406,11 @@ export async function loadAllJobsFromFileSystem(): Promise<Job[]> {
 
   try {
     const jobIds = await listDirectory(cachedDirectoryHandle, ["jobs"]);
-    const jobs: Job[] = [];
-
-    for (const jobId of jobIds) {
-      const job = await loadJobFromFileSystem(jobId);
-      if (job) {
-        jobs.push(job);
-      }
-    }
+    
+    // Load all jobs concurrently for better performance
+    const jobPromises = jobIds.map((jobId) => loadJobFromFileSystem(jobId));
+    const loadedJobs = await Promise.all(jobPromises);
+    const jobs = loadedJobs.filter((job): job is Job => job !== null);
 
     // Sort by creation date (newest first)
     jobs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());

@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Job } from "./types";
-import { useStoredValue, getStoredValue, setStoredValue } from "./storage";
+import { useStoredValue, getStoredValue } from "./storage";
 import {
   getStorageMode,
   getCachedDirectoryHandle,
@@ -15,17 +15,6 @@ import {
   deleteJobFromFileSystem,
   StorageMode,
 } from "./filesystem-storage";
-
-// Lightweight job metadata for listing (without outputs)
-export interface JobSummary {
-  id: string;
-  title: string;
-  description: string;
-  status: Job["status"];
-  version: number;
-  createdAt: string;
-  updatedAt: string;
-}
 
 /**
  * Hook for managing jobs with hybrid storage support.

@@ -79,7 +79,8 @@ export function StorageSetupDialog({ open, onComplete }: StorageSetupDialogProps
         toast.success(`Storage directory set to: ${handle.name}`);
       }
     } catch (error) {
-      toast.error(`Failed to select directory: ${error}`);
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      toast.error(`Failed to select directory: ${errorMessage}`);
     } finally {
       setIsSelectingDirectory(false);
     }
