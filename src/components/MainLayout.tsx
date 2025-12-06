@@ -1,19 +1,20 @@
 import { useState, useEffect } from "react";
-import { useStoredValue } from "@/lib/storage";
 import { Job } from "@/lib/types";
 import { JobList } from "./JobList";
 import { JobDetail } from "./JobDetail";
 import { NewJobDialog } from "./NewJobDialog";
 import { SettingsDialog } from "./SettingsDialog";
-import { StorageSetupDialog, isStorageSetupComplete, markStorageSetupComplete } from "./StorageSetupDialog";
+import { StorageSetupDialog, isStorageSetupComplete } from "./StorageSetupDialog";
+import { ReconnectStorageDialog, needsStorageReconnect } from "./ReconnectStorageDialog";
 import { Button } from "@/components/ui/button";
 import { Plus, Gear } from "@phosphor-icons/react";
-import { StorageMode, getStorageMode, getCachedDirectoryHandle } from "@/lib/filesystem-storage";
+import { StorageMode } from "@/lib/filesystem-storage";
 import { useJobs } from "@/lib/use-jobs";
 
 export function MainLayout() {
   // Check if storage setup needs to be shown
   const [showStorageSetup, setShowStorageSetup] = useState(false);
+  const [showReconnectDialog, setShowReconnectDialog] = useState(false);
   const [storageConfigured, setStorageConfigured] = useState(false);
   
   // Use the new jobs hook for hybrid storage
@@ -23,11 +24,15 @@ export function MainLayout() {
   const [isNewJobDialogOpen, setIsNewJobDialogOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  // Check if we need to show storage setup on mount
+  // Check if we need to show storage setup or reconnect dialog on mount
   useEffect(() => {
     const setupComplete = isStorageSetupComplete();
     if (!setupComplete) {
+      // First time user - show setup dialog
       setShowStorageSetup(true);
+    } else if (needsStorageReconnect()) {
+      // Returning user with file system storage - show reconnect dialog
+      setShowReconnectDialog(true);
     } else {
       setStorageConfigured(true);
     }
@@ -53,6 +58,19 @@ export function MainLayout() {
   const handleStorageModeChange = (mode: StorageMode) => {
     setStorageMode(mode);
     refreshJobs();
+  };
+  
+  const handleStorageReconnected = () => {
+    setShowReconnectDialog(false);
+    setStorageConfigured(true);
+    setStorageMode("fileSystem");
+    refreshJobs();
+  };
+  
+  const handleUseBrowserStorage = () => {
+    setShowReconnectDialog(false);
+    setStorageConfigured(true);
+    setStorageMode("localStorage");
   };
 
   return (
@@ -135,6 +153,12 @@ export function MainLayout() {
       <StorageSetupDialog
         open={showStorageSetup}
         onComplete={handleStorageSetupComplete}
+      />
+      
+      <ReconnectStorageDialog
+        open={showReconnectDialog}
+        onReconnected={handleStorageReconnected}
+        onUseBrowserStorage={handleUseBrowserStorage}
       />
     </div>
   );
