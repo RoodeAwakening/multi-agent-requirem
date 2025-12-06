@@ -13,6 +13,7 @@ import {
   loadAllJobsFromFileSystem,
   loadJobFromFileSystem,
   deleteJobFromFileSystem,
+  clearStorageConfig,
   StorageMode,
 } from "./filesystem-storage";
 
@@ -24,11 +25,13 @@ export function useJobs(): {
   jobs: Job[];
   isLoading: boolean;
   storageMode: StorageMode;
+  fileSystemError: string | null;
   addJob: (job: Job) => Promise<void>;
   updateJob: (job: Job) => Promise<void>;
   deleteJob: (jobId: string) => Promise<void>;
   refreshJobs: () => Promise<void>;
   setStorageMode: (mode: StorageMode) => void;
+  clearFileSystemError: () => void;
 } {
   // State for storage mode - must be declared first
   const [currentStorageMode, setCurrentStorageMode] = useState<StorageMode>(getStorageMode());
@@ -39,6 +42,7 @@ export function useJobs(): {
   // State for file system jobs
   const [fileSystemJobs, setFileSystemJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [fileSystemError, setFileSystemError] = useState<string | null>(null);
 
   // Determine which jobs to use based on storage mode
   const jobs = currentStorageMode === "fileSystem" && getCachedDirectoryHandle()
@@ -52,6 +56,7 @@ export function useJobs(): {
     const load = async () => {
       if (currentStorageMode === "fileSystem" && getCachedDirectoryHandle()) {
         setIsLoading(true);
+        setFileSystemError(null);
         try {
           const loadedJobs = await loadAllJobsFromFileSystem();
           if (!cancelled) {
@@ -59,7 +64,12 @@ export function useJobs(): {
           }
         } catch (error) {
           if (!cancelled) {
+            const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
             console.error("Failed to load jobs from file system:", error);
+            // Set error state so UI can show warning and offer to retry or switch storage
+            setFileSystemError(`Failed to access file system storage: ${errorMessage}. Please re-select your storage folder or switch to browser storage.`);
+            // Fall back to localStorage and persist the change
+            clearStorageConfig();
             setCurrentStorageMode("localStorage");
           }
         } finally {
@@ -78,6 +88,12 @@ export function useJobs(): {
       cancelled = true;
     };
   }, [currentStorageMode]);
+
+  // Clear file system error
+  const clearFileSystemError = useCallback(() => {
+    setFileSystemError(null);
+  }, []);
+
   // Add a new job
   const addJob = useCallback(async (job: Job) => {
     if (currentStorageMode === "fileSystem" && getCachedDirectoryHandle()) {
@@ -130,10 +146,21 @@ export function useJobs(): {
   // Refresh jobs from storage
   const refreshJobs = useCallback(async () => {
     if (currentStorageMode === "fileSystem" && getCachedDirectoryHandle()) {
-      await loadFileSystemJobs();
+      setIsLoading(true);
+      try {
+        const loadedJobs = await loadAllJobsFromFileSystem();
+        setFileSystemJobs(loadedJobs);
+        setFileSystemError(null);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+        console.error("Failed to refresh jobs from file system:", error);
+        setFileSystemError(`Failed to access file system storage: ${errorMessage}`);
+      } finally {
+        setIsLoading(false);
+      }
     }
     // localStorage is automatically synced via useStoredValue
-  }, [currentStorageMode, loadFileSystemJobs]);
+  }, [currentStorageMode]);
 
   // Change storage mode
   const setStorageMode = useCallback((mode: StorageMode) => {
@@ -146,11 +173,13 @@ export function useJobs(): {
     jobs,
     isLoading,
     storageMode: currentStorageMode,
+    fileSystemError,
     addJob,
     updateJob,
     deleteJob,
     refreshJobs,
     setStorageMode,
+    clearFileSystemError,
   };
 }
 

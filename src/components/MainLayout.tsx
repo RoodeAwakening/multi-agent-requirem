@@ -7,7 +7,17 @@ import { SettingsDialog } from "./SettingsDialog";
 import { StorageSetupDialog, isStorageSetupComplete } from "./StorageSetupDialog";
 import { ReconnectStorageDialog, needsStorageReconnect } from "./ReconnectStorageDialog";
 import { Button } from "@/components/ui/button";
-import { Plus, Gear } from "@phosphor-icons/react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Plus, Gear, Warning } from "@phosphor-icons/react";
 import { StorageMode } from "@/lib/filesystem-storage";
 import { useJobs } from "@/lib/use-jobs";
 
@@ -15,10 +25,9 @@ export function MainLayout() {
   // Check if storage setup needs to be shown
   const [showStorageSetup, setShowStorageSetup] = useState(false);
   const [showReconnectDialog, setShowReconnectDialog] = useState(false);
-  const [storageConfigured, setStorageConfigured] = useState(false);
   
   // Use the new jobs hook for hybrid storage
-  const { jobs, storageMode, addJob, updateJob, refreshJobs, setStorageMode } = useJobs();
+  const { jobs, fileSystemError, addJob, updateJob, refreshJobs, setStorageMode, clearFileSystemError } = useJobs();
   
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [isNewJobDialogOpen, setIsNewJobDialogOpen] = useState(false);
@@ -33,8 +42,6 @@ export function MainLayout() {
     } else if (needsStorageReconnect()) {
       // Returning user with file system storage - show reconnect dialog
       setShowReconnectDialog(true);
-    } else {
-      setStorageConfigured(true);
     }
   }, []);
 
@@ -49,10 +56,9 @@ export function MainLayout() {
     await updateJob(updatedJob);
   };
   
-  const handleStorageSetupComplete = (mode: StorageMode, directoryName?: string) => {
+  const handleStorageSetupComplete = (mode: StorageMode) => {
     setStorageMode(mode);
     setShowStorageSetup(false);
-    setStorageConfigured(true);
   };
   
   const handleStorageModeChange = (mode: StorageMode) => {
@@ -62,15 +68,22 @@ export function MainLayout() {
   
   const handleStorageReconnected = () => {
     setShowReconnectDialog(false);
-    setStorageConfigured(true);
     setStorageMode("fileSystem");
     refreshJobs();
   };
   
   const handleUseBrowserStorage = () => {
     setShowReconnectDialog(false);
-    setStorageConfigured(true);
     setStorageMode("localStorage");
+  };
+  
+  const handleFileSystemErrorDismiss = () => {
+    clearFileSystemError();
+  };
+  
+  const handleFileSystemErrorOpenSettings = () => {
+    clearFileSystemError();
+    setIsSettingsOpen(true);
   };
 
   return (
@@ -160,6 +173,29 @@ export function MainLayout() {
         onReconnected={handleStorageReconnected}
         onUseBrowserStorage={handleUseBrowserStorage}
       />
+      
+      {/* File System Error Warning Dialog */}
+      <AlertDialog open={!!fileSystemError} onOpenChange={(open) => !open && handleFileSystemErrorDismiss()}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Warning size={20} className="text-amber-500" />
+              File System Storage Issue
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {fileSystemError}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleFileSystemErrorDismiss}>
+              Continue with Browser Storage
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleFileSystemErrorOpenSettings}>
+              Open Settings
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

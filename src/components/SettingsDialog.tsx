@@ -145,6 +145,12 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange }: Sett
   }, [geminiAuthMode, open]);
 
   const handleSaveSettings = () => {
+    // Validate file system mode requires a directory
+    if (storageMode === "fileSystem" && !directoryName) {
+      toast.error("Please select a storage directory for file system mode");
+      return;
+    }
+    
     setAISettings({ model: localModel, geminiAuthMode: geminiAuthMode });
     setCustomPrompts(localPrompts);
     
@@ -156,6 +162,13 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange }: Sett
     setGeminiAuthMode(geminiAuthMode);
     setGeminiCLIProjectId(geminiProjectId);
     setGeminiCLILocation(geminiLocation);
+    
+    // Persist storage mode change
+    if (storageMode === "localStorage") {
+      // Switching to localStorage - clear file system config
+      clearStorageConfig();
+    }
+    // Note: For fileSystem mode, the config is set when directory is selected via selectStorageDirectory()
     
     // Notify parent of storage mode change if callback provided
     if (onStorageModeChange) {
