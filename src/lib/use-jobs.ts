@@ -126,6 +126,8 @@ export function useJobs(): {
   // Change storage mode
   const setStorageMode = useCallback((mode: StorageMode) => {
     setCurrentStorageMode(mode);
+    // Persist the storage mode to localStorage
+    window.localStorage.setItem("storageMode", mode);
   }, []);
 
   return {
