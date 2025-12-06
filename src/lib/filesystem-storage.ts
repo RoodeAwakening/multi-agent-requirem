@@ -313,18 +313,17 @@ export async function saveJobToFileSystem(job: Job): Promise<void> {
   const jobPath = ["jobs", job.id];
 
   // Save job metadata (without outputs to keep file small)
-  const jobMetadata: Omit<Job, "outputs"> & { outputFiles: string[] } = {
-    ...job,
-    outputs: undefined as never,
-    outputFiles: Object.keys(job.outputs),
+  const { outputs, ...jobMetadata } = job;
+  const jobMetadataWithFiles: Omit<Job, "outputs"> & { outputFiles: string[] } = {
+    ...jobMetadata,
+    outputFiles: Object.keys(outputs),
   };
-  delete (jobMetadata as Record<string, unknown>).outputs;
 
   await writeFile(
     cachedDirectoryHandle,
     jobPath,
     "job.json",
-    JSON.stringify(jobMetadata, null, 2)
+    JSON.stringify(jobMetadataWithFiles, null, 2)
   );
 
   // Save each output file separately (concurrent writes for better performance)
