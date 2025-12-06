@@ -30,23 +30,21 @@ export function useJobs(): {
   refreshJobs: () => Promise<void>;
   setStorageMode: (mode: StorageMode) => void;
 } {
+  // State for storage mode - must be declared first
+  const [currentStorageMode, setCurrentStorageMode] = useState<StorageMode>(getStorageMode());
+  
   // Always use localStorage as a fallback/primary source
-  const [localStorageJobs, setLocalStorageJobs] = useStoredValue<Job[]>(
-    "jobs",
-    currentStorageMode === "localStorage" ? [] : undefined
-  );
+  const [localStorageJobs, setLocalStorageJobs] = useStoredValue<Job[]>("jobs", []);
   
   // State for file system jobs
   const [fileSystemJobs, setFileSystemJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentStorageMode, setCurrentStorageMode] = useState<StorageMode>(getStorageMode());
 
   // Determine which jobs to use based on storage mode
   const jobs = currentStorageMode === "fileSystem" && getCachedDirectoryHandle()
     ? fileSystemJobs
     : localStorageJobs || [];
 
-  // Load jobs from file system on mount if configured
   // Load jobs from file system on mount if configured
   useEffect(() => {
     let cancelled = false;

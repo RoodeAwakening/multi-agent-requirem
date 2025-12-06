@@ -18,12 +18,15 @@ import {
   isFileSystemAccessSupported,
   selectStorageDirectory,
   getStorageMode,
-  isFileSystemStorageConfigured,
   getStoredDirectoryName,
   getCachedDirectoryName,
   clearStorageConfig,
+  exportJobsToFileSystem,
+  getCachedDirectoryHandle,
   StorageMode,
 } from "@/lib/filesystem-storage";
+import { getStoredValue, setStoredValue } from "@/lib/storage";
+import { Job } from "@/lib/types";
 import {
   Dialog,
   DialogContent,
@@ -31,6 +34,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -109,7 +122,12 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange }: Sett
     getCachedDirectoryName() || getStoredDirectoryName()
   );
   const [isSelectingDirectory, setIsSelectingDirectory] = useState(false);
+  const [isMigrating, setIsMigrating] = useState(false);
+  const [showMigrationWarning, setShowMigrationWarning] = useState(false);
   const fsSupported = isFileSystemAccessSupported();
+  
+  // Get current jobs count for migration warning
+  const localStorageJobs = getStoredValue<Job[]>("jobs") || [];
 
   useEffect(() => {
     setLocalModel(aiSettings?.model || "gemini-flash");
@@ -757,9 +775,14 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange }: Sett
                           : "border-border opacity-60"
                       }`}
                       onClick={() => {
-                        if (fsSupported) {
-                          setLocalStorageMode("fileSystem");
-                          setHasChanges(true);
+                        if (fsSupported && storageMode !== "fileSystem") {
+                          // Show migration warning if there are jobs in localStorage
+                          if (localStorageJobs.length > 0) {
+                            setShowMigrationWarning(true);
+                          } else {
+                            setLocalStorageMode("fileSystem");
+                            setHasChanges(true);
+                          }
                         }
                       }}
                     >
@@ -860,11 +883,17 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange }: Sett
                           variant="ghost"
                           size="sm"
                           onClick={() => {
+                            // Show warning about data not being migrated
+                            const confirmed = window.confirm(
+                              "Switching to browser storage will make your file system tasks inaccessible from this app. Your files will remain on disk but won't be loaded.\n\nAre you sure you want to continue?"
+                            );
+                            if (!confirmed) return;
+                            
                             clearStorageConfig();
                             setLocalStorageMode("localStorage");
                             setDirectoryName(null);
                             setHasChanges(true);
-                            toast.success("Switched back to browser storage");
+                            toast.info("Switched to browser storage. File system tasks won't be loaded.");
                           }}
                         >
                           Switch to Browser Storage
@@ -982,6 +1011,65 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange }: Sett
           </div>
         </div>
       </DialogContent>
+      
+      {/* Migration Warning Dialog */}
+      <AlertDialog open={showMigrationWarning} onOpenChange={setShowMigrationWarning}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Migrate Tasks to File System?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have {localStorageJobs.length} task{localStorageJobs.length !== 1 ? 's' : ''} stored in browser storage.
+              Would you like to migrate them to file system storage?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel onClick={() => {
+              setShowMigrationWarning(false);
+            }}>
+              Cancel
+            </AlertDialogCancel>
+            <Button
+              variant="outline"
+              onClick={() => {
+                // Switch without migrating
+                setLocalStorageMode("fileSystem");
+                setHasChanges(true);
+                setShowMigrationWarning(false);
+                toast.info("Switched to file system storage. Browser tasks were not migrated.");
+              }}
+            >
+              Switch Without Migrating
+            </Button>
+            <AlertDialogAction
+              disabled={isMigrating || !getCachedDirectoryHandle()}
+              onClick={async () => {
+                if (!getCachedDirectoryHandle()) {
+                  toast.error("Please select a storage directory first");
+                  return;
+                }
+                
+                setIsMigrating(true);
+                try {
+                  const count = await exportJobsToFileSystem(localStorageJobs);
+                  // Clear localStorage jobs after successful migration
+                  setStoredValue("jobs", []);
+                  setLocalStorageMode("fileSystem");
+                  setHasChanges(true);
+                  toast.success(`Migrated ${count} task${count !== 1 ? 's' : ''} to file system storage`);
+                } catch (error) {
+                  const errorMessage = error instanceof Error ? error.message : "Unknown error";
+                  toast.error(`Migration failed: ${errorMessage}`);
+                } finally {
+                  setIsMigrating(false);
+                  setShowMigrationWarning(false);
+                }
+              }}
+            >
+              {isMigrating ? "Migrating..." : "Migrate Tasks"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }
