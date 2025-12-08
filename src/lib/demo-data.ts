@@ -1,3 +1,23 @@
+/**
+ * Demo Data Module
+ * 
+ * This module provides pre-configured demo content to help new users understand
+ * how I.A.N. (Intelligent Analysis Navigator) works without having to create
+ * their own task from scratch.
+ * 
+ * The demo includes a realistic "Smart Shopping Cart" e-commerce feature with:
+ * - Complete task title and description
+ * - Mock meeting transcript
+ * - Technical documentation
+ * - Email communications
+ * - UX design notes
+ * - Implementation checklist
+ * 
+ * Main exports:
+ * - createDemoJob(): Creates a fully configured Job object with all demo content
+ * - getDemoDescription(): Returns a user-friendly description of what's in the demo
+ */
+
 import { Job, ReferenceFile } from "./types";
 import { generateJobId } from "./constants";
 

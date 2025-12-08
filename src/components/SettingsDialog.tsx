@@ -1047,18 +1047,23 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemo
                       <div className="pt-2">
                         <Button
                           size="lg"
-                          onClick={() => {
-                            const demoJob = createDemoJob();
-                            
-                            // Notify parent component to add the job properly
-                            if (onDemoCreated) {
-                              onDemoCreated(demoJob);
+                          onClick={async () => {
+                            try {
+                              const demoJob = createDemoJob();
+                              
+                              // Notify parent component to add the job properly
+                              if (onDemoCreated) {
+                                await onDemoCreated(demoJob);
+                              }
+                              
+                              // Close dialog
+                              onOpenChange(false);
+                              
+                              toast.success("Demo task created! Select it from the task list to get started.");
+                            } catch (error) {
+                              const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+                              toast.error(`Failed to create demo task: ${errorMessage}`);
                             }
-                            
-                            // Close dialog
-                            onOpenChange(false);
-                            
-                            toast.success("Demo task created! Select it from the task list to get started.");
                           }}
                           className="w-full sm:w-auto"
                         >
