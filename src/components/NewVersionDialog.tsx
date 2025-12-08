@@ -152,18 +152,20 @@ export function NewVersionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle>Create Version {currentJob.version + 1}</DialogTitle>
-          <DialogDescription>
-            Add new insights, requirements, or reference materials to re-run the
-            agent pipeline with updated information.
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0">
+        <div className="px-6 pt-6">
+          <DialogHeader>
+            <DialogTitle>Create Version {currentJob.version + 1}</DialogTitle>
+            <DialogDescription>
+              Add new insights, requirements, or reference materials to re-run the
+              agent pipeline with updated information.
+            </DialogDescription>
+          </DialogHeader>
+        </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
-          <ScrollArea className="flex-1 -mx-6 px-6 pr-10">{/* pr-10 to account for scrollbar */}
-            <div className="space-y-4">
+          <ScrollArea className="flex-1 px-6">
+            <div className="space-y-4 pr-4">{/* pr-4 for scrollbar spacing */}
               <div className="space-y-2">
               <Label htmlFor="original-description">Original Task</Label>
               <div className="rounded-md border border-input bg-muted p-3">
@@ -340,18 +342,20 @@ export function NewVersionDialog({
             </div>
           </ScrollArea>
 
-          <DialogFooter className="mt-4">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => onOpenChange(false)}
-            >
-              Cancel
-            </Button>
-            <Button type="submit">
-              Create Version {currentJob.version + 1}
-            </Button>
-          </DialogFooter>
+          <div className="px-6 pb-6 pt-4">
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => onOpenChange(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit">
+                Create Version {currentJob.version + 1}
+              </Button>
+            </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

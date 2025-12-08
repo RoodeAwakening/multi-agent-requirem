@@ -60,7 +60,7 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
       onJobUpdated(updatedJob);
       toast.info("Pipeline status was reset. Please run again if needed.");
     }
-  }, [job.id]); // Only run when job.id changes (when switching jobs)
+  }, [job.id, job.status, isRunning, onJobUpdated]); // Run when job changes or status changes
 
   // Get the data for the currently viewing version
   const currentViewData = useMemo(() => {
