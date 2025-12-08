@@ -163,7 +163,7 @@ export function NewVersionDialog({
           </DialogHeader>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1">
           <ScrollArea className="flex-1 px-6">
             {/* Add right padding for scrollbar spacing */}
             <div className="space-y-4 pr-4">
