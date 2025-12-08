@@ -136,6 +136,15 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange }: Sett
     setLocalPrompts(customPrompts || {});
   }, [customPrompts]);
   
+  // Refresh storage mode and directory name when dialog opens
+  // This ensures the UI reflects the current state after changes made elsewhere (e.g., StorageSetupDialog)
+  useEffect(() => {
+    if (open) {
+      setLocalStorageMode(getStorageMode());
+      setDirectoryName(getCachedDirectoryName() || getStoredDirectoryName());
+    }
+  }, [open]);
+  
   // Check backend status when CLI auth is selected
   useEffect(() => {
     if (geminiAuthMode === "cli-auth" && open) {
