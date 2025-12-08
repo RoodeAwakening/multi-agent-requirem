@@ -144,21 +144,62 @@ export class PipelineOrchestrator {
   }
 
   private formatReferences(): string {
-    // First, try to use the actual file contents
+    const parts: string[] = [];
+
+    // If this is a versioned job with previous outputs, include them as reference context
+    if (this.job.version > 1 && this.job.versionHistory && this.job.versionHistory.length > 0) {
+      const previousVersion = this.job.versionHistory[this.job.versionHistory.length - 1];
+      
+      if (previousVersion.outputs && Object.keys(previousVersion.outputs).length > 0) {
+        parts.push("=== PREVIOUS VERSION ANALYSIS (Version " + previousVersion.version + ") ===");
+        parts.push("This context provides the analysis from the previous version. Use it to maintain continuity and build upon prior work.\n");
+        
+        Object.entries(previousVersion.outputs).forEach(([filename, content]) => {
+          if (content) {
+            parts.push(`--- Previous Analysis: ${filename} ---`);
+            parts.push(content);
+            parts.push(`--- End of ${filename} ---\n`);
+          }
+        });
+        
+        parts.push("=== END OF PREVIOUS VERSION ANALYSIS ===\n");
+      }
+    }
+
+    // Then, include current reference files
     if (this.job.referenceFiles && this.job.referenceFiles.length > 0) {
+      if (parts.length > 0) {
+        parts.push("=== NEW REFERENCE MATERIALS ===");
+        parts.push("These are new materials added for this version:\n");
+      }
+      
       const formattedFiles = this.job.referenceFiles.map((file) => {
         return `--- File: ${file.path} ---\n${file.content}\n--- End of ${file.name} ---`;
       });
-      return formattedFiles.join("\n\n");
+      parts.push(formattedFiles.join("\n\n"));
+      
+      if (this.job.version > 1) {
+        parts.push("=== END OF NEW REFERENCE MATERIALS ===");
+      }
+      
+      return parts.join("\n\n");
     }
     
     // Fallback to just listing folders if no file contents available
-    if (!this.job.referenceFolders || this.job.referenceFolders.length === 0) {
-      return "No reference materials provided.";
+    if (this.job.referenceFolders && this.job.referenceFolders.length > 0) {
+      if (parts.length > 0) {
+        parts.push("=== REFERENCE FOLDERS ===");
+      }
+      parts.push(this.job.referenceFolders
+        .map((folder, index) => `Reference ${index + 1}: ${folder}`)
+        .join("\n"));
+      return parts.join("\n\n");
     }
 
-    return this.job.referenceFolders
-      .map((folder, index) => `Reference ${index + 1}: ${folder}`)
-      .join("\n");
+    if (parts.length > 0) {
+      return parts.join("\n\n");
+    }
+
+    return "No reference materials provided.";
   }
 }
