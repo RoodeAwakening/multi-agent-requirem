@@ -151,7 +151,7 @@ export class PipelineOrchestrator {
       const previousVersion = this.job.versionHistory[this.job.versionHistory.length - 1];
       
       if (previousVersion.outputs && Object.keys(previousVersion.outputs).length > 0) {
-        parts.push("=== PREVIOUS VERSION ANALYSIS (Version " + previousVersion.version + ") ===");
+        parts.push(`=== PREVIOUS VERSION ANALYSIS (Version ${previousVersion.version}) ===`);
         parts.push("This context provides the analysis from the previous version. Use it to maintain continuity and build upon prior work.\n");
         
         Object.entries(previousVersion.outputs).forEach(([filename, content]) => {

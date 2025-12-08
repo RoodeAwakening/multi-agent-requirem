@@ -219,14 +219,24 @@ function VersionComparisonView({
     );
   }
 
+  // Helper function to check if two arrays have the same elements
+  const arraysEqual = (a: string[], b: string[]): boolean => {
+    if (a.length !== b.length) return false;
+    const sortedA = [...a].sort();
+    const sortedB = [...b].sort();
+    return sortedA.every((val, idx) => val === sortedB[idx]);
+  };
+
   const descriptionChanged =
     fromVersion.description !== toVersion.description;
-  const referencesChanged =
-    JSON.stringify(fromVersion.referenceFolders) !==
-    JSON.stringify(toVersion.referenceFolders);
-  const outputsChanged =
-    JSON.stringify(Object.keys(fromVersion.outputs).sort()) !==
-    JSON.stringify(Object.keys(toVersion.outputs).sort());
+  const referencesChanged = !arraysEqual(
+    fromVersion.referenceFolders,
+    toVersion.referenceFolders
+  );
+  const outputsChanged = !arraysEqual(
+    Object.keys(fromVersion.outputs),
+    Object.keys(toVersion.outputs)
+  );
 
   const newReferences = toVersion.referenceFolders.filter(
     (ref) => !fromVersion.referenceFolders.includes(ref)
