@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
 import { Job, ReferenceFile } from "@/lib/types";
 import { processFiles, processFolderFiles } from "@/lib/file-utils";
 // Use deep imports for better tree-shaking
@@ -32,8 +33,10 @@ export function NewVersionDialog({
   onVersionCreated,
 }: NewVersionDialogProps) {
   const [additionalDetails, setAdditionalDetails] = useState("");
+  const [changeReason, setChangeReason] = useState("");
   const [selectedPaths, setSelectedPaths] = useState<string[]>([]);
   const [referenceFiles, setReferenceFiles] = useState<ReferenceFile[]>([]);
+  const [includeOldReferences, setIncludeOldReferences] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
@@ -89,10 +92,38 @@ export function NewVersionDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Combine existing reference files with new ones
-    const combinedReferenceFiles = [
-      ...(currentJob.referenceFiles || []),
-      ...referenceFiles,
+    // Smart reference handling: 
+    // If includeOldReferences is FALSE (default), only use new files
+    // If includeOldReferences is TRUE, include old reference files too
+    const combinedReferenceFiles = includeOldReferences
+      ? [...(currentJob.referenceFiles || []), ...referenceFiles]
+      : referenceFiles; // Only new files
+
+    const combinedReferenceFolders = includeOldReferences
+      ? [...currentJob.referenceFolders, ...selectedPaths]
+      : selectedPaths; // Only new folders
+
+    // Create a snapshot of the current version before creating a new one
+    const currentVersionSnapshot = {
+      version: currentJob.version,
+      createdAt: currentJob.updatedAt,
+      description: currentJob.description,
+      // Combine both fields explicitly for clarity in version history
+      changeReason: changeReason.trim() 
+        ? (additionalDetails.trim() 
+            ? `${changeReason.trim()} - ${additionalDetails.trim()}` 
+            : changeReason.trim())
+        : additionalDetails.trim(),
+      status: currentJob.status,
+      referenceFolders: currentJob.referenceFolders,
+      referenceFiles: currentJob.referenceFiles,
+      outputs: currentJob.outputs,
+    };
+
+    // Initialize version history if it doesn't exist and add the current version
+    const versionHistory = [
+      ...(currentJob.versionHistory || []),
+      currentVersionSnapshot,
     ];
 
     const newVersion: Job = {
@@ -101,22 +132,22 @@ export function NewVersionDialog({
       description: additionalDetails
         ? `${currentJob.description}\n\n--- Version ${currentJob.version + 1} Updates ---\n${additionalDetails}`
         : currentJob.description,
-      referenceFolders: [
-        ...currentJob.referenceFolders,
-        ...selectedPaths,
-      ],
+      referenceFolders: combinedReferenceFolders,
       referenceFiles: combinedReferenceFiles,
       updatedAt: new Date().toISOString(),
       status: "new",
-      outputs: {},
+      outputs: {}, // Clear outputs - they will be regenerated
+      versionHistory,
     };
 
     onVersionCreated(newVersion);
     onOpenChange(false);
 
     setAdditionalDetails("");
+    setChangeReason("");
     setSelectedPaths([]);
     setReferenceFiles([]);
+    setIncludeOldReferences(false);
   };
 
   return (
@@ -154,6 +185,22 @@ export function NewVersionDialog({
             />
             <p className="text-xs text-muted-foreground">
               Describe what's new or different for this version
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="change-reason">
+              Reason for Creating New Version (Optional)
+            </Label>
+            <Textarea
+              id="change-reason"
+              value={changeReason}
+              onChange={(e) => setChangeReason(e.target.value)}
+              placeholder="Why are you creating this version? (e.g., 'Client feedback', 'New requirements', 'Bug fixes')"
+              rows={2}
+            />
+            <p className="text-xs text-muted-foreground">
+              This helps track why changes were made across versions
             </p>
           </div>
 
@@ -203,6 +250,37 @@ export function NewVersionDialog({
               className="hidden"
               onChange={handleFolderSelect}
             />
+
+            {/* Smart reference handling toggle */}
+            {currentJob.referenceFolders.length > 0 && (
+              <div className="rounded-lg border border-border bg-muted/30 p-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <Label htmlFor="include-old-refs" className="text-sm font-medium">
+                      Include previous version's reference files
+                    </Label>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {includeOldReferences ? (
+                        <>
+                          <strong>Enabled:</strong> All old reference files will be included along with new ones.
+                          This uses more context but ensures all original materials are available.
+                        </>
+                      ) : (
+                        <>
+                          <strong>Disabled (Recommended):</strong> Only new reference files will be used.
+                          Previous outputs contain the analysis from old files, saving context.
+                        </>
+                      )}
+                    </p>
+                  </div>
+                  <Switch
+                    id="include-old-refs"
+                    checked={includeOldReferences}
+                    onCheckedChange={setIncludeOldReferences}
+                  />
+                </div>
+              </div>
+            )}
 
             {currentJob.referenceFolders.length > 0 && (
               <div className="space-y-2">

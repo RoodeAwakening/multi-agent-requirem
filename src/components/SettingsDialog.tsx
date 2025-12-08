@@ -81,14 +81,14 @@ interface SettingsDialogProps {
 
 export function SettingsDialog({ open, onOpenChange, onStorageModeChange }: SettingsDialogProps) {
   const [aiSettings, setAISettings] = useStoredValue<AISettings>("ai-settings", {
-    model: "gemini-flash",
+    model: "gemini-2.5-flash",
   });
   const [customPrompts, setCustomPrompts] = useStoredValue<
     Partial<Record<PipelineStepId, string>>
   >("custom-prompts", {});
 
   const [localModel, setLocalModel] = useState<AIModel>(
-    aiSettings?.model || "gemini-flash"
+    aiSettings?.model || "gemini-2.5-flash"
   );
   const [localPrompts, setLocalPrompts] = useState<
     Partial<Record<PipelineStepId, string>>
@@ -129,7 +129,7 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange }: Sett
   const localStorageJobs = getStoredValue<Job[]>("jobs") || [];
 
   useEffect(() => {
-    setLocalModel(aiSettings?.model || "gemini-flash");
+    setLocalModel(aiSettings?.model || "gemini-2.5-flash");
   }, [aiSettings]);
 
   useEffect(() => {
@@ -159,7 +159,14 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange }: Sett
       return;
     }
     
-    setAISettings({ model: localModel, geminiAuthMode: geminiAuthMode });
+    // Save AI settings with proper structure
+    const newAISettings: AISettings = {
+      model: localModel,
+      geminiAuthMode: geminiAuthMode,
+      temperature: aiSettings?.temperature,
+    };
+    console.log('[Settings] Saving AI settings:', newAISettings);
+    setAISettings(newAISettings);
     setCustomPrompts(localPrompts);
     
     // Save API keys (save even if empty to allow clearing)
@@ -322,19 +329,27 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange }: Sett
                             </span>
                           </div>
                         </SelectItem>
-                        <SelectItem value="gemini-pro">
+                        <SelectItem value="gemini-2.5-pro">
                           <div className="flex flex-col items-start">
-                            <span className="font-medium">Gemini Pro</span>
+                            <span className="font-medium">Gemini 2.5 Pro</span>
                             <span className="text-xs text-muted-foreground">
-                              Google's advanced model - Strong reasoning
+                              Most advanced - Best for complex reasoning
                             </span>
                           </div>
                         </SelectItem>
-                        <SelectItem value="gemini-flash">
+                        <SelectItem value="gemini-2.5-flash">
                           <div className="flex flex-col items-start">
-                            <span className="font-medium">Gemini Flash</span>
+                            <span className="font-medium">Gemini 2.5 Flash</span>
                             <span className="text-xs text-muted-foreground">
-                              Fast responses - Cost effective
+                              Fast and efficient - Great balance
+                            </span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="gemini-2.0-flash-lite">
+                          <div className="flex flex-col items-start">
+                            <span className="font-medium">Gemini 2.0 Flash Lite</span>
+                            <span className="text-xs text-muted-foreground">
+                              Lightweight and fast - Cost effective
                             </span>
                           </div>
                         </SelectItem>

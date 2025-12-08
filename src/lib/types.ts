@@ -17,6 +17,19 @@ export interface ReferenceFile {
   type: string;
 }
 
+export interface VersionSnapshot {
+  version: number;
+  createdAt: string;
+  description: string;
+  changeReason?: string;
+  status: JobStatus;
+  referenceFolders: string[];
+  referenceFiles?: ReferenceFile[];
+  outputs: {
+    [key: string]: string;
+  };
+}
+
 export interface Job {
   id: string;
   title: string;
@@ -31,6 +44,7 @@ export interface Job {
   outputs: {
     [key: string]: string;
   };
+  versionHistory?: VersionSnapshot[];
 }
 
 export interface PipelineStep {
