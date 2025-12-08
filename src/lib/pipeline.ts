@@ -157,7 +157,7 @@ export class PipelineOrchestrator {
         
         Object.entries(previousVersion.outputs).forEach(([filename, content]) => {
           if (content) {
-            parts.push(`--- Previous Analysis: ${filename} ---`);
+            parts.push(`--- Previous Version Analysis (Version ${previousVersion.version}): ${filename} ---`);
             parts.push(content);
             parts.push(`--- End of ${filename} ---\n`);
           }
@@ -194,13 +194,14 @@ export class PipelineOrchestrator {
       parts.push(this.job.referenceFolders
         .map((folder, index) => `Reference ${index + 1}: ${folder}`)
         .join("\n"));
-      return parts.join("\n\n");
     }
 
+    // If any reference context was included, return it
     if (parts.length > 0) {
       return parts.join("\n\n");
     }
 
+    // Otherwise, truly no reference context was available
     return "No reference materials provided.";
   }
 }

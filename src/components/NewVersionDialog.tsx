@@ -108,8 +108,12 @@ export function NewVersionDialog({
       version: currentJob.version,
       createdAt: currentJob.updatedAt,
       description: currentJob.description,
-      // Store the explicit reason if provided, otherwise use the additional details as the reason
-      changeReason: changeReason.trim() || additionalDetails.trim(),
+      // Combine both fields explicitly for clarity in version history
+      changeReason: changeReason.trim() 
+        ? (additionalDetails.trim() 
+            ? `${changeReason.trim()} - ${additionalDetails.trim()}` 
+            : changeReason.trim())
+        : additionalDetails.trim(),
       status: currentJob.status,
       referenceFolders: currentJob.referenceFolders,
       referenceFiles: currentJob.referenceFiles,

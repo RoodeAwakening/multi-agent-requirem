@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { Job, VersionSnapshot } from "@/lib/types";
+import { Job } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -253,8 +253,9 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
             <Button
               onClick={() => setViewingVersion(job.version)}
               size="lg"
-              variant="default"
+              variant="outline"
             >
+              <ArrowsClockwise className="mr-2" />
               Return to Current Version (v{job.version})
             </Button>
           )}
