@@ -12,10 +12,10 @@ interface ReferencesPanelProps {
 
 export function ReferencesPanel({ referenceFiles, referenceFolders }: ReferencesPanelProps) {
   const [selectedFile, setSelectedFile] = useState<string>(
-    referenceFiles.length > 0 ? referenceFiles[0].path : ""
+    referenceFiles?.[0]?.path || ""
   );
 
-  const selectedFileData = referenceFiles.find((f) => f.path === selectedFile);
+  const selectedFileData = referenceFiles?.find((f) => f.path === selectedFile);
 
   return (
     <div className="flex flex-col h-full">
@@ -41,8 +41,8 @@ export function ReferencesPanel({ referenceFiles, referenceFolders }: References
             className="h-full flex flex-col"
           >
             <div className="border-b">
-              <ScrollArea className="w-full">
-                <TabsList className="w-full justify-start rounded-none border-none h-auto p-2 flex-nowrap">
+              <ScrollArea className="w-full" orientation="horizontal">
+                <TabsList className="w-max justify-start rounded-none border-none h-auto p-2 inline-flex">
                   {referenceFiles.map((file) => (
                     <TabsTrigger
                       key={file.path}
@@ -75,7 +75,7 @@ export function ReferencesPanel({ referenceFiles, referenceFolders }: References
                       </p>
                       <Separator className="mt-2" />
                     </div>
-                    <ScrollArea className="h-[calc(100vh-280px)]">
+                    <ScrollArea className="h-[calc(100vh-16rem)]">
                       <pre className="whitespace-pre-wrap font-mono text-sm bg-muted p-4 rounded-lg">
                         {file.content}
                       </pre>
