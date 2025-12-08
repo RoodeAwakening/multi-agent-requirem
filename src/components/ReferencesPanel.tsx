@@ -35,8 +35,8 @@ export function ReferencesPanel({ referenceFiles, referenceFolders }: References
 
       {referenceFiles.length > 0 ? (
         <div className="flex-1 flex overflow-hidden">
-          {/* Left sidebar with file list */}
-          <div className="w-72 border-r flex flex-col">
+          {/* Left sidebar with file list - narrower */}
+          <div className="w-64 border-r flex flex-col shrink-0">
             <ScrollArea className="flex-1">
               <div className="p-2 space-y-1">
                 {referenceFiles.map((file) => (
@@ -44,7 +44,7 @@ export function ReferencesPanel({ referenceFiles, referenceFolders }: References
                     key={file.path}
                     onClick={() => setSelectedFile(file.path)}
                     className={cn(
-                      "w-full text-left px-3 py-2.5 rounded-md transition-colors flex items-start gap-2",
+                      "w-full text-left px-3 py-2 rounded-md transition-colors flex items-start gap-2",
                       selectedFile === file.path
                         ? "bg-accent text-accent-foreground"
                         : "hover:bg-muted"
@@ -61,10 +61,10 @@ export function ReferencesPanel({ referenceFiles, referenceFolders }: References
             </ScrollArea>
           </div>
 
-          {/* Right content area */}
-          <div className="flex-1 overflow-auto">
+          {/* Right content area - takes remaining space */}
+          <div className="flex-1 overflow-auto min-w-0">
             {selectedFileData && (
-              <div className="p-6">
+              <div className="p-6 h-full">
                 <div className="mb-4">
                   <div className="flex items-center gap-2 mb-2">
                     <File size={20} />
@@ -75,11 +75,13 @@ export function ReferencesPanel({ referenceFiles, referenceFolders }: References
                   </p>
                   <Separator className="mt-2" />
                 </div>
-                <ScrollArea className="h-[calc(100vh-16rem)]">
-                  <pre className="whitespace-pre-wrap font-mono text-sm bg-muted p-4 rounded-lg">
-                    {selectedFileData.content}
-                  </pre>
-                </ScrollArea>
+                <div className="h-[calc(100%-5rem)]">
+                  <ScrollArea className="h-full">
+                    <pre className="whitespace-pre-wrap font-mono text-sm bg-muted p-4 rounded-lg">
+                      {selectedFileData.content}
+                    </pre>
+                  </ScrollArea>
+                </div>
               </div>
             )}
           </div>
