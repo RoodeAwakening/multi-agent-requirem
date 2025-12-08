@@ -338,6 +338,14 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange }: Sett
                             </span>
                           </div>
                         </SelectItem>
+                        <SelectItem value="gemini-2.0-flash-live">
+                          <div className="flex flex-col items-start">
+                            <span className="font-medium">Gemini 2.0 Flash Live</span>
+                            <span className="text-xs text-muted-foreground">
+                              Unlimited tokens - Best for large contexts
+                            </span>
+                          </div>
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-export type AIModel = "gpt-4o" | "gpt-4o-mini" | "gemini-pro" | "gemini-flash";
+export type AIModel = "gpt-4o" | "gpt-4o-mini" | "gemini-pro" | "gemini-flash" | "gemini-2.0-flash-live";
 export type GeminiAuthMode = "api-key" | "cli-auth";
 
 export interface AISettings {
@@ -16,6 +16,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 const GEMINI_MODEL_MAP: Record<string, string> = {
   "gemini-pro": "gemini-1.5-pro",
   "gemini-flash": "gemini-1.5-flash",
+  "gemini-2.0-flash-live": "gemini-2.0-flash-exp",
 };
 
 /**
@@ -25,7 +26,7 @@ const GEMINI_MODEL_MAP: Record<string, string> = {
  * API keys are configured via the Settings dialog and stored in localStorage
  */
 export async function callAI(prompt: string, model: AIModel, authMode?: GeminiAuthMode): Promise<string> {
-  if (model === "gemini-pro" || model === "gemini-flash") {
+  if (model === "gemini-pro" || model === "gemini-flash" || model === "gemini-2.0-flash-live") {
     return callGemini(prompt, model, authMode);
   } else {
     return callOpenAI(prompt, model);
@@ -236,7 +237,7 @@ export function getApiKey(provider: "openai" | "gemini"): string | null {
  * Check if an API key is configured for the given model
  */
 export function isModelConfigured(model: AIModel): boolean {
-  if (model === "gemini-pro" || model === "gemini-flash") {
+  if (model === "gemini-pro" || model === "gemini-flash" || model === "gemini-2.0-flash-live") {
     const authMode = getGeminiAuthMode();
     if (authMode === "cli-auth") {
       return !!localStorage.getItem("gemini-cli-project-id");
