@@ -191,7 +191,7 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
           </div>
           <Separator orientation="vertical" className="h-4" />
           <div className="text-sm text-muted-foreground">
-            Version: {currentViewData.version} {job.version > 1 && `of ${job.version}`}
+            Version {currentViewData.version}/{job.version}
           </div>
           {currentViewData.referenceFolders.length > 0 && (
             <>
