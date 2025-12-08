@@ -51,6 +51,17 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
     setViewingVersion(job.version);
   }, [job.id, job.version]);
 
+  // Fix for pipeline running state bug: If job status is "running" but isRunning is false,
+  // it means the user left and returned while the pipeline was "running" (which is actually stale).
+  // Reset the status to prevent showing a stuck "running" state.
+  useEffect(() => {
+    if (job.status === "running" && !isRunning) {
+      const updatedJob = { ...job, status: "new" as const };
+      onJobUpdated(updatedJob);
+      toast.info("Pipeline status was reset. Please run again if needed.");
+    }
+  }, [job.id, job.status, isRunning, onJobUpdated]); // Run when job changes or status changes
+
   // Get the data for the currently viewing version
   const currentViewData = useMemo(() => {
     if (viewingVersion === job.version) {
