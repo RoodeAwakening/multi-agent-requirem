@@ -216,7 +216,7 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
                     References
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-[900px] sm:w-[1000px] md:w-[1100px] lg:w-[1200px] max-w-[95vw] p-0">
+                <SheetContent side="right" className="!w-[75vw] sm:!w-[80vw] md:!w-[85vw] lg:!w-[90vw] !max-w-none p-0">
                   <ReferencesPanel
                     referenceFiles={currentViewData.referenceFiles || []}
                     referenceFolders={currentViewData.referenceFolders}
