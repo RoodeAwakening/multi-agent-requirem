@@ -32,6 +32,7 @@ export function NewVersionDialog({
   onVersionCreated,
 }: NewVersionDialogProps) {
   const [additionalDetails, setAdditionalDetails] = useState("");
+  const [changeReason, setChangeReason] = useState("");
   const [selectedPaths, setSelectedPaths] = useState<string[]>([]);
   const [referenceFiles, setReferenceFiles] = useState<ReferenceFile[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -95,6 +96,24 @@ export function NewVersionDialog({
       ...referenceFiles,
     ];
 
+    // Create a snapshot of the current version before creating a new one
+    const currentVersionSnapshot = {
+      version: currentJob.version,
+      createdAt: currentJob.updatedAt,
+      description: currentJob.description,
+      changeReason: changeReason || additionalDetails, // Use changeReason or fallback to additionalDetails
+      status: currentJob.status,
+      referenceFolders: currentJob.referenceFolders,
+      referenceFiles: currentJob.referenceFiles,
+      outputs: currentJob.outputs,
+    };
+
+    // Initialize version history if it doesn't exist and add the current version
+    const versionHistory = [
+      ...(currentJob.versionHistory || []),
+      currentVersionSnapshot,
+    ];
+
     const newVersion: Job = {
       ...currentJob,
       version: currentJob.version + 1,
@@ -109,12 +128,14 @@ export function NewVersionDialog({
       updatedAt: new Date().toISOString(),
       status: "new",
       outputs: {},
+      versionHistory,
     };
 
     onVersionCreated(newVersion);
     onOpenChange(false);
 
     setAdditionalDetails("");
+    setChangeReason("");
     setSelectedPaths([]);
     setReferenceFiles([]);
   };
@@ -154,6 +175,22 @@ export function NewVersionDialog({
             />
             <p className="text-xs text-muted-foreground">
               Describe what's new or different for this version
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="change-reason">
+              Reason for Creating New Version (Optional)
+            </Label>
+            <Textarea
+              id="change-reason"
+              value={changeReason}
+              onChange={(e) => setChangeReason(e.target.value)}
+              placeholder="Why are you creating this version? (e.g., 'Client feedback', 'New requirements', 'Bug fixes')"
+              rows={2}
+            />
+            <p className="text-xs text-muted-foreground">
+              This helps track why changes were made across versions
             </p>
           </div>
 

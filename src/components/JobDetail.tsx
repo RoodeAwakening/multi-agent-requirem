@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Job } from "@/lib/types";
+import { Job, VersionSnapshot } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,11 +13,13 @@ import { FolderOpen } from "@phosphor-icons/react/dist/csr/FolderOpen";
 import { ArrowsClockwise } from "@phosphor-icons/react/dist/csr/ArrowsClockwise";
 import { FilePdf } from "@phosphor-icons/react/dist/csr/FilePdf";
 import { DownloadSimple } from "@phosphor-icons/react/dist/csr/DownloadSimple";
+import { Clock } from "@phosphor-icons/react/dist/csr/Clock";
 import { PipelineOrchestrator } from "@/lib/pipeline";
 import { OUTPUT_FILES } from "@/lib/constants";
 import { toast } from "sonner";
 import { marked } from "marked";
 import { NewVersionDialog } from "./NewVersionDialog";
+import { VersionHistoryPanel } from "./VersionHistoryPanel";
 import { exportJobToPDF } from "@/lib/pdf-export";
 import {
   DropdownMenu,
@@ -26,6 +28,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 interface JobDetailProps {
   job: Job;
@@ -40,6 +43,41 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
     OUTPUT_FILES[0].filename
   );
   const [isNewVersionDialogOpen, setIsNewVersionDialogOpen] = useState(false);
+  const [viewingVersion, setViewingVersion] = useState<number>(job.version);
+  const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
+
+  // Get the data for the currently viewing version
+  const currentViewData = useMemo(() => {
+    if (viewingVersion === job.version) {
+      return job;
+    }
+    
+    const historicalVersion = job.versionHistory?.find(
+      (v) => v.version === viewingVersion
+    );
+    
+    if (historicalVersion) {
+      // Return a Job-like object for display
+      return {
+        ...job,
+        version: historicalVersion.version,
+        description: historicalVersion.description,
+        status: historicalVersion.status,
+        referenceFolders: historicalVersion.referenceFolders,
+        referenceFiles: historicalVersion.referenceFiles,
+        outputs: historicalVersion.outputs,
+        updatedAt: historicalVersion.createdAt,
+      } as Job;
+    }
+    
+    return job;
+  }, [job, viewingVersion]);
+
+  const handleVersionSelect = (version: number) => {
+    setViewingVersion(version);
+    setIsVersionHistoryOpen(false);
+    toast.success(`Viewing version ${version}`);
+  };
 
   const handleRunPipeline = async () => {
     if (isRunning) return;
@@ -75,13 +113,14 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
   };
 
   const handleVersionCreated = (newVersionJob: Job) => {
+    setViewingVersion(newVersionJob.version); // Switch to viewing the new version
     onJobUpdated(newVersionJob);
     toast.success(`Version ${newVersionJob.version} created successfully!`);
   };
 
   const handleExportCurrentTab = () => {
     try {
-      exportJobToPDF(job, selectedOutput);
+      exportJobToPDF(currentViewData, selectedOutput);
       toast.success(`PDF exported: ${selectedOutput}`);
     } catch (error) {
       toast.error("Failed to export PDF");
@@ -91,7 +130,7 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
 
   const handleExportFullReport = () => {
     try {
-      exportJobToPDF(job);
+      exportJobToPDF(currentViewData);
       toast.success("Full report exported as PDF");
     } catch (error) {
       toast.error("Failed to export PDF");
@@ -101,7 +140,7 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
 
   const handleExportSpecificDocument = (filename: string) => {
     try {
-      exportJobToPDF(job, filename);
+      exportJobToPDF(currentViewData, filename);
       toast.success(`PDF exported: ${filename}`);
     } catch (error) {
       toast.error("Failed to export PDF");
@@ -109,8 +148,9 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
     }
   };
 
-  const outputContent = job.outputs[selectedOutput];
-  const hasOutputs = Object.keys(job.outputs).length > 0;
+  const outputContent = currentViewData.outputs[selectedOutput];
+  const hasOutputs = Object.keys(currentViewData.outputs).length > 0;
+  const hasVersionHistory = (job.versionHistory?.length || 0) > 0;
 
   const renderedMarkdown = useMemo(() => {
     if (!outputContent) return "";
@@ -129,9 +169,14 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
               <h2 className="text-2xl font-bold">{job.title}</h2>
-              <StatusBadge status={job.status} />
+              <StatusBadge status={currentViewData.status} />
+              {viewingVersion !== job.version && (
+                <Badge variant="outline">
+                  Viewing v{viewingVersion}
+                </Badge>
+              )}
             </div>
-            <p className="text-muted-foreground">{job.description}</p>
+            <p className="text-muted-foreground">{currentViewData.description}</p>
           </div>
         </div>
 
@@ -141,38 +186,70 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
           </div>
           <Separator orientation="vertical" className="h-4" />
           <div className="text-sm text-muted-foreground">
-            Version: {job.version}
+            Version: {currentViewData.version} {job.version > 1 && `of ${job.version}`}
           </div>
-          {job.referenceFolders.length > 0 && (
+          {currentViewData.referenceFolders.length > 0 && (
             <>
               <Separator orientation="vertical" className="h-4" />
               <div className="flex items-center gap-1 text-sm text-muted-foreground">
                 <FolderOpen size={16} />
-                {job.referenceFolders.length} reference
-                {job.referenceFolders.length !== 1 ? "s" : ""}
+                {currentViewData.referenceFolders.length} reference
+                {currentViewData.referenceFolders.length !== 1 ? "s" : ""}
               </div>
+            </>
+          )}
+          {hasVersionHistory && (
+            <>
+              <Separator orientation="vertical" className="h-4" />
+              <Sheet open={isVersionHistoryOpen} onOpenChange={setIsVersionHistoryOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8">
+                    <Clock size={16} className="mr-2" />
+                    History ({(job.versionHistory?.length || 0) + 1})
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[400px] p-0">
+                  <VersionHistoryPanel
+                    job={job}
+                    onVersionSelect={handleVersionSelect}
+                    currentlyViewingVersion={viewingVersion}
+                  />
+                </SheetContent>
+              </Sheet>
             </>
           )}
         </div>
 
         <div className="flex items-center gap-3">
-          <Button
-            onClick={handleRunPipeline}
-            disabled={isRunning}
-            size="lg"
-            className="min-w-40"
-          >
-            {isRunning ? (
-              <>Running...</>
-            ) : (
-              <>
-                <Play className="mr-2" weight="fill" />
-                Run Full Pipeline
-              </>
-            )}
-          </Button>
+          {viewingVersion === job.version && (
+            <Button
+              onClick={handleRunPipeline}
+              disabled={isRunning}
+              size="lg"
+              className="min-w-40"
+            >
+              {isRunning ? (
+                <>Running...</>
+              ) : (
+                <>
+                  <Play className="mr-2" weight="fill" />
+                  Run Full Pipeline
+                </>
+              )}
+            </Button>
+          )}
 
-          {job.status === "completed" && (
+          {viewingVersion !== job.version && (
+            <Button
+              onClick={() => setViewingVersion(job.version)}
+              size="lg"
+              variant="default"
+            >
+              Return to Current Version (v{job.version})
+            </Button>
+          )}
+
+          {job.status === "completed" && viewingVersion === job.version && (
             <>
               <Button
                 onClick={() => setIsNewVersionDialogOpen(true)}
@@ -202,7 +279,7 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   {OUTPUT_FILES.map((file) => {
-                    const hasOutput = !!job.outputs[file.filename];
+                    const hasOutput = !!currentViewData.outputs[file.filename];
                     return (
                       <DropdownMenuItem
                         key={file.filename}
@@ -240,7 +317,7 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
             <div className="flex items-center justify-between border-b px-6 py-2">
               <TabsList className="justify-start rounded-none border-none h-auto p-0">
                 {OUTPUT_FILES.map((file) => {
-                  const hasOutput = !!job.outputs[file.filename];
+                  const hasOutput = !!currentViewData.outputs[file.filename];
                   return (
                     <TabsTrigger
                       key={file.filename}
