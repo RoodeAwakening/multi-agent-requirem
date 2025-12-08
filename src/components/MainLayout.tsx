@@ -69,6 +69,11 @@ export function MainLayout() {
     refreshJobs();
   };
   
+  const handleDemoCreated = () => {
+    // Refresh the jobs list to show the newly created demo task
+    refreshJobs();
+  };
+  
   const handleStorageReconnected = () => {
     setShowReconnectDialog(false);
     setStorageMode("fileSystem");
@@ -164,6 +169,7 @@ export function MainLayout() {
         open={isSettingsOpen}
         onOpenChange={setIsSettingsOpen}
         onStorageModeChange={handleStorageModeChange}
+        onDemoCreated={handleDemoCreated}
       />
       
       <StorageSetupDialog

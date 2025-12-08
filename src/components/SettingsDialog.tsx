@@ -72,14 +72,17 @@ import { FolderOpen } from "@phosphor-icons/react/dist/csr/FolderOpen";
 import { HardDrives } from "@phosphor-icons/react/dist/csr/HardDrives";
 import { Browser } from "@phosphor-icons/react/dist/csr/Browser";
 import { Warning } from "@phosphor-icons/react/dist/csr/Warning";
+import { PlayCircle } from "@phosphor-icons/react/dist/csr/PlayCircle";
+import { createDemoJob, getDemoDescription } from "@/lib/demo-data";
 
 interface SettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onStorageModeChange?: (mode: StorageMode) => void;
+  onDemoCreated?: () => void;
 }
 
-export function SettingsDialog({ open, onOpenChange, onStorageModeChange }: SettingsDialogProps) {
+export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemoCreated }: SettingsDialogProps) {
   const [aiSettings, setAISettings] = useStoredValue<AISettings>("ai-settings", {
     model: "gemini-2.5-flash",
   });
@@ -286,6 +289,7 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange }: Sett
             <TabsTrigger value="model">AI Model</TabsTrigger>
             <TabsTrigger value="prompts">Agent Prompts</TabsTrigger>
             <TabsTrigger value="storage">Data Storage</TabsTrigger>
+            <TabsTrigger value="demo">Demo</TabsTrigger>
           </TabsList>
 
           <div className="flex-1 min-h-0 overflow-hidden">
@@ -1018,6 +1022,149 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange }: Sett
                       )}
                     </ul>
                   </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="demo" className="m-0 h-full overflow-y-auto">
+              <div className="p-6 space-y-6 max-w-3xl">
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Try the Demo</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Experience I.A.N. with a pre-configured demo task that showcases all features.
+                  </p>
+                </div>
+
+                <div className="p-6 border-2 border-accent/50 rounded-lg bg-accent/5 space-y-4">
+                  <div className="flex items-start gap-4">
+                    <PlayCircle size={32} className="text-accent shrink-0 mt-1" weight="fill" />
+                    <div className="flex-1 space-y-3">
+                      <h4 className="font-semibold text-lg">Smart Shopping Cart Demo</h4>
+                      <p className="text-sm text-muted-foreground whitespace-pre-line">
+                        {getDemoDescription()}
+                      </p>
+                      
+                      <div className="pt-2">
+                        <Button
+                          size="lg"
+                          onClick={() => {
+                            const demoJob = createDemoJob();
+                            // Store the demo job
+                            const jobs = JSON.parse(localStorage.getItem("multi-agent-pipeline:jobs") || "[]");
+                            jobs.unshift(demoJob);
+                            localStorage.setItem("multi-agent-pipeline:jobs", JSON.stringify(jobs));
+                            
+                            // Notify parent component
+                            if (onDemoCreated) {
+                              onDemoCreated();
+                            }
+                            
+                            // Close dialog
+                            onOpenChange(false);
+                            
+                            toast.success("Demo task created! Select it from the task list to get started.");
+                          }}
+                          className="w-full sm:w-auto"
+                        >
+                          <PlayCircle className="mr-2" weight="fill" />
+                          Create Demo Task
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-4">
+                  <h4 className="font-medium">What's Included in the Demo?</h4>
+                  
+                  <div className="grid gap-3">
+                    <div className="flex items-start gap-3 p-3 border rounded-lg">
+                      <CheckCircle size={20} className="text-green-600 shrink-0 mt-0.5" weight="fill" />
+                      <div>
+                        <p className="font-medium text-sm">Pre-filled Task Details</p>
+                        <p className="text-xs text-muted-foreground">
+                          Complete title and description for a real-world e-commerce feature
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3 p-3 border rounded-lg">
+                      <CheckCircle size={20} className="text-green-600 shrink-0 mt-0.5" weight="fill" />
+                      <div>
+                        <p className="font-medium text-sm">Mock Meeting Transcript</p>
+                        <p className="text-xs text-muted-foreground">
+                          Realistic conversation between PM, Engineering, UX, and Business teams
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3 p-3 border rounded-lg">
+                      <CheckCircle size={20} className="text-green-600 shrink-0 mt-0.5" weight="fill" />
+                      <div>
+                        <p className="font-medium text-sm">Technical Documentation</p>
+                        <p className="text-xs text-muted-foreground">
+                          Architecture notes, API specs, and performance requirements
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3 p-3 border rounded-lg">
+                      <CheckCircle size={20} className="text-green-600 shrink-0 mt-0.5" weight="fill" />
+                      <div>
+                        <p className="font-medium text-sm">Email Communications</p>
+                        <p className="text-xs text-muted-foreground">
+                          Stakeholder emails including CEO priorities and competitive analysis
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3 p-3 border rounded-lg">
+                      <CheckCircle size={20} className="text-green-600 shrink-0 mt-0.5" weight="fill" />
+                      <div>
+                        <p className="font-medium text-sm">UX Design Notes</p>
+                        <p className="text-xs text-muted-foreground">
+                          User flows, visual design specs, and accessibility considerations
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3 p-3 border rounded-lg">
+                      <CheckCircle size={20} className="text-green-600 shrink-0 mt-0.5" weight="fill" />
+                      <div>
+                        <p className="font-medium text-sm">Implementation Checklist</p>
+                        <p className="text-xs text-muted-foreground">
+                          Detailed project plan with phases, tasks, and success criteria
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 border-2 border-blue-500/50 rounded-lg bg-blue-50 dark:bg-blue-900/10">
+                  <h4 className="font-semibold text-sm mb-2 flex items-center gap-2 text-blue-700 dark:text-blue-400">
+                    <span>💡</span> How to Use the Demo
+                  </h4>
+                  <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
+                    <li>Click "Create Demo Task" to add the pre-configured task</li>
+                    <li>Select the demo task from your task list in the sidebar</li>
+                    <li>Review the reference materials to understand the context</li>
+                    <li>Click "Run Full Pipeline" to see AI agents analyze the task</li>
+                    <li>Explore the generated outputs from different agent perspectives</li>
+                    <li>Try creating a new version with updated requirements</li>
+                    <li>Export the results as a PDF for sharing</li>
+                  </ol>
+                </div>
+
+                <div className="p-4 border-2 border-amber-500/50 rounded-lg bg-amber-50 dark:bg-amber-900/10">
+                  <h4 className="font-semibold text-sm mb-2 flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                    <span>⚠️</span> Note
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    The demo task is a fictional example created for demonstration purposes. 
+                    It will be added to your task list like any other task and can be deleted when you're done exploring.
+                  </p>
                 </div>
               </div>
             </TabsContent>
