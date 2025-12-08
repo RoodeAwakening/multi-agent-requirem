@@ -7,7 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Play, FolderOpen, ArrowsClockwise, FilePdf, DownloadSimple } from "@phosphor-icons/react";
+// Use deep imports for better tree-shaking
+import { Play } from "@phosphor-icons/react/dist/csr/Play";
+import { FolderOpen } from "@phosphor-icons/react/dist/csr/FolderOpen";
+import { ArrowsClockwise } from "@phosphor-icons/react/dist/csr/ArrowsClockwise";
+import { FilePdf } from "@phosphor-icons/react/dist/csr/FilePdf";
+import { DownloadSimple } from "@phosphor-icons/react/dist/csr/DownloadSimple";
 import { PipelineOrchestrator } from "@/lib/pipeline";
 import { OUTPUT_FILES } from "@/lib/constants";
 import { toast } from "sonner";

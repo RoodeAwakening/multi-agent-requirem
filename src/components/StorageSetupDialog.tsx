@@ -23,14 +23,13 @@ import {
 } from "@/lib/filesystem-storage";
 import { setStoredValue } from "@/lib/storage";
 import { toast } from "sonner";
-import {
-  FolderOpen,
-  HardDrives,
-  Browser,
-  Warning,
-  Rocket,
-  CheckCircle,
-} from "@phosphor-icons/react";
+// Use deep imports for better tree-shaking
+import { FolderOpen } from "@phosphor-icons/react/dist/csr/FolderOpen";
+import { HardDrives } from "@phosphor-icons/react/dist/csr/HardDrives";
+import { Browser } from "@phosphor-icons/react/dist/csr/Browser";
+import { Warning } from "@phosphor-icons/react/dist/csr/Warning";
+import { Rocket } from "@phosphor-icons/react/dist/csr/Rocket";
+import { CheckCircle } from "@phosphor-icons/react/dist/csr/CheckCircle";
 
 interface StorageSetupDialogProps {
   open: boolean;

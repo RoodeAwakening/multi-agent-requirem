@@ -13,7 +13,10 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Job, ReferenceFile } from "@/lib/types";
 import { processFiles, processFolderFiles } from "@/lib/file-utils";
-import { FolderOpen, File, X } from "@phosphor-icons/react";
+// Use deep imports for better tree-shaking
+import { FolderOpen } from "@phosphor-icons/react/dist/csr/FolderOpen";
+import { File } from "@phosphor-icons/react/dist/csr/File";
+import { X } from "@phosphor-icons/react/dist/csr/X";
 
 interface NewVersionDialogProps {
   open: boolean;

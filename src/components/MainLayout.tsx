@@ -17,7 +17,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Gear, Warning } from "@phosphor-icons/react";
+// Use deep imports for better tree-shaking (reduces bundle size by ~750KB)
+import { Plus } from "@phosphor-icons/react/dist/csr/Plus";
+import { Gear } from "@phosphor-icons/react/dist/csr/Gear";
+import { Warning } from "@phosphor-icons/react/dist/csr/Warning";
 import { StorageMode } from "@/lib/filesystem-storage";
 import { useJobs } from "@/lib/use-jobs";
 

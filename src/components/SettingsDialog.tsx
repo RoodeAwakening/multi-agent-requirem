@@ -62,17 +62,16 @@ import { Separator } from "@/components/ui/separator";
 import { PipelineStepId } from "@/lib/types";
 import { PROMPTS } from "@/lib/prompts";
 import { toast } from "sonner";
-import {
-  CheckCircle,
-  ArrowCounterClockwise,
-  FloppyDisk,
-  Eye,
-  EyeSlash,
-  FolderOpen,
-  HardDrives,
-  Browser,
-  Warning,
-} from "@phosphor-icons/react";
+// Use deep imports for better tree-shaking (reduces bundle size by ~750KB)
+import { CheckCircle } from "@phosphor-icons/react/dist/csr/CheckCircle";
+import { ArrowCounterClockwise } from "@phosphor-icons/react/dist/csr/ArrowCounterClockwise";
+import { FloppyDisk } from "@phosphor-icons/react/dist/csr/FloppyDisk";
+import { Eye } from "@phosphor-icons/react/dist/csr/Eye";
+import { EyeSlash } from "@phosphor-icons/react/dist/csr/EyeSlash";
+import { FolderOpen } from "@phosphor-icons/react/dist/csr/FolderOpen";
+import { HardDrives } from "@phosphor-icons/react/dist/csr/HardDrives";
+import { Browser } from "@phosphor-icons/react/dist/csr/Browser";
+import { Warning } from "@phosphor-icons/react/dist/csr/Warning";
 
 interface SettingsDialogProps {
   open: boolean;

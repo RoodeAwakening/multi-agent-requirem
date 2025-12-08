@@ -24,12 +24,11 @@ import {
   getCachedDirectoryHandle,
 } from "@/lib/filesystem-storage";
 import { toast } from "sonner";
-import {
-  FolderOpen,
-  ArrowsClockwise,
-  Browser,
-  Info,
-} from "@phosphor-icons/react";
+// Use deep imports for better tree-shaking
+import { FolderOpen } from "@phosphor-icons/react/dist/csr/FolderOpen";
+import { ArrowsClockwise } from "@phosphor-icons/react/dist/csr/ArrowsClockwise";
+import { Browser } from "@phosphor-icons/react/dist/csr/Browser";
+import { Info } from "@phosphor-icons/react/dist/csr/Info";
 
 interface ReconnectStorageDialogProps {
   open: boolean;
