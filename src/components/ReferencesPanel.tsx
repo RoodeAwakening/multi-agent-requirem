@@ -2,8 +2,8 @@ import { ReferenceFile } from "@/lib/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { File } from "@phosphor-icons/react/dist/csr/File";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface ReferencesPanelProps {
   referenceFiles: ReferenceFile[];
@@ -34,57 +34,55 @@ export function ReferencesPanel({ referenceFiles, referenceFolders }: References
       </div>
 
       {referenceFiles.length > 0 ? (
-        <div className="flex-1 overflow-hidden">
-          <Tabs
-            value={selectedFile}
-            onValueChange={setSelectedFile}
-            className="h-full flex flex-col"
-          >
-            <div className="border-b">
-              <ScrollArea className="w-full" orientation="horizontal">
-                <TabsList className="w-max justify-start rounded-none border-none h-auto p-2 inline-flex">
-                  {referenceFiles.map((file) => (
-                    <TabsTrigger
-                      key={file.path}
-                      value={file.path}
-                      className="data-[state=active]:border-b-2 data-[state=active]:border-accent whitespace-nowrap"
-                    >
-                      <File size={14} className="mr-1" />
-                      {file.name}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-              </ScrollArea>
-            </div>
-
-            <div className="flex-1 overflow-auto">
-              {referenceFiles.map((file) => (
-                <TabsContent
-                  key={file.path}
-                  value={file.path}
-                  className="h-full m-0 p-0"
-                >
-                  <div className="p-6">
-                    <div className="mb-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <File size={20} />
-                        <h4 className="font-semibold text-base">{file.name}</h4>
-                      </div>
-                      <p className="text-xs text-muted-foreground font-mono">
-                        {file.path}
-                      </p>
-                      <Separator className="mt-2" />
+        <div className="flex-1 flex overflow-hidden">
+          {/* Left sidebar with file list */}
+          <div className="w-72 border-r flex flex-col">
+            <ScrollArea className="flex-1">
+              <div className="p-2 space-y-1">
+                {referenceFiles.map((file) => (
+                  <button
+                    key={file.path}
+                    onClick={() => setSelectedFile(file.path)}
+                    className={cn(
+                      "w-full text-left px-3 py-2.5 rounded-md transition-colors flex items-start gap-2",
+                      selectedFile === file.path
+                        ? "bg-accent text-accent-foreground"
+                        : "hover:bg-muted"
+                    )}
+                  >
+                    <File size={16} className="shrink-0 mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{file.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{file.path}</p>
                     </div>
-                    <ScrollArea className="h-[calc(100vh-16rem)]">
-                      <pre className="whitespace-pre-wrap font-mono text-sm bg-muted p-4 rounded-lg">
-                        {file.content}
-                      </pre>
-                    </ScrollArea>
+                  </button>
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
+
+          {/* Right content area */}
+          <div className="flex-1 overflow-auto">
+            {selectedFileData && (
+              <div className="p-6">
+                <div className="mb-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <File size={20} />
+                    <h4 className="font-semibold text-base">{selectedFileData.name}</h4>
                   </div>
-                </TabsContent>
-              ))}
-            </div>
-          </Tabs>
+                  <p className="text-xs text-muted-foreground font-mono">
+                    {selectedFileData.path}
+                  </p>
+                  <Separator className="mt-2" />
+                </div>
+                <ScrollArea className="h-[calc(100vh-16rem)]">
+                  <pre className="whitespace-pre-wrap font-mono text-sm bg-muted p-4 rounded-lg">
+                    {selectedFileData.content}
+                  </pre>
+                </ScrollArea>
+              </div>
+            )}
+          </div>
         </div>
       ) : (
         <div className="flex-1 flex items-center justify-center p-6">
