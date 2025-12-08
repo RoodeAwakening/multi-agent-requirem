@@ -301,6 +301,12 @@ Description: {{TASK_DESCRIPTION}}
 **Your Goal:**
 Transform the requirements into an actionable product backlog with epics, milestones, and user stories.
 
+**Story Sizing Rules:**
+- **IMPORTANT**: No story should be larger than 8 points. 
+- If a story would be larger than 8 points (like 13 or more), break it into 2 or more smaller stories.
+- Each resulting story should be independently valuable and have its own acceptance criteria.
+- Ensure the largest story after breaking down is no more than 8 points.
+
 **Required Output Structure:**
 
 # Epic: {{TASK_TITLE}}
@@ -327,7 +333,7 @@ Break the work into logical milestones or release increments:
    
    **Priority**: High/Medium/Low
    **Effort Estimate**: S/M/L/XL
-   **Story Points**: (1, 2, 3, 5, 8, 13, etc. - use Fibonacci sequence)
+   **Story Points**: (1, 2, 3, 5, or 8 - use Fibonacci sequence, max 8 points)
 
 2. **[STORY-2]** As a (user type), I want (capability) so that (value/benefit).
    
@@ -344,7 +350,7 @@ List external dependencies or blockers that could impact delivery.
 ## Open Questions for Stakeholders
 List any decisions or clarifications needed from stakeholders before proceeding.
 
-Generate your product backlog now. Make stories actionable and properly sized.`,
+Generate your product backlog now. Make stories actionable and properly sized. Remember: no story should exceed 8 points.`,
 
   executive_assistant: `You are an Executive Assistant preparing a leadership summary.
 
