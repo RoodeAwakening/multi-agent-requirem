@@ -69,6 +69,13 @@ export function MainLayout() {
     refreshJobs();
   };
   
+  const handleDemoCreated = async (demoJob: Job) => {
+    // Add the demo job using the proper storage mechanism
+    await addJob(demoJob);
+    // Select the demo job so user can see it immediately
+    setSelectedJobId(demoJob.id);
+  };
+  
   const handleStorageReconnected = () => {
     setShowReconnectDialog(false);
     setStorageMode("fileSystem");
@@ -164,6 +171,7 @@ export function MainLayout() {
         open={isSettingsOpen}
         onOpenChange={setIsSettingsOpen}
         onStorageModeChange={handleStorageModeChange}
+        onDemoCreated={handleDemoCreated}
       />
       
       <StorageSetupDialog

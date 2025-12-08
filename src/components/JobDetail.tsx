@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { marked } from "marked";
 import { NewVersionDialog } from "./NewVersionDialog";
 import { VersionHistoryPanel } from "./VersionHistoryPanel";
+import { ReferencesPanel } from "./ReferencesPanel";
 import { exportJobToPDF } from "@/lib/pdf-export";
 import {
   DropdownMenu,
@@ -45,6 +46,7 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
   const [isNewVersionDialogOpen, setIsNewVersionDialogOpen] = useState(false);
   const [viewingVersion, setViewingVersion] = useState<number>(job.version);
   const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
+  const [isReferencesOpen, setIsReferencesOpen] = useState(false);
 
   // Reset viewing version when job changes
   useEffect(() => {
@@ -204,14 +206,23 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
           <div className="text-sm text-muted-foreground">
             Version {currentViewData.version}/{job.version}
           </div>
-          {currentViewData.referenceFolders.length > 0 && (
+          {(currentViewData.referenceFiles?.length || currentViewData.referenceFolders.length > 0) && (
             <>
               <Separator orientation="vertical" className="h-4" />
-              <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                <FolderOpen size={16} />
-                {currentViewData.referenceFolders.length} reference
-                {currentViewData.referenceFolders.length !== 1 ? "s" : ""}
-              </div>
+              <Sheet open={isReferencesOpen} onOpenChange={setIsReferencesOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8">
+                    <FolderOpen size={16} className="mr-2" />
+                    References
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="!w-[75vw] sm:!w-[80vw] md:!w-[85vw] lg:!w-[90vw] !max-w-none p-0">
+                  <ReferencesPanel
+                    referenceFiles={currentViewData.referenceFiles || []}
+                    referenceFolders={currentViewData.referenceFolders}
+                  />
+                </SheetContent>
+              </Sheet>
             </>
           )}
           {hasVersionHistory && (
