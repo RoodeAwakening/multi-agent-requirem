@@ -1,12 +1,11 @@
 import { Job } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { 
-  CheckCircle, 
-  Circle, 
-  XCircle, 
-  Spinner 
-} from "@phosphor-icons/react";
+// Use deep imports for better tree-shaking
+import { CheckCircle } from "@phosphor-icons/react/dist/csr/CheckCircle";
+import { Circle } from "@phosphor-icons/react/dist/csr/Circle";
+import { XCircle } from "@phosphor-icons/react/dist/csr/XCircle";
+import { Spinner } from "@phosphor-icons/react/dist/csr/Spinner";
 
 interface JobListProps {
   jobs: Job[] | undefined;

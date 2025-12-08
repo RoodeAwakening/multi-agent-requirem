@@ -1,30 +1,92 @@
-import { useState } from "react";
-import { useStoredValue } from "@/lib/storage";
+import { useState, useEffect } from "react";
 import { Job } from "@/lib/types";
 import { JobList } from "./JobList";
 import { JobDetail } from "./JobDetail";
 import { NewJobDialog } from "./NewJobDialog";
 import { SettingsDialog } from "./SettingsDialog";
+import { StorageSetupDialog, isStorageSetupComplete } from "./StorageSetupDialog";
+import { ReconnectStorageDialog, needsStorageReconnect } from "./ReconnectStorageDialog";
 import { Button } from "@/components/ui/button";
-import { Plus, Gear } from "@phosphor-icons/react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+// Use deep imports for better tree-shaking (reduces bundle size by ~750KB)
+import { Plus } from "@phosphor-icons/react/dist/csr/Plus";
+import { Gear } from "@phosphor-icons/react/dist/csr/Gear";
+import { Warning } from "@phosphor-icons/react/dist/csr/Warning";
+import { StorageMode } from "@/lib/filesystem-storage";
+import { useJobs } from "@/lib/use-jobs";
 
 export function MainLayout() {
-  const [jobs, setJobs] = useStoredValue<Job[]>("jobs", []);
+  // Check if storage setup needs to be shown
+  const [showStorageSetup, setShowStorageSetup] = useState(false);
+  const [showReconnectDialog, setShowReconnectDialog] = useState(false);
+  
+  // Use the new jobs hook for hybrid storage
+  const { jobs, fileSystemError, addJob, updateJob, refreshJobs, setStorageMode, clearFileSystemError } = useJobs();
+  
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [isNewJobDialogOpen, setIsNewJobDialogOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
+  // Check if we need to show storage setup or reconnect dialog on mount
+  useEffect(() => {
+    const setupComplete = isStorageSetupComplete();
+    if (!setupComplete) {
+      // First time user - show setup dialog
+      setShowStorageSetup(true);
+    } else if (needsStorageReconnect()) {
+      // Returning user with file system storage - show reconnect dialog
+      setShowReconnectDialog(true);
+    }
+  }, []);
+
   const selectedJob = jobs?.find((job) => job.id === selectedJobId);
 
-  const handleJobCreated = (newJob: Job) => {
-    setJobs((current) => [newJob, ...(current || [])]);
+  const handleJobCreated = async (newJob: Job) => {
+    await addJob(newJob);
     setSelectedJobId(newJob.id);
   };
 
-  const handleJobUpdated = (updatedJob: Job) => {
-    setJobs((current) =>
-      (current || []).map((job) => (job.id === updatedJob.id ? updatedJob : job))
-    );
+  const handleJobUpdated = async (updatedJob: Job) => {
+    await updateJob(updatedJob);
+  };
+  
+  const handleStorageSetupComplete = (mode: StorageMode) => {
+    setStorageMode(mode);
+    setShowStorageSetup(false);
+  };
+  
+  const handleStorageModeChange = (mode: StorageMode) => {
+    setStorageMode(mode);
+    refreshJobs();
+  };
+  
+  const handleStorageReconnected = () => {
+    setShowReconnectDialog(false);
+    setStorageMode("fileSystem");
+    refreshJobs();
+  };
+  
+  const handleUseBrowserStorage = () => {
+    setShowReconnectDialog(false);
+    setStorageMode("localStorage");
+  };
+  
+  const handleFileSystemErrorDismiss = () => {
+    clearFileSystemError();
+  };
+  
+  const handleFileSystemErrorOpenSettings = () => {
+    clearFileSystemError();
+    setIsSettingsOpen(true);
   };
 
   return (
@@ -101,7 +163,42 @@ export function MainLayout() {
       <SettingsDialog
         open={isSettingsOpen}
         onOpenChange={setIsSettingsOpen}
+        onStorageModeChange={handleStorageModeChange}
       />
+      
+      <StorageSetupDialog
+        open={showStorageSetup}
+        onComplete={handleStorageSetupComplete}
+      />
+      
+      <ReconnectStorageDialog
+        open={showReconnectDialog}
+        onReconnected={handleStorageReconnected}
+        onUseBrowserStorage={handleUseBrowserStorage}
+      />
+      
+      {/* File System Error Warning Dialog */}
+      <AlertDialog open={!!fileSystemError} onOpenChange={(open) => !open && handleFileSystemErrorDismiss()}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Warning size={20} className="text-amber-500" />
+              File System Storage Issue
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {fileSystemError}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleFileSystemErrorDismiss}>
+              Continue with Browser Storage
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleFileSystemErrorOpenSettings}>
+              Open Settings
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
