@@ -303,7 +303,7 @@ Transform the requirements into an actionable product backlog with epics, milest
 
 **Story Sizing Rules:**
 - **IMPORTANT**: No story should be larger than 8 points. 
-- If a story would be larger than 8 points (like 13 or more), break it into 2 or more smaller stories.
+- If a story would be 13 points or larger (the next Fibonacci number after 8), break it into 2 or more smaller stories.
 - Each resulting story should be independently valuable and have its own acceptance criteria.
 - Ensure the largest story after breaking down is no more than 8 points.
 
