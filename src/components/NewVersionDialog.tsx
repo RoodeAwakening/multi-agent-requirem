@@ -152,7 +152,7 @@ export function NewVersionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0">
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
         <div className="px-6 pt-6">
           <DialogHeader>
             <DialogTitle>Create Version {currentJob.version + 1}</DialogTitle>
@@ -163,7 +163,7 @@ export function NewVersionDialog({
           </DialogHeader>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
           <ScrollArea className="flex-1 px-6">
             {/* Add right padding for scrollbar spacing */}
             <div className="space-y-4 pr-4">
