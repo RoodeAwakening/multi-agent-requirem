@@ -165,17 +165,18 @@ export function NewVersionDialog({
 
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
           <ScrollArea className="flex-1 px-6">
-            <div className="space-y-4 pr-4">{/* pr-4 for scrollbar spacing */}
+            {/* Add right padding for scrollbar spacing */}
+            <div className="space-y-4 pr-4">
               <div className="space-y-2">
-              <Label htmlFor="original-description">Original Task</Label>
-              <div className="rounded-md border border-input bg-muted p-3">
-                <p className="text-sm text-muted-foreground">
-                  {currentJob.description}
-                </p>
+                <Label htmlFor="original-description">Original Task</Label>
+                <div className="rounded-md border border-input bg-muted p-3">
+                  <p className="text-sm text-muted-foreground">
+                    {currentJob.description}
+                  </p>
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-2">
+              <div className="space-y-2">
               <Label htmlFor="additional-details">
                 Additional Details & Updates
               </Label>
