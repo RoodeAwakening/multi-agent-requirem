@@ -52,13 +52,14 @@ export class PipelineOrchestrator {
     const promptTemplate = await getPromptTemplate(stepId);
     const prompt = fillPromptTemplate(promptTemplate, variables);
 
-    // Get AI settings from storage
+    // Get AI settings from storage (loads fresh on each step)
     let aiSettings: AISettings = { model: "gemini-flash" };
     try {
       const savedSettings = getStoredValue<AISettings>("ai-settings");
       if (savedSettings) {
         aiSettings = savedSettings;
       }
+      console.log(`[Pipeline] Using AI model for ${stepId}:`, aiSettings.model);
     } catch (error) {
       console.warn("Failed to load AI settings, using defaults:", error);
     }

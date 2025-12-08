@@ -159,7 +159,14 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange }: Sett
       return;
     }
     
-    setAISettings({ model: localModel, geminiAuthMode: geminiAuthMode });
+    // Save AI settings with proper structure
+    const newAISettings: AISettings = {
+      model: localModel,
+      geminiAuthMode: geminiAuthMode,
+      temperature: aiSettings?.temperature,
+    };
+    console.log('[Settings] Saving AI settings:', newAISettings);
+    setAISettings(newAISettings);
     setCustomPrompts(localPrompts);
     
     // Save API keys (save even if empty to allow clearing)
