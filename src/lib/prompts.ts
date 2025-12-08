@@ -327,10 +327,11 @@ Break the work into logical milestones or release increments:
    
    **Priority**: High/Medium/Low
    **Effort Estimate**: S/M/L/XL
+   **Story Points**: (1, 2, 3, 5, 8, 13, etc. - use Fibonacci sequence)
 
 2. **[STORY-2]** As a (user type), I want (capability) so that (value/benefit).
    
-   (Continue with acceptance criteria, priority, and estimate)
+   (Continue with acceptance criteria, priority, estimate, and story points)
 
 (Continue for all milestones)
 

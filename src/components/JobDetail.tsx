@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Job, VersionSnapshot } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -45,6 +45,11 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
   const [isNewVersionDialogOpen, setIsNewVersionDialogOpen] = useState(false);
   const [viewingVersion, setViewingVersion] = useState<number>(job.version);
   const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
+
+  // Reset viewing version when job changes
+  useEffect(() => {
+    setViewingVersion(job.version);
+  }, [job.id, job.version]);
 
   // Get the data for the currently viewing version
   const currentViewData = useMemo(() => {
@@ -230,6 +235,11 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
             >
               {isRunning ? (
                 <>Running...</>
+              ) : job.status === "failed" ? (
+                <>
+                  <Play className="mr-2" weight="fill" />
+                  Retry Pipeline
+                </>
               ) : (
                 <>
                   <Play className="mr-2" weight="fill" />
@@ -250,34 +260,35 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
           )}
 
           {job.status === "completed" && viewingVersion === job.version && (
-            <>
-              <Button
-                onClick={() => setIsNewVersionDialogOpen(true)}
-                disabled={isRunning}
-                size="lg"
-                variant="outline"
-              >
-                <ArrowsClockwise className="mr-2" />
-                Create New Version
-              </Button>
+            <Button
+              onClick={() => setIsNewVersionDialogOpen(true)}
+              disabled={isRunning}
+              size="lg"
+              variant="outline"
+            >
+              <ArrowsClockwise className="mr-2" />
+              Create New Version
+            </Button>
+          )}
 
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    disabled={isRunning || !hasOutputs}
-                    size="lg"
-                    variant="secondary"
-                  >
-                    <FilePdf className="mr-2" />
-                    Export PDF
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-64">
-                  <DropdownMenuItem onClick={handleExportFullReport}>
-                    <DownloadSimple className="mr-2" />
-                    Full Report (All Outputs)
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
+          {hasOutputs && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  disabled={isRunning}
+                  size="lg"
+                  variant="secondary"
+                >
+                  <FilePdf className="mr-2" />
+                  Export PDF
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64">
+                <DropdownMenuItem onClick={handleExportFullReport}>
+                  <DownloadSimple className="mr-2" />
+                  Full Report (All Outputs)
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                   {OUTPUT_FILES.map((file) => {
                     const hasOutput = !!currentViewData.outputs[file.filename];
                     return (
@@ -293,7 +304,6 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
                   })}
                 </DropdownMenuContent>
               </DropdownMenu>
-            </>
           )}
 
           {isRunning && (
