@@ -79,7 +79,7 @@ interface SettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onStorageModeChange?: (mode: StorageMode) => void;
-  onDemoCreated?: () => void;
+  onDemoCreated?: (demoJob: Job) => void;
 }
 
 export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemoCreated }: SettingsDialogProps) {
@@ -1049,14 +1049,10 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemo
                           size="lg"
                           onClick={() => {
                             const demoJob = createDemoJob();
-                            // Store the demo job
-                            const jobs = JSON.parse(localStorage.getItem("multi-agent-pipeline:jobs") || "[]");
-                            jobs.unshift(demoJob);
-                            localStorage.setItem("multi-agent-pipeline:jobs", JSON.stringify(jobs));
                             
-                            // Notify parent component
+                            // Notify parent component to add the job properly
                             if (onDemoCreated) {
-                              onDemoCreated();
+                              onDemoCreated(demoJob);
                             }
                             
                             // Close dialog

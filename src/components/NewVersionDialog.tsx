@@ -152,7 +152,7 @@ export function NewVersionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0">
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-scroll">
         <div className="px-6 pt-6">
           <DialogHeader>
             <DialogTitle>Create Version {currentJob.version + 1}</DialogTitle>
