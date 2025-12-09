@@ -56,10 +56,17 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
   // Fix for pipeline running state bug: If job status is "running" but isRunning is false,
   // it means the user left and returned while the pipeline was "running" (which is actually stale).
   // Reset the status to prevent showing a stuck "running" state.
-  // IMPORTANT: We use a ref to track if we just completed a pipeline to avoid race conditions
-  // where the effect runs after successful completion but before the job prop updates.
+  // IMPORTANT: We use refs to track completion and per-job stale check state to avoid race conditions.
   const justCompletedRef = useRef(false);
   const hasCheckedStaleStatus = useRef(false);
+  
+  // Reset both flags when switching jobs to ensure clean state
+  useEffect(() => {
+    return () => {
+      hasCheckedStaleStatus.current = false;
+      justCompletedRef.current = false;
+    };
+  }, [job.id]);
   
   useEffect(() => {
     // Don't reset if we just completed the pipeline (avoid race condition)
@@ -68,20 +75,14 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
       return;
     }
     
-    // Only check for stale status once between state changes
-    // The flag is reset whenever dependencies change (including status updates)
+    // Only check for stale status once per job to prevent repeated resets
     if (!hasCheckedStaleStatus.current && job.status === "running" && !isRunning) {
       hasCheckedStaleStatus.current = true;
       const updatedJob = { ...job, status: "new" as const };
       onJobUpdated(updatedJob);
       toast.info("Pipeline status was reset. Please run again if needed.");
     }
-    
-    // Reset the flag when switching to a different job
-    return () => {
-      hasCheckedStaleStatus.current = false;
-    };
-  }, [job.id, job.status, isRunning, onJobUpdated]); // Proper dependencies for React hooks
+  }, [job.status, isRunning, onJobUpdated]); // Check on status/state changes
 
   // Get the data for the currently viewing version
   const currentViewData = useMemo(() => {
