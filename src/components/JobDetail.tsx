@@ -142,6 +142,7 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
       toast.success("Pipeline completed successfully!");
     } catch (error) {
       const failedJob = { ...job, status: "failed" as const };
+      justCompletedRef.current = true; // Prevent race condition on failure too
       onJobUpdated(failedJob);
       toast.error(`Pipeline failed: ${error}`);
     } finally {
