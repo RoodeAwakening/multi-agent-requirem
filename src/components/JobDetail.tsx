@@ -59,6 +59,7 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
   // IMPORTANT: We use a ref to track if we just completed a pipeline to avoid race conditions
   // where the effect runs after successful completion but before the job prop updates.
   const justCompletedRef = useRef(false);
+  const hasCheckedStaleStatus = useRef(false);
   
   useEffect(() => {
     // Don't reset if we just completed the pipeline (avoid race condition)
@@ -67,17 +68,20 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
       return;
     }
     
-    // Only reset stale "running" status when component first mounts/job changes
-    // Not on every render to avoid race conditions
-    if (job.status === "running" && !isRunning) {
+    // Only check for stale status once per job to avoid race conditions
+    // This runs when the component first mounts with a job or when switching jobs
+    if (!hasCheckedStaleStatus.current && job.status === "running" && !isRunning) {
+      hasCheckedStaleStatus.current = true;
       const updatedJob = { ...job, status: "new" as const };
       onJobUpdated(updatedJob);
       toast.info("Pipeline status was reset. Please run again if needed.");
     }
-    // Intentionally limited dependencies: only run when job ID changes to avoid race conditions
-    // during pipeline completion. We accept the ESLint warning here as this is the intended behavior.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [job.id]); // Only run when job ID changes (i.e., switching jobs or mount)
+    
+    // Reset the flag when switching to a different job
+    return () => {
+      hasCheckedStaleStatus.current = false;
+    };
+  }, [job.id, job.status, isRunning, onJobUpdated]); // Proper dependencies for React hooks
 
   // Get the data for the currently viewing version
   const currentViewData = useMemo(() => {
@@ -117,10 +121,11 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
 
     setIsRunning(true);
     setProgress(0);
-    job.status = "running";
-    onJobUpdated({ ...job });
+    // Don't mutate the job prop - create a new object with updated status
+    const runningJob = { ...job, status: "running" as const };
+    onJobUpdated(runningJob);
 
-    const orchestrator = new PipelineOrchestrator(job, {
+    const orchestrator = new PipelineOrchestrator(runningJob, {
       onProgress: (step, prog) => {
         setProgress(prog);
         setCurrentStep(step);
@@ -136,8 +141,8 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
       onJobUpdated(updatedJob);
       toast.success("Pipeline completed successfully!");
     } catch (error) {
-      job.status = "failed";
-      onJobUpdated({ ...job });
+      const failedJob = { ...job, status: "failed" as const };
+      onJobUpdated(failedJob);
       toast.error(`Pipeline failed: ${error}`);
     } finally {
       setIsRunning(false);
