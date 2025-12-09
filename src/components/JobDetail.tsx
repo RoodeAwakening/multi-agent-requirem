@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Job } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -56,13 +56,28 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
   // Fix for pipeline running state bug: If job status is "running" but isRunning is false,
   // it means the user left and returned while the pipeline was "running" (which is actually stale).
   // Reset the status to prevent showing a stuck "running" state.
+  // IMPORTANT: We use a ref to track if we just completed a pipeline to avoid race conditions
+  // where the effect runs after successful completion but before the job prop updates.
+  const justCompletedRef = useRef(false);
+  
   useEffect(() => {
+    // Don't reset if we just completed the pipeline (avoid race condition)
+    if (justCompletedRef.current) {
+      justCompletedRef.current = false;
+      return;
+    }
+    
+    // Only reset stale "running" status when component first mounts/job changes
+    // Not on every render to avoid race conditions
     if (job.status === "running" && !isRunning) {
       const updatedJob = { ...job, status: "new" as const };
       onJobUpdated(updatedJob);
       toast.info("Pipeline status was reset. Please run again if needed.");
     }
-  }, [job.id, job.status, isRunning, onJobUpdated]); // Run when job changes or status changes
+    // Intentionally limited dependencies: only run when job ID changes to avoid race conditions
+    // during pipeline completion. We accept the ESLint warning here as this is the intended behavior.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [job.id]); // Only run when job ID changes (i.e., switching jobs or mount)
 
   // Get the data for the currently viewing version
   const currentViewData = useMemo(() => {
@@ -117,6 +132,7 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
 
     try {
       const updatedJob = await orchestrator.runFullPipeline();
+      justCompletedRef.current = true; // Mark that we just completed to avoid race condition
       onJobUpdated(updatedJob);
       toast.success("Pipeline completed successfully!");
     } catch (error) {
