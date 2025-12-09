@@ -68,8 +68,8 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
       return;
     }
     
-    // Only check for stale status once per job to avoid race conditions
-    // This runs when the component first mounts with a job or when switching jobs
+    // Only check for stale status once between state changes
+    // The flag is reset whenever dependencies change (including status updates)
     if (!hasCheckedStaleStatus.current && job.status === "running" && !isRunning) {
       hasCheckedStaleStatus.current = true;
       const updatedJob = { ...job, status: "new" as const };
