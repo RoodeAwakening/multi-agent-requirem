@@ -11,28 +11,44 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 // Use deep imports for better tree-shaking
 import { Clock } from "@phosphor-icons/react/dist/csr/Clock";
 import { GitDiff } from "@phosphor-icons/react/dist/csr/GitDiff";
 import { ArrowRight } from "@phosphor-icons/react/dist/csr/ArrowRight";
+import { Trash } from "@phosphor-icons/react/dist/csr/Trash";
 
 interface VersionHistoryPanelProps {
   job: Job;
   onVersionSelect: (version: number) => void;
   currentlyViewingVersion?: number;
+  onVersionDelete?: (versionNumber: number) => void;
 }
 
 export function VersionHistoryPanel({
   job,
   onVersionSelect,
   currentlyViewingVersion,
+  onVersionDelete,
 }: VersionHistoryPanelProps) {
   const [compareDialogOpen, setCompareDialogOpen] = useState(false);
   const [compareVersions, setCompareVersions] = useState<{
     from: number;
     to: number;
   } | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [versionToDelete, setVersionToDelete] = useState<number | null>(null);
 
   const allVersions: VersionSnapshot[] = [
     ...(job.versionHistory || []),
@@ -53,6 +69,20 @@ export function VersionHistoryPanel({
   const handleCompareClick = (fromVersion: number, toVersion: number) => {
     setCompareVersions({ from: fromVersion, to: toVersion });
     setCompareDialogOpen(true);
+  };
+
+  const handleDeleteClick = (versionNumber: number) => {
+    setVersionToDelete(versionNumber);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (versionToDelete && onVersionDelete) {
+      onVersionDelete(versionToDelete);
+      toast.success(`Version ${versionToDelete} deleted successfully`);
+    }
+    setDeleteDialogOpen(false);
+    setVersionToDelete(null);
   };
 
   const getVersionData = (version: number): VersionSnapshot | undefined => {
@@ -171,6 +201,18 @@ export function VersionHistoryPanel({
                         Compare
                       </Button>
                     )}
+                    {/* Only allow deleting non-current versions and only if there are more than 1 version */}
+                    {!isCurrentVersion && allVersions.length > 1 && onVersionDelete && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleDeleteClick(version.version)}
+                        className="text-xs h-7 ml-auto text-destructive hover:text-destructive hover:bg-destructive/10"
+                        title="Delete this version"
+                      >
+                        <Trash size={14} />
+                      </Button>
+                    )}
                   </div>
 
                   {version.status && (
@@ -217,6 +259,14 @@ export function VersionHistoryPanel({
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete Version Dialog */}
+      <DeleteVersionDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        versionNumber={versionToDelete}
+        onConfirm={handleConfirmDelete}
+      />
     </>
   );
 }
@@ -434,5 +484,38 @@ function VersionComparisonView({
           )}
       </div>
     </ScrollArea>
+  );
+}
+
+// Delete Version Confirmation Dialog Component
+function DeleteVersionDialog({
+  open,
+  onOpenChange,
+  versionNumber,
+  onConfirm,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  versionNumber: number | null;
+  onConfirm: () => void;
+}) {
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Version {versionNumber}?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to delete version {versionNumber}? This action cannot be undone.
+            The version will be permanently removed from history.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm} className="bg-destructive hover:bg-destructive/90">
+            Delete Version
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

@@ -172,6 +172,25 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
     toast.success(`Version ${newVersionJob.version} created successfully!`);
   };
 
+  const handleVersionDelete = (versionNumber: number) => {
+    // Filter out the deleted version from history
+    const updatedHistory = (job.versionHistory || []).filter(
+      (v) => v.version !== versionNumber
+    );
+    
+    const updatedJob: Job = {
+      ...job,
+      versionHistory: updatedHistory,
+    };
+    
+    // If we're viewing the deleted version, switch back to current
+    if (viewingVersion === versionNumber) {
+      setViewingVersion(job.version);
+    }
+    
+    onJobUpdated(updatedJob);
+  };
+
   const handleExportCurrentTab = () => {
     try {
       exportJobToPDF(currentViewData, selectedOutput);
@@ -300,6 +319,7 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
                     job={job}
                     onVersionSelect={handleVersionSelect}
                     currentlyViewingVersion={viewingVersion}
+                    onVersionDelete={handleVersionDelete}
                   />
                 </SheetContent>
               </Sheet>

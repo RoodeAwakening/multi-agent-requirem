@@ -1049,8 +1049,7 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemo
                           size="lg"
                           onClick={async () => {
                             try {
-                              // Create demo with version history to showcase the changelog feature
-                              const demoJob = createDemoJob(true);
+                              const demoJob = createDemoJob(false);
                               
                               // Notify parent component to add the job properly
                               if (onDemoCreated) {
@@ -1072,10 +1071,6 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemo
                           Create Demo Task
                         </Button>
                       </div>
-                      
-                      <p className="text-xs text-muted-foreground">
-                        💡 The demo includes version history with a changelog to demonstrate the "What's Changed" feature
-                      </p>
                     </div>
                   </div>
                 </div>
