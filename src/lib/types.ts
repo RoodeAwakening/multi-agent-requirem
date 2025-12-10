@@ -22,6 +22,7 @@ export interface VersionSnapshot {
   createdAt: string;
   description: string;
   changeReason?: string;
+  changelog?: string; // AI-generated changelog describing what changed from previous version
   status: JobStatus;
   referenceFolders: string[];
   referenceFiles?: ReferenceFile[];

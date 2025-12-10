@@ -1044,12 +1044,12 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemo
                         {getDemoDescription()}
                       </p>
                       
-                      <div className="pt-2">
+                      <div className="pt-2 flex gap-2 flex-wrap">
                         <Button
                           size="lg"
                           onClick={async () => {
                             try {
-                              const demoJob = createDemoJob();
+                              const demoJob = createDemoJob(false);
                               
                               // Notify parent component to add the job properly
                               if (onDemoCreated) {
@@ -1059,18 +1059,49 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemo
                               // Close dialog
                               onOpenChange(false);
                               
-                              toast.success("Demo task created! Select it from the task list to get started.");
+                              toast.success("Demo task (Version 1) created! Select it from the task list to get started.");
                             } catch (error) {
                               const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
                               toast.error(`Failed to create demo task: ${errorMessage}`);
                             }
                           }}
-                          className="w-full sm:w-auto"
+                          className="flex-1 sm:flex-none"
                         >
                           <PlayCircle className="mr-2" weight="fill" />
-                          Create Demo Task
+                          Create Demo (Version 1)
+                        </Button>
+                        
+                        <Button
+                          size="lg"
+                          variant="outline"
+                          onClick={async () => {
+                            try {
+                              const demoJob = createDemoJob(true);
+                              
+                              // Notify parent component to add the job properly
+                              if (onDemoCreated) {
+                                await onDemoCreated(demoJob);
+                              }
+                              
+                              // Close dialog
+                              onOpenChange(false);
+                              
+                              toast.success("Demo task (Version 2 with changelog) created! Select it from the task list.");
+                            } catch (error) {
+                              const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+                              toast.error(`Failed to create demo task: ${errorMessage}`);
+                            }
+                          }}
+                          className="flex-1 sm:flex-none"
+                        >
+                          <PlayCircle className="mr-2" weight="fill" />
+                          Create Demo (Version 2)
                         </Button>
                       </div>
+                      
+                      <p className="text-xs text-muted-foreground">
+                        💡 Version 2 includes version history and changelog to demonstrate the "What's Changed" feature
+                      </p>
                     </div>
                   </div>
                 </div>

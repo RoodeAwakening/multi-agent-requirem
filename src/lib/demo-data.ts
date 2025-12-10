@@ -509,11 +509,11 @@ User views cart → Recommendations sidebar loads →
 /**
  * Creates a pre-configured demo job with sample content to help users
  * understand how the application works.
+ * @param withVersionHistory - If true, creates a demo with version 2 and changelog
  */
-export function createDemoJob(): Job {
+export function createDemoJob(withVersionHistory = false): Job {
   const now = new Date().toISOString();
-  
-  return {
+  const baseJob: Job = {
     id: generateJobId(),
     title: DEMO_TITLE,
     description: DEMO_DESCRIPTION,
@@ -524,6 +524,86 @@ export function createDemoJob(): Job {
     status: "new",
     version: 1,
     outputs: {},
+  };
+
+  if (!withVersionHistory) {
+    return baseJob;
+  }
+
+  // Create version 2 with changes
+  const v2Description = `${DEMO_DESCRIPTION}
+
+--- Version 2 Updates ---
+Based on initial stakeholder feedback and market analysis, we're expanding the Smart Shopping Cart with enhanced features:
+
+**New Requirements:**
+- Integration with loyalty program for personalized rewards
+- Support for price prediction ("likely to go on sale soon")
+- Social proof indicators (e.g., "5 people bought this in the last hour")
+- Bundle deal recommendations based on cart contents
+- Price history graphs for transparency
+
+**Technical Updates:**
+- Enhanced ML model for better recommendation accuracy
+- Real-time inventory sync to prevent out-of-stock disappointments
+- A/B testing framework for UI variations
+- Analytics dashboard for business metrics
+
+**User Feedback Integration:**
+- Improved mobile UX based on beta testing
+- Faster load times (target < 1.5s for cart page)
+- Better accessibility for screen readers`;
+
+  const version1Snapshot = {
+    version: 1,
+    createdAt: baseJob.createdAt,
+    description: baseJob.description,
+    changeReason: "Initial version",
+    changelog: "Initial version - no previous changes to compare.",
+    status: baseJob.status,
+    referenceFolders: baseJob.referenceFolders,
+    referenceFiles: baseJob.referenceFiles,
+    outputs: baseJob.outputs,
+  };
+
+  const v2Changelog = `## Version 2 - Enhanced Features & Performance
+
+### Requirements Changes
+- **Loyalty Program Integration**: Added requirement to integrate with existing loyalty program for personalized rewards and points tracking
+- **Price Prediction Feature**: New AI-powered price prediction to alert users when items may go on sale
+- **Enhanced Transparency**: Price history graphs and social proof indicators for better purchasing decisions
+
+### New Features/Updates
+- **Social Proof**: Show real-time purchase activity ("5 people bought this in the last hour")
+- **Bundle Deals**: Smart bundle recommendations based on cart analysis
+- **Performance Target**: Improved load time target from <2s to <1.5s for cart page
+
+### Reference Materials
+- No new reference materials added in this version
+- All original documentation still applies
+
+### Technical Changes
+- Enhanced ML recommendation model with hybrid approach
+- Real-time inventory synchronization system
+- A/B testing framework for measuring feature impact
+- New analytics dashboard for business KPIs
+- Improved mobile UX based on beta testing feedback
+- Accessibility improvements for screen reader support
+
+### Business Impact
+- Expected to increase conversion rates by additional 5-10%
+- Loyalty program integration targets 30% enrollment increase
+- Social proof expected to reduce purchase hesitation by 15%`;
+
+  return {
+    ...baseJob,
+    version: 2,
+    description: v2Description,
+    updatedAt: new Date(Date.now() + 86400000).toISOString(), // 1 day later
+    versionHistory: [{
+      ...version1Snapshot,
+      changelog: v2Changelog,
+    }],
   };
 }
 
@@ -539,6 +619,8 @@ export function getDemoDescription(): string {
 • Email correspondence from leadership
 • UX design notes
 • Implementation checklist
+
+You can create this demo with version history to see how changelogs work across versions.
 
 The demo helps you understand how to use I.A.N. for requirements analysis. You can run the pipeline on this demo task to see how different AI agents analyze the requirements from various perspectives.`;
 }

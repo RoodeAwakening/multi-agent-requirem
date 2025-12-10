@@ -72,9 +72,10 @@ export function VersionHistoryPanel({
           </p>
         </div>
 
-        <ScrollArea className="flex-1">
-          <div className="p-4 space-y-3">
-            {sortedVersions.map((version, index) => {
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full">
+            <div className="p-4 space-y-3">
+              {sortedVersions.map((version, index) => {
               const isCurrentVersion = version.version === job.version;
               const isViewing =
                 currentlyViewingVersion !== undefined &&
@@ -119,6 +120,20 @@ export function VersionHistoryPanel({
                       <p className="text-sm font-medium text-foreground">
                         {version.changeReason}
                       </p>
+                    </div>
+                  )}
+
+                  {version.changelog && (
+                    <div className="mb-2">
+                      <details className="text-xs">
+                        <summary className="cursor-pointer text-accent hover:text-accent/80 font-medium">
+                          What's Changed
+                        </summary>
+                        <div className="mt-2 pl-2 text-muted-foreground whitespace-pre-wrap">
+                          {version.changelog.split('\n').slice(0, 5).join('\n')}
+                          {version.changelog.split('\n').length > 5 && '...'}
+                        </div>
+                      </details>
                     </div>
                   )}
 
@@ -167,9 +182,10 @@ export function VersionHistoryPanel({
                   )}
                 </div>
               );
-            })}
-          </div>
-        </ScrollArea>
+              })}
+            </div>
+          </ScrollArea>
+        </div>
       </div>
 
       {/* Comparison Dialog */}
@@ -255,6 +271,17 @@ function VersionComparisonView({
   return (
     <ScrollArea className="max-h-[60vh]">
       <div className="space-y-4">
+        {/* Changelog Section */}
+        {toVersion.changelog && (
+          <div className="rounded-lg border border-accent/50 bg-accent/5 p-4">
+            <h4 className="font-semibold text-sm mb-2">What's Changed</h4>
+            <div 
+              className="text-sm text-muted-foreground prose prose-sm max-w-none"
+              dangerouslySetInnerHTML={{ __html: toVersion.changelog.replace(/\n/g, '<br />') }}
+            />
+          </div>
+        )}
+
         {/* Change Reason */}
         {toVersion.changeReason && (
           <div className="rounded-lg border border-accent/50 bg-accent/5 p-4">
