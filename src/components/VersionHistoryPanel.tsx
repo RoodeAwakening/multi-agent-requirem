@@ -11,28 +11,44 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 // Use deep imports for better tree-shaking
 import { Clock } from "@phosphor-icons/react/dist/csr/Clock";
 import { GitDiff } from "@phosphor-icons/react/dist/csr/GitDiff";
 import { ArrowRight } from "@phosphor-icons/react/dist/csr/ArrowRight";
+import { Trash } from "@phosphor-icons/react/dist/csr/Trash";
 
 interface VersionHistoryPanelProps {
   job: Job;
   onVersionSelect: (version: number) => void;
   currentlyViewingVersion?: number;
+  onVersionDelete?: (versionNumber: number) => void;
 }
 
 export function VersionHistoryPanel({
   job,
   onVersionSelect,
   currentlyViewingVersion,
+  onVersionDelete,
 }: VersionHistoryPanelProps) {
   const [compareDialogOpen, setCompareDialogOpen] = useState(false);
   const [compareVersions, setCompareVersions] = useState<{
     from: number;
     to: number;
   } | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [versionToDelete, setVersionToDelete] = useState<number | null>(null);
 
   const allVersions: VersionSnapshot[] = [
     ...(job.versionHistory || []),
@@ -44,6 +60,8 @@ export function VersionHistoryPanel({
       referenceFolders: job.referenceFolders,
       referenceFiles: job.referenceFiles,
       outputs: job.outputs,
+      changeReason: job.changeReason,
+      changelog: job.changelog,
     },
   ];
 
@@ -53,6 +71,20 @@ export function VersionHistoryPanel({
   const handleCompareClick = (fromVersion: number, toVersion: number) => {
     setCompareVersions({ from: fromVersion, to: toVersion });
     setCompareDialogOpen(true);
+  };
+
+  const handleDeleteClick = (versionNumber: number) => {
+    setVersionToDelete(versionNumber);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (versionToDelete && onVersionDelete) {
+      onVersionDelete(versionToDelete);
+      toast.success(`Version ${versionToDelete} deleted successfully`);
+    }
+    setDeleteDialogOpen(false);
+    setVersionToDelete(null);
   };
 
   const getVersionData = (version: number): VersionSnapshot | undefined => {
@@ -72,9 +104,10 @@ export function VersionHistoryPanel({
           </p>
         </div>
 
-        <ScrollArea className="flex-1">
-          <div className="p-4 space-y-3">
-            {sortedVersions.map((version, index) => {
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full">
+            <div className="p-4 space-y-3">
+              {sortedVersions.map((version, index) => {
               const isCurrentVersion = version.version === job.version;
               const isViewing =
                 currentlyViewingVersion !== undefined &&
@@ -114,14 +147,29 @@ export function VersionHistoryPanel({
                     </span>
                   </div>
 
+                  {/* Show changeReason as the main title if available */}
                   {version.changeReason && (
                     <div className="mb-2">
-                      <p className="text-sm font-medium text-foreground">
+                      <p className="text-sm font-bold text-foreground">
                         {version.changeReason}
                       </p>
                     </div>
                   )}
 
+                  {version.changelog && (
+                    <div className="mb-2">
+                      <details className="text-xs">
+                        <summary className="cursor-pointer text-accent hover:text-accent/80 font-medium">
+                          What's Changed
+                        </summary>
+                        <div className="mt-2 pl-2 text-muted-foreground whitespace-pre-wrap max-h-96 overflow-y-auto">
+                          {version.changelog}
+                        </div>
+                      </details>
+                    </div>
+                  )}
+
+                  {/* Show description as secondary text, truncated */}
                   <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
                     {version.description}
                   </p>
@@ -153,6 +201,18 @@ export function VersionHistoryPanel({
                         Compare
                       </Button>
                     )}
+                    {/* Allow deleting any version if there are more than 1 version */}
+                    {allVersions.length > 1 && onVersionDelete && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleDeleteClick(version.version)}
+                        className="text-xs h-7 ml-auto text-destructive hover:text-destructive hover:bg-destructive/10"
+                        title="Delete this version"
+                      >
+                        <Trash size={14} />
+                      </Button>
+                    )}
                   </div>
 
                   {version.status && (
@@ -167,9 +227,10 @@ export function VersionHistoryPanel({
                   )}
                 </div>
               );
-            })}
-          </div>
-        </ScrollArea>
+              })}
+            </div>
+          </ScrollArea>
+        </div>
       </div>
 
       {/* Comparison Dialog */}
@@ -198,6 +259,15 @@ export function VersionHistoryPanel({
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete Version Dialog */}
+      <DeleteVersionDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        versionNumber={versionToDelete}
+        isCurrentVersion={versionToDelete === job.version}
+        onConfirm={handleConfirmDelete}
+      />
     </>
   );
 }
@@ -255,6 +325,16 @@ function VersionComparisonView({
   return (
     <ScrollArea className="max-h-[60vh]">
       <div className="space-y-4">
+        {/* Changelog Section */}
+        {toVersion.changelog && (
+          <div className="rounded-lg border border-accent/50 bg-accent/5 p-4">
+            <h4 className="font-semibold text-sm mb-2">What's Changed</h4>
+            <div className="text-sm text-muted-foreground prose prose-sm max-w-none whitespace-pre-wrap">
+              {toVersion.changelog}
+            </div>
+          </div>
+        )}
+
         {/* Change Reason */}
         {toVersion.changeReason && (
           <div className="rounded-lg border border-accent/50 bg-accent/5 p-4">
@@ -405,5 +485,49 @@ function VersionComparisonView({
           )}
       </div>
     </ScrollArea>
+  );
+}
+
+// Delete Version Confirmation Dialog Component
+function DeleteVersionDialog({
+  open,
+  onOpenChange,
+  versionNumber,
+  isCurrentVersion,
+  onConfirm,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  versionNumber: number | null;
+  isCurrentVersion: boolean;
+  onConfirm: () => void;
+}) {
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Version {versionNumber}?</AlertDialogTitle>
+          <AlertDialogDescription>
+            {isCurrentVersion ? (
+              <>
+                Are you sure you want to delete the current version {versionNumber}? This action cannot be undone.
+                The most recent version from history will become the new current version.
+              </>
+            ) : (
+              <>
+                Are you sure you want to delete version {versionNumber}? This action cannot be undone.
+                The version will be permanently removed from history.
+              </>
+            )}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm} className="bg-destructive hover:bg-destructive/90">
+            Delete Version
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

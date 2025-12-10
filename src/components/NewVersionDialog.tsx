@@ -14,6 +14,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { Job, ReferenceFile } from "@/lib/types";
 import { processFiles, processFolderFiles } from "@/lib/file-utils";
+import { toast } from "sonner";
 // Use deep imports for better tree-shaking
 import { FolderOpen } from "@phosphor-icons/react/dist/csr/FolderOpen";
 import { File } from "@phosphor-icons/react/dist/csr/File";
@@ -108,16 +109,12 @@ export function NewVersionDialog({
       version: currentJob.version,
       createdAt: currentJob.updatedAt,
       description: currentJob.description,
-      // Combine both fields explicitly for clarity in version history
-      changeReason: changeReason.trim() 
-        ? (additionalDetails.trim() 
-            ? `${changeReason.trim()} - ${additionalDetails.trim()}` 
-            : changeReason.trim())
-        : additionalDetails.trim(),
       status: currentJob.status,
       referenceFolders: currentJob.referenceFolders,
       referenceFiles: currentJob.referenceFiles,
       outputs: currentJob.outputs,
+      changeReason: currentJob.changeReason,
+      changelog: currentJob.changelog,
     };
 
     // Initialize version history if it doesn't exist and add the current version
@@ -126,12 +123,18 @@ export function NewVersionDialog({
       currentVersionSnapshot,
     ];
 
-    const newVersion: Job = {
+    const newVersionJob: Job = {
       ...currentJob,
       version: currentJob.version + 1,
       description: additionalDetails
         ? `${currentJob.description}\n\n--- Version ${currentJob.version + 1} Updates ---\n${additionalDetails}`
         : currentJob.description,
+      // Set changeReason on the NEW version to describe what changed
+      changeReason: changeReason.trim() 
+        ? (additionalDetails.trim() 
+            ? `${changeReason.trim()} - ${additionalDetails.trim()}` 
+            : changeReason.trim())
+        : additionalDetails.trim(),
       referenceFolders: combinedReferenceFolders,
       referenceFiles: combinedReferenceFiles,
       updatedAt: new Date().toISOString(),
@@ -140,9 +143,11 @@ export function NewVersionDialog({
       versionHistory,
     };
 
-    onVersionCreated(newVersion);
+    // Don't generate changelog here - it will be generated after pipeline completes
+    onVersionCreated(newVersionJob);
     onOpenChange(false);
-
+    toast.success("New version created! Run the pipeline to generate outputs and changelog.");
+    
     setAdditionalDetails("");
     setChangeReason("");
     setSelectedPaths([]);
@@ -349,11 +354,14 @@ export function NewVersionDialog({
                 type="button"
                 variant="secondary"
                 onClick={() => onOpenChange(false)}
+                disabled={isLoading}
               >
                 Cancel
               </Button>
-              <Button type="submit">
-                Create Version {currentJob.version + 1}
+              <Button type="submit" disabled={isLoading}>
+                {isLoading 
+                  ? "Creating version..." 
+                  : `Create Version ${currentJob.version + 1}`}
               </Button>
             </DialogFooter>
           </div>

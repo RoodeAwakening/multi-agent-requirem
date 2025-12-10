@@ -1049,7 +1049,7 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemo
                           size="lg"
                           onClick={async () => {
                             try {
-                              const demoJob = createDemoJob();
+                              const demoJob = createDemoJob(false);
                               
                               // Notify parent component to add the job properly
                               if (onDemoCreated) {

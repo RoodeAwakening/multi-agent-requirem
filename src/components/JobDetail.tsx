@@ -7,6 +7,23 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 // Use deep imports for better tree-shaking
 import { Play } from "@phosphor-icons/react/dist/csr/Play";
 import { FolderOpen } from "@phosphor-icons/react/dist/csr/FolderOpen";
@@ -14,6 +31,8 @@ import { ArrowsClockwise } from "@phosphor-icons/react/dist/csr/ArrowsClockwise"
 import { FilePdf } from "@phosphor-icons/react/dist/csr/FilePdf";
 import { DownloadSimple } from "@phosphor-icons/react/dist/csr/DownloadSimple";
 import { Clock } from "@phosphor-icons/react/dist/csr/Clock";
+import { Trash } from "@phosphor-icons/react/dist/csr/Trash";
+import { GitDiff } from "@phosphor-icons/react/dist/csr/GitDiff";
 import { PipelineOrchestrator } from "@/lib/pipeline";
 import { OUTPUT_FILES } from "@/lib/constants";
 import { toast } from "sonner";
@@ -34,9 +53,10 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 interface JobDetailProps {
   job: Job;
   onJobUpdated: (job: Job) => void;
+  onJobDeleted: (jobId: string) => Promise<void>;
 }
 
-export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
+export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState<string>("");
@@ -47,6 +67,8 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
   const [viewingVersion, setViewingVersion] = useState<number>(job.version);
   const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
   const [isReferencesOpen, setIsReferencesOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isChangelogDialogOpen, setIsChangelogDialogOpen] = useState(false);
 
   // Reset viewing version when job changes
   useEffect(() => {
@@ -139,6 +161,30 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
     try {
       const updatedJob = await orchestrator.runFullPipeline();
       justCompletedRef.current = true; // Mark that we just completed to avoid race condition
+      
+      // Generate changelog after pipeline completes
+      if (updatedJob.versionHistory && updatedJob.versionHistory.length > 0) {
+        toast.info("Generating changelog...");
+        try {
+          const { generateChangelog } = await import("@/lib/changelog-agent");
+          
+          // Get the previous version (last item in history)
+          const previousVersion = updatedJob.versionHistory[updatedJob.versionHistory.length - 1];
+          
+          // Generate changelog comparing previous to current
+          const changelog = await generateChangelog(previousVersion, updatedJob);
+          
+          // Add changelog to the CURRENT version (not the previous one)
+          // The changelog describes what changed from previous version to current version
+          updatedJob.changelog = changelog;
+          
+          toast.success("Changelog generated!");
+        } catch (error) {
+          console.error("Error generating changelog:", error);
+          toast.warning("Pipeline completed but changelog generation failed");
+        }
+      }
+      
       onJobUpdated(updatedJob);
       toast.success("Pipeline completed successfully!");
     } catch (error) {
@@ -157,6 +203,63 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
     setViewingVersion(newVersionJob.version); // Switch to viewing the new version
     onJobUpdated(newVersionJob);
     toast.success(`Version ${newVersionJob.version} created successfully!`);
+  };
+
+  const handleVersionDelete = (versionNumber: number) => {
+    const isCurrentVersion = versionNumber === job.version;
+    
+    if (isCurrentVersion) {
+      // Deleting current version - promote the most recent version from history
+      if (!job.versionHistory || job.versionHistory.length === 0) {
+        toast.error("Cannot delete the only version");
+        return;
+      }
+      
+      // Find the most recent version in history (highest version number)
+      const sortedHistory = [...job.versionHistory].sort((a, b) => b.version - a.version);
+      const newCurrentVersion = sortedHistory[0];
+      
+      // Remove the new current version from history
+      const updatedHistory = job.versionHistory.filter(
+        (v) => v.version !== newCurrentVersion.version
+      );
+      
+      // Promote the most recent history version to current
+      const updatedJob: Job = {
+        ...job,
+        version: newCurrentVersion.version,
+        description: newCurrentVersion.description,
+        referenceFolders: newCurrentVersion.referenceFolders,
+        referenceFiles: newCurrentVersion.referenceFiles,
+        outputs: newCurrentVersion.outputs,
+        status: newCurrentVersion.status,
+        changeReason: newCurrentVersion.changeReason,
+        changelog: newCurrentVersion.changelog,
+        updatedAt: new Date().toISOString(),
+        versionHistory: updatedHistory,
+      };
+      
+      // Switch to viewing the new current version
+      setViewingVersion(newCurrentVersion.version);
+      onJobUpdated(updatedJob);
+    } else {
+      // Deleting a past version from history
+      const updatedHistory = (job.versionHistory || []).filter(
+        (v) => v.version !== versionNumber
+      );
+      
+      const updatedJob: Job = {
+        ...job,
+        versionHistory: updatedHistory,
+      };
+      
+      // If we're viewing the deleted version, switch back to current
+      if (viewingVersion === versionNumber) {
+        setViewingVersion(job.version);
+      }
+      
+      onJobUpdated(updatedJob);
+    }
   };
 
   const handleExportCurrentTab = () => {
@@ -189,6 +292,21 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
     }
   };
 
+  const handleDeleteClick = () => {
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      await onJobDeleted(job.id);
+      toast.success("Task deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete task");
+      console.error("Error deleting job:", error);
+    }
+    setIsDeleteDialogOpen(false);
+  };
+
   const outputContent = currentViewData.outputs[selectedOutput];
   const hasOutputs = Object.keys(currentViewData.outputs).length > 0;
   const hasVersionHistory = (job.versionHistory?.length || 0) > 0;
@@ -218,7 +336,25 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
               )}
             </div>
             <p className="text-muted-foreground">{currentViewData.description}</p>
+            
+            {/* Display changeReason for current version */}
+            {currentViewData.changeReason && viewingVersion === job.version && (
+              <div className="mt-3 p-3 bg-muted/50 rounded-md border border-border">
+                <p className="text-sm font-medium text-foreground">
+                  {currentViewData.changeReason}
+                </p>
+              </div>
+            )}
           </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleDeleteClick}
+            title="Delete task"
+            className="shrink-0"
+          >
+            <Trash size={20} className="text-destructive" />
+          </Button>
         </div>
 
         <div className="flex items-center gap-4 mb-4">
@@ -263,9 +399,24 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
                     job={job}
                     onVersionSelect={handleVersionSelect}
                     currentlyViewingVersion={viewingVersion}
+                    onVersionDelete={handleVersionDelete}
                   />
                 </SheetContent>
               </Sheet>
+            </>
+          )}
+          {currentViewData.changelog && viewingVersion === job.version && (
+            <>
+              <Separator orientation="vertical" className="h-4" />
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8"
+                onClick={() => setIsChangelogDialogOpen(true)}
+              >
+                <GitDiff size={16} className="mr-2" />
+                What's Changed
+              </Button>
             </>
           )}
         </div>
@@ -452,6 +603,43 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
         currentJob={job}
         onVersionCreated={handleVersionCreated}
       />
+
+      <Dialog open={isChangelogDialogOpen} onOpenChange={setIsChangelogDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <GitDiff size={20} weight="bold" />
+              What's Changed - Version {job.version}
+            </DialogTitle>
+            <DialogDescription>
+              Comparing changes from version {job.version - 1} to version {job.version}
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="h-[60vh] pr-4">
+            <div className="whitespace-pre-wrap text-sm">
+              {currentViewData.changelog || "No changelog available"}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Task?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{job.title}"? This action cannot be undone.
+              All version history and generated outputs will be permanently deleted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
