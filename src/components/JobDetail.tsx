@@ -8,6 +8,13 @@ import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -25,6 +32,7 @@ import { FilePdf } from "@phosphor-icons/react/dist/csr/FilePdf";
 import { DownloadSimple } from "@phosphor-icons/react/dist/csr/DownloadSimple";
 import { Clock } from "@phosphor-icons/react/dist/csr/Clock";
 import { Trash } from "@phosphor-icons/react/dist/csr/Trash";
+import { GitDiff } from "@phosphor-icons/react/dist/csr/GitDiff";
 import { PipelineOrchestrator } from "@/lib/pipeline";
 import { OUTPUT_FILES } from "@/lib/constants";
 import { toast } from "sonner";
@@ -60,6 +68,7 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
   const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
   const [isReferencesOpen, setIsReferencesOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isChangelogDialogOpen, setIsChangelogDialogOpen] = useState(false);
 
   // Reset viewing version when job changes
   useEffect(() => {
@@ -165,14 +174,10 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
           // Generate changelog comparing previous to current
           const changelog = await generateChangelog(previousVersion, updatedJob);
           
-          // Add changelog to the previous version's snapshot in history
-          const updatedVersionHistory = [...updatedJob.versionHistory];
-          updatedVersionHistory[updatedVersionHistory.length - 1] = {
-            ...previousVersion,
-            changelog,
-          };
+          // Add changelog to the CURRENT version (not the previous one)
+          // The changelog describes what changed from previous version to current version
+          updatedJob.changelog = changelog;
           
-          updatedJob.versionHistory = updatedVersionHistory;
           toast.success("Changelog generated!");
         } catch (error) {
           console.error("Error generating changelog:", error);
@@ -329,6 +334,42 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
               )}
             </div>
             <p className="text-muted-foreground">{currentViewData.description}</p>
+            
+            {/* Display changeReason for current version */}
+            {currentViewData.changeReason && viewingVersion === job.version && (
+              <div className="mt-3 p-3 bg-muted/50 rounded-md border border-border">
+                <p className="text-sm font-medium text-foreground">
+                  {currentViewData.changeReason}
+                </p>
+              </div>
+            )}
+            
+            {/* Display changelog for current version with modal option */}
+            {currentViewData.changelog && viewingVersion === job.version && (
+              <div className="mt-3 p-3 bg-accent/10 rounded-md border border-accent/30">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-semibold text-accent flex items-center gap-2">
+                    <GitDiff size={16} weight="bold" />
+                    What's Changed
+                  </h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsChangelogDialogOpen(true)}
+                    className="h-7 text-xs"
+                  >
+                    View Full Changelog
+                  </Button>
+                </div>
+                <div className="text-xs text-muted-foreground whitespace-pre-wrap max-h-20 overflow-hidden">
+                  {(() => {
+                    const lines = currentViewData.changelog.split('\n');
+                    const preview = lines.slice(0, 3).join('\n');
+                    return preview + (lines.length > 3 ? '\n...' : '');
+                  })()}
+                </div>
+              </div>
+            )}
           </div>
           <Button
             variant="ghost"
@@ -573,6 +614,25 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
         currentJob={job}
         onVersionCreated={handleVersionCreated}
       />
+
+      <Dialog open={isChangelogDialogOpen} onOpenChange={setIsChangelogDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <GitDiff size={20} weight="bold" />
+              What's Changed - Version {job.version}
+            </DialogTitle>
+            <DialogDescription>
+              Comparing changes from version {job.version - 1} to version {job.version}
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="h-[60vh] pr-4">
+            <div className="whitespace-pre-wrap text-sm">
+              {currentViewData.changelog || "No changelog available"}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>

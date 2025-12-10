@@ -35,6 +35,7 @@ export interface Job {
   id: string;
   title: string;
   description: string;
+  changeReason?: string; // Description of why this version was created
   referenceFolders: string[];
   referenceFiles?: ReferenceFile[];
   createdAt: string;
@@ -42,6 +43,7 @@ export interface Job {
   status: JobStatus;
   version: number;
   currentStep?: PipelineStepId;
+  changelog?: string; // AI-generated changelog describing what changed from previous version
   outputs: {
     [key: string]: string;
   };

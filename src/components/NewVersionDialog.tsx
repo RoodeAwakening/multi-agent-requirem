@@ -109,16 +109,11 @@ export function NewVersionDialog({
       version: currentJob.version,
       createdAt: currentJob.updatedAt,
       description: currentJob.description,
-      // Combine both fields explicitly for clarity in version history
-      changeReason: changeReason.trim() 
-        ? (additionalDetails.trim() 
-            ? `${changeReason.trim()} - ${additionalDetails.trim()}` 
-            : changeReason.trim())
-        : additionalDetails.trim(),
       status: currentJob.status,
       referenceFolders: currentJob.referenceFolders,
       referenceFiles: currentJob.referenceFiles,
       outputs: currentJob.outputs,
+      // Don't set changeReason here - it describes changes TO the new version, not from the old version
     };
 
     // Initialize version history if it doesn't exist and add the current version
@@ -133,6 +128,12 @@ export function NewVersionDialog({
       description: additionalDetails
         ? `${currentJob.description}\n\n--- Version ${currentJob.version + 1} Updates ---\n${additionalDetails}`
         : currentJob.description,
+      // Set changeReason on the NEW version to describe what changed
+      changeReason: changeReason.trim() 
+        ? (additionalDetails.trim() 
+            ? `${changeReason.trim()} - ${additionalDetails.trim()}` 
+            : changeReason.trim())
+        : additionalDetails.trim(),
       referenceFolders: combinedReferenceFolders,
       referenceFiles: combinedReferenceFiles,
       updatedAt: new Date().toISOString(),
