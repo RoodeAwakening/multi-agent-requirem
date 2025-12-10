@@ -14,7 +14,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { Job, ReferenceFile } from "@/lib/types";
 import { processFiles, processFolderFiles } from "@/lib/file-utils";
-import { generateChangelog } from "@/lib/changelog-agent";
 import { toast } from "sonner";
 // Use deep imports for better tree-shaking
 import { FolderOpen } from "@phosphor-icons/react/dist/csr/FolderOpen";
@@ -40,7 +39,6 @@ export function NewVersionDialog({
   const [referenceFiles, setReferenceFiles] = useState<ReferenceFile[]>([]);
   const [includeOldReferences, setIncludeOldReferences] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isGeneratingChangelog, setIsGeneratingChangelog] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
 
@@ -143,37 +141,16 @@ export function NewVersionDialog({
       versionHistory,
     };
 
-    // Generate changelog in the background
-    setIsGeneratingChangelog(true);
-    try {
-      const changelog = await generateChangelog(currentVersionSnapshot, newVersionJob);
-      
-      // Add changelog to the previous version's snapshot in history
-      const updatedVersionHistory = [...versionHistory];
-      updatedVersionHistory[updatedVersionHistory.length - 1] = {
-        ...currentVersionSnapshot,
-        changelog,
-      };
-      
-      newVersionJob.versionHistory = updatedVersionHistory;
-      
-      onVersionCreated(newVersionJob);
-      onOpenChange(false);
-      toast.success("Version created with changelog!");
-    } catch (error) {
-      console.error("Error generating changelog:", error);
-      // Still create the version even if changelog fails
-      onVersionCreated(newVersionJob);
-      onOpenChange(false);
-      toast.warning("Version created but changelog generation failed");
-    } finally {
-      setIsGeneratingChangelog(false);
-      setAdditionalDetails("");
-      setChangeReason("");
-      setSelectedPaths([]);
-      setReferenceFiles([]);
-      setIncludeOldReferences(false);
-    }
+    // Don't generate changelog here - it will be generated after pipeline completes
+    onVersionCreated(newVersionJob);
+    onOpenChange(false);
+    toast.success("New version created! Run the pipeline to generate outputs and changelog.");
+    
+    setAdditionalDetails("");
+    setChangeReason("");
+    setSelectedPaths([]);
+    setReferenceFiles([]);
+    setIncludeOldReferences(false);
   };
 
   return (
@@ -375,13 +352,13 @@ export function NewVersionDialog({
                 type="button"
                 variant="secondary"
                 onClick={() => onOpenChange(false)}
-                disabled={isGeneratingChangelog}
+                disabled={isLoading}
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isGeneratingChangelog}>
-                {isGeneratingChangelog 
-                  ? "Creating version & generating changelog..." 
+              <Button type="submit" disabled={isLoading}>
+                {isLoading 
+                  ? "Creating version..." 
                   : `Create Version ${currentJob.version + 1}`}
               </Button>
             </DialogFooter>

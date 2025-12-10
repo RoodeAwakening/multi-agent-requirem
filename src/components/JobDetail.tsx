@@ -152,6 +152,34 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
     try {
       const updatedJob = await orchestrator.runFullPipeline();
       justCompletedRef.current = true; // Mark that we just completed to avoid race condition
+      
+      // Generate changelog after pipeline completes
+      if (updatedJob.versionHistory && updatedJob.versionHistory.length > 0) {
+        toast.info("Generating changelog...");
+        try {
+          const { generateChangelog } = await import("@/lib/changelog-agent");
+          
+          // Get the previous version (last item in history)
+          const previousVersion = updatedJob.versionHistory[updatedJob.versionHistory.length - 1];
+          
+          // Generate changelog comparing previous to current
+          const changelog = await generateChangelog(previousVersion, updatedJob);
+          
+          // Add changelog to the previous version's snapshot in history
+          const updatedVersionHistory = [...updatedJob.versionHistory];
+          updatedVersionHistory[updatedVersionHistory.length - 1] = {
+            ...previousVersion,
+            changelog,
+          };
+          
+          updatedJob.versionHistory = updatedVersionHistory;
+          toast.success("Changelog generated!");
+        } catch (error) {
+          console.error("Error generating changelog:", error);
+          toast.warning("Pipeline completed but changelog generation failed");
+        }
+      }
+      
       onJobUpdated(updatedJob);
       toast.success("Pipeline completed successfully!");
     } catch (error) {
