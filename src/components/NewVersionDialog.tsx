@@ -113,7 +113,8 @@ export function NewVersionDialog({
       referenceFolders: currentJob.referenceFolders,
       referenceFiles: currentJob.referenceFiles,
       outputs: currentJob.outputs,
-      // Don't set changeReason here - it describes changes TO the new version, not from the old version
+      changeReason: currentJob.changeReason,
+      changelog: currentJob.changelog,
     };
 
     // Initialize version history if it doesn't exist and add the current version
