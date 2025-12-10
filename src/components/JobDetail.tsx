@@ -173,22 +173,58 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
   };
 
   const handleVersionDelete = (versionNumber: number) => {
-    // Filter out the deleted version from history
-    const updatedHistory = (job.versionHistory || []).filter(
-      (v) => v.version !== versionNumber
-    );
+    const isCurrentVersion = versionNumber === job.version;
     
-    const updatedJob: Job = {
-      ...job,
-      versionHistory: updatedHistory,
-    };
-    
-    // If we're viewing the deleted version, switch back to current
-    if (viewingVersion === versionNumber) {
-      setViewingVersion(job.version);
+    if (isCurrentVersion) {
+      // Deleting current version - promote the most recent version from history
+      if (!job.versionHistory || job.versionHistory.length === 0) {
+        toast.error("Cannot delete the only version");
+        return;
+      }
+      
+      // Find the most recent version in history (highest version number)
+      const sortedHistory = [...job.versionHistory].sort((a, b) => b.version - a.version);
+      const newCurrentVersion = sortedHistory[0];
+      
+      // Remove the new current version from history
+      const updatedHistory = job.versionHistory.filter(
+        (v) => v.version !== newCurrentVersion.version
+      );
+      
+      // Promote the most recent history version to current
+      const updatedJob: Job = {
+        ...job,
+        version: newCurrentVersion.version,
+        description: newCurrentVersion.description,
+        referenceFolders: newCurrentVersion.referenceFolders,
+        referenceFiles: newCurrentVersion.referenceFiles,
+        outputs: newCurrentVersion.outputs,
+        status: newCurrentVersion.status,
+        updatedAt: new Date().toISOString(),
+        versionHistory: updatedHistory,
+      };
+      
+      // Switch to viewing the new current version
+      setViewingVersion(newCurrentVersion.version);
+      onJobUpdated(updatedJob);
+    } else {
+      // Deleting a past version from history
+      const updatedHistory = (job.versionHistory || []).filter(
+        (v) => v.version !== versionNumber
+      );
+      
+      const updatedJob: Job = {
+        ...job,
+        versionHistory: updatedHistory,
+      };
+      
+      // If we're viewing the deleted version, switch back to current
+      if (viewingVersion === versionNumber) {
+        setViewingVersion(job.version);
+      }
+      
+      onJobUpdated(updatedJob);
     }
-    
-    onJobUpdated(updatedJob);
   };
 
   const handleExportCurrentTab = () => {

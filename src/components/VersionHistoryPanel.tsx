@@ -201,8 +201,8 @@ export function VersionHistoryPanel({
                         Compare
                       </Button>
                     )}
-                    {/* Only allow deleting non-current versions and only if there are more than 1 version */}
-                    {!isCurrentVersion && allVersions.length > 1 && onVersionDelete && (
+                    {/* Allow deleting any version if there are more than 1 version */}
+                    {allVersions.length > 1 && onVersionDelete && (
                       <Button
                         size="sm"
                         variant="ghost"
@@ -265,6 +265,7 @@ export function VersionHistoryPanel({
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         versionNumber={versionToDelete}
+        isCurrentVersion={versionToDelete === job.version}
         onConfirm={handleConfirmDelete}
       />
     </>
@@ -492,11 +493,13 @@ function DeleteVersionDialog({
   open,
   onOpenChange,
   versionNumber,
+  isCurrentVersion,
   onConfirm,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   versionNumber: number | null;
+  isCurrentVersion: boolean;
   onConfirm: () => void;
 }) {
   return (
@@ -505,8 +508,17 @@ function DeleteVersionDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Version {versionNumber}?</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete version {versionNumber}? This action cannot be undone.
-            The version will be permanently removed from history.
+            {isCurrentVersion ? (
+              <>
+                Are you sure you want to delete the current version {versionNumber}? This action cannot be undone.
+                The most recent version from history will become the new current version.
+              </>
+            ) : (
+              <>
+                Are you sure you want to delete version {versionNumber}? This action cannot be undone.
+                The version will be permanently removed from history.
+              </>
+            )}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
