@@ -130,8 +130,11 @@ export function VersionHistoryPanel({
                           What's Changed
                         </summary>
                         <div className="mt-2 pl-2 text-muted-foreground whitespace-pre-wrap">
-                          {version.changelog.split('\n').slice(0, 5).join('\n')}
-                          {version.changelog.split('\n').length > 5 && '...'}
+                          {(() => {
+                            const lines = version.changelog.split('\n');
+                            const preview = lines.slice(0, 5).join('\n');
+                            return preview + (lines.length > 5 ? '...' : '');
+                          })()}
                         </div>
                       </details>
                     </div>
@@ -275,10 +278,9 @@ function VersionComparisonView({
         {toVersion.changelog && (
           <div className="rounded-lg border border-accent/50 bg-accent/5 p-4">
             <h4 className="font-semibold text-sm mb-2">What's Changed</h4>
-            <div 
-              className="text-sm text-muted-foreground prose prose-sm max-w-none"
-              dangerouslySetInnerHTML={{ __html: toVersion.changelog.replace(/\n/g, '<br />') }}
-            />
+            <div className="text-sm text-muted-foreground prose prose-sm max-w-none whitespace-pre-wrap">
+              {toVersion.changelog}
+            </div>
           </div>
         )}
 

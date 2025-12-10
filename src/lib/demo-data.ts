@@ -559,7 +559,9 @@ Based on initial stakeholder feedback and market analysis, we're expanding the S
     createdAt: baseJob.createdAt,
     description: baseJob.description,
     changeReason: "Initial version",
-    changelog: "Initial version - no previous changes to compare.",
+    // No changelog for initial version - changelog appears when viewing this version
+    // to show what changed to get to the next version (v2)
+    changelog: v2Changelog,
     status: baseJob.status,
     referenceFolders: baseJob.referenceFolders,
     referenceFiles: baseJob.referenceFiles,
@@ -600,10 +602,7 @@ Based on initial stakeholder feedback and market analysis, we're expanding the S
     version: 2,
     description: v2Description,
     updatedAt: new Date(Date.now() + 86400000).toISOString(), // 1 day later
-    versionHistory: [{
-      ...version1Snapshot,
-      changelog: v2Changelog,
-    }],
+    versionHistory: [version1Snapshot],
   };
 }
 
