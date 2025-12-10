@@ -233,6 +233,8 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
         referenceFiles: newCurrentVersion.referenceFiles,
         outputs: newCurrentVersion.outputs,
         status: newCurrentVersion.status,
+        changeReason: newCurrentVersion.changeReason,
+        changelog: newCurrentVersion.changelog,
         updatedAt: new Date().toISOString(),
         versionHistory: updatedHistory,
       };
