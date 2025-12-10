@@ -162,12 +162,8 @@ export function VersionHistoryPanel({
                         <summary className="cursor-pointer text-accent hover:text-accent/80 font-medium">
                           What's Changed
                         </summary>
-                        <div className="mt-2 pl-2 text-muted-foreground whitespace-pre-wrap">
-                          {(() => {
-                            const lines = version.changelog.split('\n');
-                            const preview = lines.slice(0, 5).join('\n');
-                            return preview + (lines.length > 5 ? '...' : '');
-                          })()}
+                        <div className="mt-2 pl-2 text-muted-foreground whitespace-pre-wrap max-h-96 overflow-y-auto">
+                          {version.changelog}
                         </div>
                       </details>
                     </div>
