@@ -60,6 +60,8 @@ export function VersionHistoryPanel({
       referenceFolders: job.referenceFolders,
       referenceFiles: job.referenceFiles,
       outputs: job.outputs,
+      changeReason: job.changeReason,
+      changelog: job.changelog,
     },
   ];
 
