@@ -5,7 +5,9 @@
  * that describe what changed between versions of a task/job.
  */
 
-import { generateContent } from "./ai-client";
+import { callAI } from "./ai-client";
+import { getStoredValue } from "./storage";
+import { AISettings } from "./ai-client";
 import { Job, VersionSnapshot } from "./types";
 
 /**
@@ -26,7 +28,12 @@ export async function generateChangelog(
   const prompt = buildChangelogPrompt(previousVersion, currentVersion);
   
   try {
-    const changelog = await generateContent(prompt);
+    // Get the AI model from settings
+    const aiSettings = getStoredValue<AISettings>("ai-settings");
+    const model = aiSettings?.model || "gemini-2.5-flash";
+    const authMode = aiSettings?.geminiAuthMode;
+    
+    const changelog = await callAI(prompt, model, authMode);
     return changelog;
   } catch (error) {
     console.error("Error generating changelog:", error);
