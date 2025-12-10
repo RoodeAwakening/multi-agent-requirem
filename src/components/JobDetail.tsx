@@ -7,6 +7,16 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 // Use deep imports for better tree-shaking
 import { Play } from "@phosphor-icons/react/dist/csr/Play";
 import { FolderOpen } from "@phosphor-icons/react/dist/csr/FolderOpen";
@@ -14,6 +24,7 @@ import { ArrowsClockwise } from "@phosphor-icons/react/dist/csr/ArrowsClockwise"
 import { FilePdf } from "@phosphor-icons/react/dist/csr/FilePdf";
 import { DownloadSimple } from "@phosphor-icons/react/dist/csr/DownloadSimple";
 import { Clock } from "@phosphor-icons/react/dist/csr/Clock";
+import { Trash } from "@phosphor-icons/react/dist/csr/Trash";
 import { PipelineOrchestrator } from "@/lib/pipeline";
 import { OUTPUT_FILES } from "@/lib/constants";
 import { toast } from "sonner";
@@ -34,9 +45,10 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 interface JobDetailProps {
   job: Job;
   onJobUpdated: (job: Job) => void;
+  onJobDeleted: (jobId: string) => Promise<void>;
 }
 
-export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
+export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState<string>("");
@@ -47,6 +59,7 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
   const [viewingVersion, setViewingVersion] = useState<number>(job.version);
   const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
   const [isReferencesOpen, setIsReferencesOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   // Reset viewing version when job changes
   useEffect(() => {
@@ -189,6 +202,21 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
     }
   };
 
+  const handleDeleteClick = () => {
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      await onJobDeleted(job.id);
+      toast.success("Task deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete task");
+      console.error("Error deleting job:", error);
+    }
+    setIsDeleteDialogOpen(false);
+  };
+
   const outputContent = currentViewData.outputs[selectedOutput];
   const hasOutputs = Object.keys(currentViewData.outputs).length > 0;
   const hasVersionHistory = (job.versionHistory?.length || 0) > 0;
@@ -219,6 +247,15 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
             </div>
             <p className="text-muted-foreground">{currentViewData.description}</p>
           </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleDeleteClick}
+            title="Delete task"
+            className="shrink-0"
+          >
+            <Trash size={20} className="text-destructive" />
+          </Button>
         </div>
 
         <div className="flex items-center gap-4 mb-4">
@@ -452,6 +489,24 @@ export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
         currentJob={job}
         onVersionCreated={handleVersionCreated}
       />
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Task?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{job.title}"? This action cannot be undone.
+              All version history and generated outputs will be permanently deleted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

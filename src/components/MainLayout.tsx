@@ -30,7 +30,7 @@ export function MainLayout() {
   const [showReconnectDialog, setShowReconnectDialog] = useState(false);
   
   // Use the new jobs hook for hybrid storage
-  const { jobs, fileSystemError, addJob, updateJob, refreshJobs, setStorageMode, clearFileSystemError } = useJobs();
+  const { jobs, fileSystemError, addJob, updateJob, deleteJob, refreshJobs, setStorageMode, clearFileSystemError } = useJobs();
   
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [isNewJobDialogOpen, setIsNewJobDialogOpen] = useState(false);
@@ -57,6 +57,14 @@ export function MainLayout() {
 
   const handleJobUpdated = async (updatedJob: Job) => {
     await updateJob(updatedJob);
+  };
+  
+  const handleJobDeleted = async (jobId: string) => {
+    await deleteJob(jobId);
+    // If the deleted job was selected, clear selection
+    if (selectedJobId === jobId) {
+      setSelectedJobId(null);
+    }
   };
   
   const handleStorageSetupComplete = (mode: StorageMode) => {
@@ -125,6 +133,7 @@ export function MainLayout() {
             jobs={jobs}
             selectedJobId={selectedJobId}
             onSelectJob={setSelectedJobId}
+            onDeleteJob={handleJobDeleted}
           />
         </div>
 
@@ -142,7 +151,7 @@ export function MainLayout() {
 
       <main className="flex-1 overflow-auto">
         {selectedJob ? (
-          <JobDetail job={selectedJob} onJobUpdated={handleJobUpdated} />
+          <JobDetail job={selectedJob} onJobUpdated={handleJobUpdated} onJobDeleted={handleJobDeleted} />
         ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">

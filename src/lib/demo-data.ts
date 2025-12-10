@@ -554,20 +554,6 @@ Based on initial stakeholder feedback and market analysis, we're expanding the S
 - Faster load times (target < 1.5s for cart page)
 - Better accessibility for screen readers`;
 
-  const version1Snapshot = {
-    version: 1,
-    createdAt: baseJob.createdAt,
-    description: baseJob.description,
-    changeReason: "Initial version",
-    // No changelog for initial version - changelog appears when viewing this version
-    // to show what changed to get to the next version (v2)
-    changelog: v2Changelog,
-    status: baseJob.status,
-    referenceFolders: baseJob.referenceFolders,
-    referenceFiles: baseJob.referenceFiles,
-    outputs: baseJob.outputs,
-  };
-
   const v2Changelog = `## Version 2 - Enhanced Features & Performance
 
 ### Requirements Changes
@@ -596,6 +582,20 @@ Based on initial stakeholder feedback and market analysis, we're expanding the S
 - Expected to increase conversion rates by additional 5-10%
 - Loyalty program integration targets 30% enrollment increase
 - Social proof expected to reduce purchase hesitation by 15%`;
+
+  const version1Snapshot = {
+    version: 1,
+    createdAt: baseJob.createdAt,
+    description: baseJob.description,
+    changeReason: "Initial version",
+    // No changelog for initial version - changelog appears when viewing this version
+    // to show what changed to get to the next version (v2)
+    changelog: v2Changelog,
+    status: baseJob.status,
+    referenceFolders: baseJob.referenceFolders,
+    referenceFiles: baseJob.referenceFiles,
+    outputs: baseJob.outputs,
+  };
 
   return {
     ...baseJob,
