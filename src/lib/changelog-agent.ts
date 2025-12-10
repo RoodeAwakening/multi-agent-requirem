@@ -54,7 +54,6 @@ function buildChangelogPrompt(
   currentVersion: Job | VersionSnapshot
 ): string {
   // Extract changes in requirements/description
-  const descriptionChanged = previousVersion.description !== currentVersion.description;
   
   // Extract changes in reference materials
   const oldRefs = new Set(previousVersion.referenceFolders);
