@@ -82,86 +82,177 @@ function buildChangelogPrompt(
     productOwner: prevOutputs[keyOutputs.productOwner] !== currOutputs[keyOutputs.productOwner],
   };
   
-  // Get summaries of outputs for comparison (first 500 chars to keep prompt manageable)
-  const getPrevSummary = (key: string) => (prevOutputs[key] || "Not available").slice(0, 500);
-  const getCurrSummary = (key: string) => (currOutputs[key] || "Not available").slice(0, 500);
+  // Get fuller content for comparison (up to 2000 chars to allow more detailed analysis)
+  const getPrevContent = (key: string) => (prevOutputs[key] || "Not available").slice(0, 2000);
+  const getCurrContent = (key: string) => (currOutputs[key] || "Not available").slice(0, 2000);
 
   // Build prompt
-  return `You are a technical writer creating release notes/changelog for a software requirements analysis.
+  return `You are a Technical Documentation Specialist analyzing changes between two versions of a requirements analysis project.
 
-**Task:** Generate a concise, professional changelog that describes what changed from version ${previousVersion.version} to version ${currentVersion.version} by comparing the agent outputs.
+**Task:** Generate a comprehensive, detailed changelog documenting all significant changes from version ${previousVersion.version} to version ${currentVersion.version}.
 
-**Previous Version (v${previousVersion.version}):**
+**Context:**
+
+Previous Version (v${previousVersion.version}):
 Description: ${previousVersion.description}
 ${previousVersion.changeReason ? `Change Reason: ${previousVersion.changeReason}` : ""}
 
-**Current Version (v${currentVersion.version}):**
+Current Version (v${currentVersion.version}):
 Description: ${currentVersion.description}
 ${"changeReason" in currentVersion && currentVersion.changeReason ? `Change Reason: ${currentVersion.changeReason}` : ""}
 
-**Agent Output Changes:**
+**Agent Output Analysis:**
 
-**Tech Lead Analysis:** ${outputChanges.techLead ? "CHANGED" : "No changes"}
+**Tech Lead Analysis:** ${outputChanges.techLead ? "CHANGED" : "No significant changes"}
 ${outputChanges.techLead ? `
-Previous (excerpt): ${getPrevSummary(keyOutputs.techLead)}
-Current (excerpt): ${getCurrSummary(keyOutputs.techLead)}
+--- Previous Version (v${previousVersion.version}) ---
+${getPrevContent(keyOutputs.techLead)}
+
+--- Current Version (v${currentVersion.version}) ---
+${getCurrContent(keyOutputs.techLead)}
 ` : ""}
 
-**Business Analyst Analysis:** ${outputChanges.businessAnalyst ? "CHANGED" : "No changes"}
+**Business Analyst Analysis:** ${outputChanges.businessAnalyst ? "CHANGED" : "No significant changes"}
 ${outputChanges.businessAnalyst ? `
-Previous (excerpt): ${getPrevSummary(keyOutputs.businessAnalyst)}
-Current (excerpt): ${getCurrSummary(keyOutputs.businessAnalyst)}
+--- Previous Version (v${previousVersion.version}) ---
+${getPrevContent(keyOutputs.businessAnalyst)}
+
+--- Current Version (v${currentVersion.version}) ---
+${getCurrContent(keyOutputs.businessAnalyst)}
 ` : ""}
 
-**Requirements Specification:** ${outputChanges.requirements ? "CHANGED" : "No changes"}
+**Requirements Specification:** ${outputChanges.requirements ? "CHANGED" : "No significant changes"}
 ${outputChanges.requirements ? `
-Previous (excerpt): ${getPrevSummary(keyOutputs.requirements)}
-Current (excerpt): ${getCurrSummary(keyOutputs.requirements)}
+--- Previous Version (v${previousVersion.version}) ---
+${getPrevContent(keyOutputs.requirements)}
+
+--- Current Version (v${currentVersion.version}) ---
+${getCurrContent(keyOutputs.requirements)}
 ` : ""}
 
-**Product Owner Backlog:** ${outputChanges.productOwner ? "CHANGED" : "No changes"}
+**Product Owner Backlog:** ${outputChanges.productOwner ? "CHANGED" : "No significant changes"}
 ${outputChanges.productOwner ? `
-Previous (excerpt): ${getPrevSummary(keyOutputs.productOwner)}
-Current (excerpt): ${getCurrSummary(keyOutputs.productOwner)}
+--- Previous Version (v${previousVersion.version}) ---
+${getPrevContent(keyOutputs.productOwner)}
+
+--- Current Version (v${currentVersion.version}) ---
+${getCurrContent(keyOutputs.productOwner)}
 ` : ""}
 
 **Reference Materials Changes:**
 - Added Folders: ${addedRefs.length > 0 ? addedRefs.join(", ") : "None"}
 - Removed Folders: ${removedRefs.length > 0 ? removedRefs.join(", ") : "None"}
 
+**Required Output Structure:**
+
+Generate a detailed changelog document following this structure:
+
+# Version ${currentVersion.version} Changelog
+
+## Overview
+Provide a 2-3 sentence executive summary of what changed in this version and why.
+
+## Tech Lead Changes
+
+### Architecture & Technical Approach
+- Detail specific changes to architecture, design patterns, or technical approach
+- Include new technologies, frameworks, or tools introduced
+- Note any deprecated or removed technical components
+
+### Technical Risks & Dependencies
+- List new risks identified
+- Note changes to existing risk assessments
+- Document new or changed dependencies
+
+### Implementation Considerations
+- Detail changes to implementation strategy
+- Note new technical requirements or constraints
+- List updated best practices or guidelines
+
+## Business Analyst Changes
+
+### Business Context & Objectives
+- Describe changes to business problem understanding
+- Note shifts in business objectives or priorities
+- Document new stakeholder insights
+
+### Requirements Evolution
+- Detail new functional requirements added
+- Note requirements that were modified or clarified
+- List any requirements that were removed or deprioritized
+
+### Success Metrics & KPIs
+- Document new or changed success metrics
+- Note updates to measurement approaches
+- List any new business constraints
+
+## Requirements Specification Changes
+
+### Functional Requirements
+- List specific new functional requirements
+- Detail modifications to existing requirements
+- Note acceptance criteria changes
+- Include priority shifts
+
+### Non-Functional Requirements
+- Document performance requirement changes
+- Note security or compliance updates
+- List scalability or reliability changes
+
+### Technical Specifications
+- Detail API or interface changes
+- Note data model or schema updates
+- List integration requirement changes
+
+## Product Owner Changes
+
+### User Stories & Epics
+- List new user stories added
+- Detail modifications to existing stories
+- Note story prioritization changes
+- Include acceptance criteria updates
+
+### Backlog Organization
+- Document backlog restructuring
+- Note sprint planning impacts
+- List dependency changes between stories
+
+### Stakeholder Feedback Integration
+- Detail how user feedback was incorporated
+- Note usability or UX improvements
+- List stakeholder-requested features
+
+## Reference Materials Updates
+${addedRefs.length > 0 || removedRefs.length > 0 ? `
+### Added Materials
+${addedRefs.map(ref => `- ${ref}`).join('\n') || '- None'}
+
+### Removed Materials
+${removedRefs.map(ref => `- ${ref}`).join('\n') || '- None'}
+` : '- No changes to reference materials'}
+
+## Impact Summary
+
+### High Impact Changes
+List the 3-5 most significant changes and their implications.
+
+### Migration Considerations
+Note any breaking changes or migration steps needed.
+
+### Next Steps
+Suggest recommended actions or follow-ups based on the changes.
+
+---
+
 **Instructions:**
-1. Create a changelog in markdown format with clear sections for each agent
-2. For each agent that changed, summarize the KEY differences and their impact
-3. Use bullet points for clarity
-4. Organize into sections: "Tech Lead Changes", "Business Analyst Changes", "Requirements Changes", "Product Owner Changes"
-5. Keep each section concise (2-4 bullet points per agent)
-6. Focus on WHAT changed and WHY it matters
-7. If an agent's output didn't change, briefly note "No significant changes"
+1. Be comprehensive - include ALL significant changes, not just highlights
+2. Be specific - use concrete examples and details from the agent outputs
+3. Be clear - use plain language and avoid jargon where possible
+4. Be structured - follow the exact section headings provided above
+5. If a section has no changes, state "No significant changes in this area" 
+6. Focus on WHAT changed and WHY it matters to the project
 
-**Format Example:**
-## Version ${currentVersion.version} - [Brief Title]
-
-### Tech Lead Changes
-- Updated architecture to include [specific change]
-- Added technical consideration for [feature]
-- Refined performance requirements
-
-### Business Analyst Changes
-- Expanded business case for [feature]
-- Added new success metrics
-- No significant changes (if applicable)
-
-### Requirements Changes  
-- Added detailed specification for [feature]
-- Updated acceptance criteria
-- Clarified edge cases
-
-### Product Owner Changes
-- New user stories for [feature]
-- Reprioritized backlog based on feedback
-- Added acceptance criteria for [story]
-
-Generate the changelog now:`;
+Generate the complete detailed changelog now:`;
 }
 
 /**

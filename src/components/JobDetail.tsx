@@ -343,33 +343,6 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
                 </p>
               </div>
             )}
-            
-            {/* Display changelog for current version with modal option */}
-            {currentViewData.changelog && viewingVersion === job.version && (
-              <div className="mt-3 p-3 bg-accent/10 rounded-md border border-accent/30">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-semibold text-accent flex items-center gap-2">
-                    <GitDiff size={16} weight="bold" />
-                    What's Changed
-                  </h3>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsChangelogDialogOpen(true)}
-                    className="h-7 text-xs"
-                  >
-                    View Full Changelog
-                  </Button>
-                </div>
-                <div className="text-xs text-muted-foreground whitespace-pre-wrap max-h-20 overflow-hidden">
-                  {(() => {
-                    const lines = currentViewData.changelog.split('\n');
-                    const preview = lines.slice(0, 3).join('\n');
-                    return preview + (lines.length > 3 ? '\n...' : '');
-                  })()}
-                </div>
-              </div>
-            )}
           </div>
           <Button
             variant="ghost"
@@ -428,6 +401,20 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
                   />
                 </SheetContent>
               </Sheet>
+            </>
+          )}
+          {currentViewData.changelog && viewingVersion === job.version && (
+            <>
+              <Separator orientation="vertical" className="h-4" />
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8"
+                onClick={() => setIsChangelogDialogOpen(true)}
+              >
+                <GitDiff size={16} className="mr-2" />
+                What's Changed
+              </Button>
             </>
           )}
         </div>

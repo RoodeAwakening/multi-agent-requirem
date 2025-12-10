@@ -145,9 +145,10 @@ export function VersionHistoryPanel({
                     </span>
                   </div>
 
+                  {/* Show changeReason as the main title if available */}
                   {version.changeReason && (
                     <div className="mb-2">
-                      <p className="text-sm font-medium text-foreground">
+                      <p className="text-sm font-bold text-foreground">
                         {version.changeReason}
                       </p>
                     </div>
@@ -170,6 +171,7 @@ export function VersionHistoryPanel({
                     </div>
                   )}
 
+                  {/* Show description as secondary text, truncated */}
                   <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
                     {version.description}
                   </p>
