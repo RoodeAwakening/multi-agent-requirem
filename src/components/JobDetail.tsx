@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { Job } from "@/lib/types";
+import { Job, PipelineStepId } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -49,6 +49,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { getStatusMessages, StatusMessage } from "@/lib/status-messages";
 
 interface JobDetailProps {
   job: Job;
@@ -60,6 +61,7 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState<string>("");
+  const [currentStatusMessage, setCurrentStatusMessage] = useState<StatusMessage>({ text: "", type: "serious" });
   const [selectedOutput, setSelectedOutput] = useState<string>(
     OUTPUT_FILES[0].filename
   );
@@ -105,6 +107,28 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
       toast.info("Pipeline status was reset. Please run again if needed.");
     }
   }, [job.status, isRunning, onJobUpdated]); // Check on status/state changes
+
+  // Rotate status messages while running
+  useEffect(() => {
+    if (!isRunning || !currentStep) {
+      setCurrentStatusMessage({ text: "", type: "serious" });
+      return;
+    }
+
+    const messages = getStatusMessages(currentStep as PipelineStepId);
+    let messageIndex = 0;
+
+    // Set initial message immediately
+    setCurrentStatusMessage(messages[messageIndex]);
+
+    // Rotate messages every 3 seconds
+    const intervalId = setInterval(() => {
+      messageIndex = (messageIndex + 1) % messages.length;
+      setCurrentStatusMessage(messages[messageIndex]);
+    }, 3000);
+
+    return () => clearInterval(intervalId);
+  }, [currentStep, isRunning]);
 
   // Get the data for the currently viewing version
   const currentViewData = useMemo(() => {
@@ -506,7 +530,7 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
           {isRunning && (
             <div className="flex-1">
               <div className="text-sm text-muted-foreground mb-1">
-                {currentStep && `Processing: ${currentStep}`}
+                {currentStatusMessage.text || `Processing: ${currentStep}`}
               </div>
               <Progress value={progress} className="h-2" />
             </div>
