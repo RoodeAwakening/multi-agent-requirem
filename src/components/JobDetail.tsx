@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { Job } from "@/lib/types";
+import { Job, PipelineStepId } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -34,7 +34,7 @@ import { Clock } from "@phosphor-icons/react/dist/csr/Clock";
 import { Trash } from "@phosphor-icons/react/dist/csr/Trash";
 import { GitDiff } from "@phosphor-icons/react/dist/csr/GitDiff";
 import { PipelineOrchestrator } from "@/lib/pipeline";
-import { OUTPUT_FILES } from "@/lib/constants";
+import { OUTPUT_FILES, PIPELINE_STEPS } from "@/lib/constants";
 import { toast } from "sonner";
 import { marked } from "marked";
 import { NewVersionDialog } from "./NewVersionDialog";
@@ -49,6 +49,24 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { getStatusMessages, StatusMessage } from "@/lib/status-messages";
+
+// Regex to match markdown code fences - moved outside function for performance
+const MARKDOWN_CODE_FENCE_REGEX = /^```(?:markdown|md)?\s*([\s\S]*?)\s*```\s*$/;
+
+// Helper function to strip markdown code fences if present
+// This handles cases where AI returns content wrapped in ```markdown ... ```
+function stripMarkdownCodeFence(content: string): string {
+  if (!content) return content;
+  
+  const match = content.match(MARKDOWN_CODE_FENCE_REGEX);
+  
+  if (match) {
+    return match[1]; // Return the content inside the code fence
+  }
+  
+  return content; // Return as-is if no code fence
+}
 
 interface JobDetailProps {
   job: Job;
@@ -60,6 +78,7 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState<string>("");
+  const [currentStatusMessage, setCurrentStatusMessage] = useState<StatusMessage>({ text: "", type: "serious" });
   const [selectedOutput, setSelectedOutput] = useState<string>(
     OUTPUT_FILES[0].filename
   );
@@ -105,6 +124,28 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
       toast.info("Pipeline status was reset. Please run again if needed.");
     }
   }, [job.status, isRunning, onJobUpdated]); // Check on status/state changes
+
+  // Rotate status messages while running
+  useEffect(() => {
+    if (!isRunning || !currentStep) {
+      setCurrentStatusMessage({ text: "", type: "serious" });
+      return;
+    }
+
+    const messages = getStatusMessages(currentStep as PipelineStepId);
+    let messageIndex = 0;
+
+    // Set initial message immediately
+    setCurrentStatusMessage(messages[messageIndex]);
+
+    // Rotate messages every 4 seconds
+    const intervalId = setInterval(() => {
+      messageIndex = (messageIndex + 1) % messages.length;
+      setCurrentStatusMessage(messages[messageIndex]);
+    }, 4000);
+
+    return () => clearInterval(intervalId);
+  }, [currentStep, isRunning]);
 
   // Get the data for the currently viewing version
   const currentViewData = useMemo(() => {
@@ -314,12 +355,24 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
   const renderedMarkdown = useMemo(() => {
     if (!outputContent) return "";
     try {
-      return marked.parse(outputContent, { async: false }) as string;
+      const cleanContent = stripMarkdownCodeFence(outputContent);
+      return marked.parse(cleanContent, { async: false }) as string;
     } catch (error) {
       console.error("Error parsing markdown:", error);
       return outputContent;
     }
   }, [outputContent]);
+
+  const renderedChangelog = useMemo(() => {
+    if (!currentViewData.changelog) return "";
+    try {
+      const cleanContent = stripMarkdownCodeFence(currentViewData.changelog);
+      return marked.parse(cleanContent, { async: false }) as string;
+    } catch (error) {
+      console.error("Error parsing changelog markdown:", error);
+      return currentViewData.changelog;
+    }
+  }, [currentViewData.changelog]);
 
   return (
     <div className="h-full flex flex-col">
@@ -505,8 +558,13 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
 
           {isRunning && (
             <div className="flex-1">
-              <div className="text-sm text-muted-foreground mb-1">
-                {currentStep && `Processing: ${currentStep}`}
+              <div className="text-sm mb-1">
+                <span className="font-semibold text-foreground">
+                  {PIPELINE_STEPS.find(s => s.id === currentStep)?.name || currentStep}
+                </span>
+                <span className="text-muted-foreground ml-2">
+                  {currentStatusMessage.text || `Processing...`}
+                </span>
               </div>
               <Progress value={progress} className="h-2" />
             </div>
@@ -554,18 +612,31 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
               )}
             </div>
 
-            <div className="flex-1 overflow-auto">{OUTPUT_FILES.map((file) => (
+            <div className="flex-1 overflow-auto">{OUTPUT_FILES.map((file) => {
+                const tabOutputContent = currentViewData.outputs[file.filename];
+                let tabRenderedMarkdown = "";
+                if (tabOutputContent) {
+                  try {
+                    const cleanContent = stripMarkdownCodeFence(tabOutputContent);
+                    tabRenderedMarkdown = marked.parse(cleanContent, { async: false }) as string;
+                  } catch (error) {
+                    console.error("Error parsing markdown:", error);
+                    tabRenderedMarkdown = tabOutputContent;
+                  }
+                }
+                
+                return (
                 <TabsContent
                   key={file.filename}
                   value={file.filename}
                   className="h-full m-0 p-6"
                 >
                   <ScrollArea className="h-full">
-                    {outputContent ? (
+                    {tabOutputContent ? (
                       <div
                         className="markdown-content prose max-w-none"
                         dangerouslySetInnerHTML={{
-                          __html: renderedMarkdown,
+                          __html: tabRenderedMarkdown,
                         }}
                       />
                     ) : (
@@ -578,7 +649,8 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
                     )}
                   </ScrollArea>
                 </TabsContent>
-              ))}
+              );
+            })}
             </div>
           </Tabs>
         ) : (
@@ -616,9 +688,18 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
             </DialogDescription>
           </DialogHeader>
           <ScrollArea className="h-[60vh] pr-4">
-            <div className="whitespace-pre-wrap text-sm">
-              {currentViewData.changelog || "No changelog available"}
-            </div>
+            {renderedChangelog ? (
+              <div
+                className="markdown-content prose max-w-none text-sm"
+                dangerouslySetInnerHTML={{
+                  __html: renderedChangelog,
+                }}
+              />
+            ) : (
+              <div className="text-sm text-muted-foreground">
+                No changelog available
+              </div>
+            )}
           </ScrollArea>
         </DialogContent>
       </Dialog>
