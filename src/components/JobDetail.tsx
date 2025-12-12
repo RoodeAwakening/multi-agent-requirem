@@ -34,7 +34,7 @@ import { Clock } from "@phosphor-icons/react/dist/csr/Clock";
 import { Trash } from "@phosphor-icons/react/dist/csr/Trash";
 import { GitDiff } from "@phosphor-icons/react/dist/csr/GitDiff";
 import { PipelineOrchestrator } from "@/lib/pipeline";
-import { OUTPUT_FILES } from "@/lib/constants";
+import { OUTPUT_FILES, PIPELINE_STEPS } from "@/lib/constants";
 import { toast } from "sonner";
 import { marked } from "marked";
 import { NewVersionDialog } from "./NewVersionDialog";
@@ -121,11 +121,11 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
     // Set initial message immediately
     setCurrentStatusMessage(messages[messageIndex]);
 
-    // Rotate messages every 3 seconds
+    // Rotate messages every 5 seconds
     const intervalId = setInterval(() => {
       messageIndex = (messageIndex + 1) % messages.length;
       setCurrentStatusMessage(messages[messageIndex]);
-    }, 3000);
+    }, 5000);
 
     return () => clearInterval(intervalId);
   }, [currentStep, isRunning]);
@@ -529,8 +529,13 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
 
           {isRunning && (
             <div className="flex-1">
-              <div className="text-sm text-muted-foreground mb-1">
-                {currentStatusMessage.text || `Processing: ${currentStep}`}
+              <div className="text-sm mb-1">
+                <span className="font-semibold text-foreground">
+                  {PIPELINE_STEPS.find(s => s.id === currentStep)?.name || currentStep}
+                </span>
+                <span className="text-muted-foreground ml-2">
+                  {currentStatusMessage.text || `Processing...`}
+                </span>
               </div>
               <Progress value={progress} className="h-2" />
             </div>
