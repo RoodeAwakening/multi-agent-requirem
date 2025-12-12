@@ -339,8 +339,8 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
             </div>
             <p className="text-muted-foreground">{currentViewData.description}</p>
             
-            {/* Display changeReason for current version */}
-            {currentViewData.changeReason && viewingVersion === job.version && (
+            {/* Display changeReason for any version that has it */}
+            {currentViewData.changeReason && (
               <div className="mt-3 p-3 bg-muted/50 rounded-md border border-border">
                 <p className="text-sm font-medium text-foreground">
                   {currentViewData.changeReason}
