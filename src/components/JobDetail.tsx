@@ -593,18 +593,30 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
               )}
             </div>
 
-            <div className="flex-1 overflow-auto">{OUTPUT_FILES.map((file) => (
+            <div className="flex-1 overflow-auto">{OUTPUT_FILES.map((file) => {
+                const tabOutputContent = currentViewData.outputs[file.filename];
+                let tabRenderedMarkdown = "";
+                if (tabOutputContent) {
+                  try {
+                    tabRenderedMarkdown = marked.parse(tabOutputContent, { async: false }) as string;
+                  } catch (error) {
+                    console.error("Error parsing markdown:", error);
+                    tabRenderedMarkdown = tabOutputContent;
+                  }
+                }
+                
+                return (
                 <TabsContent
                   key={file.filename}
                   value={file.filename}
                   className="h-full m-0 p-6"
                 >
                   <ScrollArea className="h-full">
-                    {outputContent ? (
+                    {tabOutputContent ? (
                       <div
                         className="markdown-content prose max-w-none"
                         dangerouslySetInnerHTML={{
-                          __html: renderedMarkdown,
+                          __html: tabRenderedMarkdown,
                         }}
                       />
                     ) : (
@@ -617,7 +629,8 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
                     )}
                   </ScrollArea>
                 </TabsContent>
-              ))}
+              );
+            })}
             </div>
           </Tabs>
         ) : (
