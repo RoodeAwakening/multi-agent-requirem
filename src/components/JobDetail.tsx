@@ -121,11 +121,11 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
     // Set initial message immediately
     setCurrentStatusMessage(messages[messageIndex]);
 
-    // Rotate messages every 5 seconds
+    // Rotate messages every 4 seconds
     const intervalId = setInterval(() => {
       messageIndex = (messageIndex + 1) % messages.length;
       setCurrentStatusMessage(messages[messageIndex]);
-    }, 5000);
+    }, 4000);
 
     return () => clearInterval(intervalId);
   }, [currentStep, isRunning]);
@@ -344,6 +344,16 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
       return outputContent;
     }
   }, [outputContent]);
+
+  const renderedChangelog = useMemo(() => {
+    if (!currentViewData.changelog) return "";
+    try {
+      return marked.parse(currentViewData.changelog, { async: false }) as string;
+    } catch (error) {
+      console.error("Error parsing changelog markdown:", error);
+      return currentViewData.changelog;
+    }
+  }, [currentViewData.changelog]);
 
   return (
     <div className="h-full flex flex-col">
@@ -645,9 +655,18 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
             </DialogDescription>
           </DialogHeader>
           <ScrollArea className="h-[60vh] pr-4">
-            <div className="whitespace-pre-wrap text-sm">
-              {currentViewData.changelog || "No changelog available"}
-            </div>
+            {renderedChangelog ? (
+              <div
+                className="markdown-content prose max-w-none text-sm"
+                dangerouslySetInnerHTML={{
+                  __html: renderedChangelog,
+                }}
+              />
+            ) : (
+              <div className="text-sm text-muted-foreground">
+                No changelog available
+              </div>
+            )}
           </ScrollArea>
         </DialogContent>
       </Dialog>
