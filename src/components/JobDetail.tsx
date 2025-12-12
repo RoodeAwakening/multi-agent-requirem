@@ -127,6 +127,8 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
         referenceFiles: historicalVersion.referenceFiles,
         outputs: historicalVersion.outputs,
         updatedAt: historicalVersion.createdAt,
+        changeReason: historicalVersion.changeReason,
+        changelog: historicalVersion.changelog,
       } as Job;
     }
     
@@ -405,7 +407,7 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
               </Sheet>
             </>
           )}
-          {currentViewData.changelog && viewingVersion === job.version && (
+          {currentViewData.changelog && (
             <>
               <Separator orientation="vertical" className="h-4" />
               <Button 
@@ -609,10 +611,10 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <GitDiff size={20} weight="bold" />
-              What's Changed - Version {job.version}
+              What's Changed - Version {currentViewData.version}
             </DialogTitle>
             <DialogDescription>
-              Comparing changes from version {job.version - 1} to version {job.version}
+              Comparing changes from version {currentViewData.version - 1} to version {currentViewData.version}
             </DialogDescription>
           </DialogHeader>
           <ScrollArea className="h-[60vh] pr-4">
