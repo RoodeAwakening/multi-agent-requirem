@@ -51,14 +51,15 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { getStatusMessages, StatusMessage } from "@/lib/status-messages";
 
+// Regex to match markdown code fences - moved outside function for performance
+const MARKDOWN_CODE_FENCE_REGEX = /^```(?:markdown|md)?\s*([\s\S]*?)\s*```\s*$/;
+
 // Helper function to strip markdown code fences if present
 // This handles cases where AI returns content wrapped in ```markdown ... ```
 function stripMarkdownCodeFence(content: string): string {
   if (!content) return content;
   
-  // Check if content starts with a markdown code fence (```markdown or ```md or just ```)
-  const markdownFenceRegex = /^```(?:markdown|md)?\s*\n([\s\S]*?)\n```\s*$/;
-  const match = content.match(markdownFenceRegex);
+  const match = content.match(MARKDOWN_CODE_FENCE_REGEX);
   
   if (match) {
     return match[1]; // Return the content inside the code fence
