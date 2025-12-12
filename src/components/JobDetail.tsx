@@ -614,7 +614,9 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
               What's Changed - Version {currentViewData.version}
             </DialogTitle>
             <DialogDescription>
-              Comparing changes from version {currentViewData.version - 1} to version {currentViewData.version}
+              {currentViewData.version === 1
+                ? "Initial version"
+                : `Comparing changes from version ${currentViewData.version - 1} to version ${currentViewData.version}`}
             </DialogDescription>
           </DialogHeader>
           <ScrollArea className="h-[60vh] pr-4">
