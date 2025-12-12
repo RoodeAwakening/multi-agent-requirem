@@ -168,6 +168,8 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
         referenceFiles: historicalVersion.referenceFiles,
         outputs: historicalVersion.outputs,
         updatedAt: historicalVersion.createdAt,
+        changeReason: historicalVersion.changeReason,
+        changelog: historicalVersion.changelog,
       } as Job;
     }
     
@@ -390,8 +392,8 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
             </div>
             <p className="text-muted-foreground">{currentViewData.description}</p>
             
-            {/* Display changeReason for current version */}
-            {currentViewData.changeReason && viewingVersion === job.version && (
+            {/* Display changeReason for any version that has it */}
+            {currentViewData.changeReason && (
               <div className="mt-3 p-3 bg-muted/50 rounded-md border border-border">
                 <p className="text-sm font-medium text-foreground">
                   {currentViewData.changeReason}
@@ -458,7 +460,7 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
               </Sheet>
             </>
           )}
-          {currentViewData.changelog && viewingVersion === job.version && (
+          {currentViewData.changelog && (
             <>
               <Separator orientation="vertical" className="h-4" />
               <Button 
@@ -681,10 +683,12 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <GitDiff size={20} weight="bold" />
-              What's Changed - Version {job.version}
+              What's Changed - Version {currentViewData.version}
             </DialogTitle>
             <DialogDescription>
-              Comparing changes from version {job.version - 1} to version {job.version}
+              {currentViewData.version === 1
+                ? "Initial version"
+                : `Comparing changes from version ${currentViewData.version - 1} to version ${currentViewData.version}`}
             </DialogDescription>
           </DialogHeader>
           <ScrollArea className="h-[60vh] pr-4">
