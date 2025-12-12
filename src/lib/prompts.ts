@@ -18,7 +18,8 @@ Description: {{TASK_DESCRIPTION}}
 4. List open technical questions that need clarification
 
 **Required Output Structure:**
-Produce a well-structured markdown document with the following sections:
+Produce a well-structured markdown document with the following sections.
+**IMPORTANT:** Return the markdown content directly. Do NOT wrap your response in code fences (\`\`\`) or code blocks.
 
 # Technical Overview
 Provide a clear summary of the technical problem and scope.
@@ -56,7 +57,8 @@ Description: {{TASK_DESCRIPTION}}
 4. Identify business risks and gaps
 
 **Required Output Structure:**
-Produce a well-structured markdown document with the following sections:
+Produce a well-structured markdown document with the following sections.
+**IMPORTANT:** Return the markdown content directly. Do NOT wrap your response in code fences (\`\`\`) or code blocks.
 
 # Business Context
 Explain the business problem, opportunity, or need being addressed.
@@ -101,7 +103,8 @@ Compare the Tech Lead and Business Analyst outputs to identify:
 - Assumptions that should be validated
 
 **Required Output Structure:**
-Produce a markdown document with two sections of numbered questions:
+Produce a markdown document with two sections of numbered questions.
+**IMPORTANT:** Return the markdown content directly. Do NOT wrap your response in code fences (\`\`\`) or code blocks.
 
 # Questions for Tech Lead
 
@@ -143,6 +146,7 @@ Description: {{TASK_DESCRIPTION}}
 
 **Required Output Structure:**
 Produce the COMPLETE updated Tech Lead document (not just the Q&A). Include all original sections updated as needed, plus:
+**IMPORTANT:** Return the markdown content directly. Do NOT wrap your response in code fences (\`\`\`) or code blocks.
 
 # Technical Overview
 (Updated if needed based on clarifications)
@@ -196,6 +200,7 @@ Description: {{TASK_DESCRIPTION}}
 
 **Required Output Structure:**
 Produce the COMPLETE updated Business Analyst document (not just the Q&A). Include all original sections updated as needed, plus:
+**IMPORTANT:** Return the markdown content directly. Do NOT wrap your response in code fences (\`\`\`) or code blocks.
 
 # Business Context
 (Updated if needed based on clarifications)
@@ -248,6 +253,7 @@ Description: {{TASK_DESCRIPTION}}
 Synthesize all inputs into a clear, comprehensive requirements specification that serves as the single source of truth for implementation.
 
 **Required Output Structure:**
+**IMPORTANT:** Return the markdown content directly. Do NOT wrap your response in code fences (\`\`\`) or code blocks.
 
 # Overview
 - **Problem Summary**: Brief description of what we're solving
@@ -308,6 +314,7 @@ Transform the requirements into an actionable product backlog with epics, milest
 - Ensure the largest story after breaking down is no more than 8 points.
 
 **Required Output Structure:**
+**IMPORTANT:** Return the markdown content directly. Do NOT wrap your response in code fences (\`\`\`) or code blocks.
 
 # Epic: {{TASK_TITLE}}
 
@@ -370,6 +377,7 @@ Create a concise, high-level summary suitable for executive leadership. Assume y
 Keep the entire summary to 1-2 pages maximum.
 
 **Required Output Structure:**
+**IMPORTANT:** Return the markdown content directly. Do NOT wrap your response in code fences (\`\`\`) or code blocks.
 
 # Executive Summary: {{TASK_TITLE}}
 

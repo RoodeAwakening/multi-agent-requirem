@@ -51,6 +51,22 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { getStatusMessages, StatusMessage } from "@/lib/status-messages";
 
+// Helper function to strip markdown code fences if present
+// This handles cases where AI returns content wrapped in ```markdown ... ```
+function stripMarkdownCodeFence(content: string): string {
+  if (!content) return content;
+  
+  // Check if content starts with a markdown code fence (```markdown or ```md or just ```)
+  const markdownFenceRegex = /^```(?:markdown|md)?\s*\n([\s\S]*?)\n```\s*$/;
+  const match = content.match(markdownFenceRegex);
+  
+  if (match) {
+    return match[1]; // Return the content inside the code fence
+  }
+  
+  return content; // Return as-is if no code fence
+}
+
 interface JobDetailProps {
   job: Job;
   onJobUpdated: (job: Job) => void;
@@ -338,7 +354,8 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
   const renderedMarkdown = useMemo(() => {
     if (!outputContent) return "";
     try {
-      return marked.parse(outputContent, { async: false }) as string;
+      const cleanContent = stripMarkdownCodeFence(outputContent);
+      return marked.parse(cleanContent, { async: false }) as string;
     } catch (error) {
       console.error("Error parsing markdown:", error);
       return outputContent;
@@ -348,7 +365,8 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
   const renderedChangelog = useMemo(() => {
     if (!currentViewData.changelog) return "";
     try {
-      return marked.parse(currentViewData.changelog, { async: false }) as string;
+      const cleanContent = stripMarkdownCodeFence(currentViewData.changelog);
+      return marked.parse(cleanContent, { async: false }) as string;
     } catch (error) {
       console.error("Error parsing changelog markdown:", error);
       return currentViewData.changelog;
@@ -598,7 +616,8 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
                 let tabRenderedMarkdown = "";
                 if (tabOutputContent) {
                   try {
-                    tabRenderedMarkdown = marked.parse(tabOutputContent, { async: false }) as string;
+                    const cleanContent = stripMarkdownCodeFence(tabOutputContent);
+                    tabRenderedMarkdown = marked.parse(cleanContent, { async: false }) as string;
                   } catch (error) {
                     console.error("Error parsing markdown:", error);
                     tabRenderedMarkdown = tabOutputContent;
