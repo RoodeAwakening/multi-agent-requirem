@@ -68,7 +68,7 @@ export const STATUS_MESSAGES: Record<PipelineStepId, StatusMessage[]> = {
     { text: "Distilling complexity into strategic insights...", type: "serious" },
     { text: "Removing all the words executives don't want to read...", type: "funny" },
     { text: "Translating 'it's complicated' into 'strategic opportunity'...", type: "funny" },
-    { text: "Making sure the TL;DR is actually TL...", type: "funny" },
+    { text: "Making sure the summary is actually brief this time...", type: "funny" },
   ],
 };
 
