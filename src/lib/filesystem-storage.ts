@@ -424,6 +424,9 @@ export async function loadAllJobsFromFileSystem(): Promise<Job[]> {
 /**
  * Delete a job from the file system
  */
+/**
+ * Move a job to trash instead of permanently deleting it
+ */
 export async function deleteJobFromFileSystem(jobId: string): Promise<void> {
   if (!cachedDirectoryHandle) {
     throw new Error("No storage directory selected");
@@ -434,7 +437,154 @@ export async function deleteJobFromFileSystem(jobId: string): Promise<void> {
     throw new Error("Permission denied to write to storage directory");
   }
 
-  await deleteDirectory(cachedDirectoryHandle, ["jobs"], jobId);
+  // Move to trash instead of permanent delete
+  await moveJobToTrash(jobId);
+}
+
+/**
+ * Move a job directory to the .trash folder
+ */
+async function moveJobToTrash(jobId: string): Promise<void> {
+  if (!cachedDirectoryHandle) {
+    throw new Error("No storage directory selected");
+  }
+
+  try {
+    // Ensure trash directory exists
+    const trashHandle = await cachedDirectoryHandle.getDirectoryHandle(".trash", { create: true });
+    
+    // Read the job data before moving
+    const jobsHandle = await cachedDirectoryHandle.getDirectoryHandle("jobs");
+    const jobHandle = await jobsHandle.getDirectoryHandle(jobId);
+    
+    // Create a copy in trash with timestamp
+    const timestamp = Date.now();
+    const trashedName = `${jobId}_${timestamp}`;
+    const trashedJobHandle = await trashHandle.getDirectoryHandle(trashedName, { create: true });
+    
+    // Copy job directory contents to trash
+    await copyDirectory(jobHandle, trashedJobHandle);
+    
+    // Now delete the original
+    await jobsHandle.removeEntry(jobId, { recursive: true });
+  } catch (error) {
+    console.error("Failed to move job to trash:", error);
+    throw error;
+  }
+}
+
+/**
+ * Helper function to recursively copy a directory
+ */
+async function copyDirectory(
+  sourceHandle: FileSystemDirectoryHandle,
+  targetHandle: FileSystemDirectoryHandle
+): Promise<void> {
+  for await (const entry of sourceHandle.values()) {
+    if (entry.kind === "file") {
+      const sourceFile = await entry.getFile();
+      const targetFileHandle = await targetHandle.getFileHandle(entry.name, { create: true });
+      const writable = await targetFileHandle.createWritable();
+      await writable.write(await sourceFile.text());
+      await writable.close();
+    } else if (entry.kind === "directory") {
+      const targetDirHandle = await targetHandle.getDirectoryHandle(entry.name, { create: true });
+      await copyDirectory(entry, targetDirHandle);
+    }
+  }
+}
+
+/**
+ * List all trashed jobs
+ */
+export async function listTrashedJobs(): Promise<Array<{ id: string; originalId: string; trashedAt: number }>> {
+  if (!cachedDirectoryHandle) {
+    return [];
+  }
+
+  try {
+    const trashHandle = await cachedDirectoryHandle.getDirectoryHandle(".trash");
+    const trashedJobs: Array<{ id: string; originalId: string; trashedAt: number }> = [];
+    
+    for await (const entry of trashHandle.values()) {
+      if (entry.kind === "directory") {
+        // Parse the format: {jobId}_{timestamp}
+        const parts = entry.name.split("_");
+        const timestamp = parseInt(parts[parts.length - 1]);
+        const originalId = parts.slice(0, -1).join("_");
+        
+        trashedJobs.push({
+          id: entry.name,
+          originalId,
+          trashedAt: timestamp
+        });
+      }
+    }
+    
+    return trashedJobs.sort((a, b) => b.trashedAt - a.trashedAt);
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Restore a job from trash
+ */
+export async function restoreJobFromTrash(trashedJobId: string): Promise<void> {
+  if (!cachedDirectoryHandle) {
+    throw new Error("No storage directory selected");
+  }
+
+  const hasPermission = await verifyPermission(cachedDirectoryHandle);
+  if (!hasPermission) {
+    throw new Error("Permission denied to write to storage directory");
+  }
+
+  try {
+    const trashHandle = await cachedDirectoryHandle.getDirectoryHandle(".trash");
+    const jobsHandle = await cachedDirectoryHandle.getDirectoryHandle("jobs", { create: true });
+    
+    // Get the trashed job
+    const trashedJobHandle = await trashHandle.getDirectoryHandle(trashedJobId);
+    
+    // Extract original job ID (remove timestamp)
+    const parts = trashedJobId.split("_");
+    const originalId = parts.slice(0, -1).join("_");
+    
+    // Create the restored job directory
+    const restoredJobHandle = await jobsHandle.getDirectoryHandle(originalId, { create: true });
+    
+    // Copy contents back
+    await copyDirectory(trashedJobHandle, restoredJobHandle);
+    
+    // Delete from trash
+    await trashHandle.removeEntry(trashedJobId, { recursive: true });
+  } catch (error) {
+    console.error("Failed to restore job from trash:", error);
+    throw error;
+  }
+}
+
+/**
+ * Permanently delete a job from trash
+ */
+export async function permanentlyDeleteFromTrash(trashedJobId: string): Promise<void> {
+  if (!cachedDirectoryHandle) {
+    throw new Error("No storage directory selected");
+  }
+
+  const hasPermission = await verifyPermission(cachedDirectoryHandle);
+  if (!hasPermission) {
+    throw new Error("Permission denied to write to storage directory");
+  }
+
+  try {
+    const trashHandle = await cachedDirectoryHandle.getDirectoryHandle(".trash");
+    await trashHandle.removeEntry(trashedJobId, { recursive: true });
+  } catch (error) {
+    console.error("Failed to permanently delete from trash:", error);
+    throw error;
+  }
 }
 
 // ============================================================

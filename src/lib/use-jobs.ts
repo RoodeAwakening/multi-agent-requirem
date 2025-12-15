@@ -128,7 +128,7 @@ export function useJobs(): {
     }
   }, [currentStorageMode, setLocalStorageJobs]);
 
-  // Delete a job
+  // Delete a job (moves to trash)
   const deleteJob = useCallback(async (jobId: string) => {
     if (currentStorageMode === "fileSystem" && getCachedDirectoryHandle()) {
       try {
@@ -139,9 +139,16 @@ export function useJobs(): {
         throw error;
       }
     } else {
+      // For localStorage, move to trash array
+      const jobToDelete = localStorageJobs?.find((j) => j.id === jobId);
+      if (jobToDelete) {
+        const trashedJobs = getStoredValue<Job[]>("trashed-jobs") || [];
+        trashedJobs.push({ ...jobToDelete, updatedAt: new Date().toISOString() });
+        localStorage.setItem("trashed-jobs", JSON.stringify(trashedJobs));
+      }
       setLocalStorageJobs((prev) => (prev || []).filter((j) => j.id !== jobId));
     }
-  }, [currentStorageMode, setLocalStorageJobs]);
+  }, [currentStorageMode, setLocalStorageJobs, localStorageJobs]);
 
   // Refresh jobs from storage
   const refreshJobs = useCallback(async () => {

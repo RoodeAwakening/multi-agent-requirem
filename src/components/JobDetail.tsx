@@ -31,7 +31,7 @@ import { ArrowsClockwise } from "@phosphor-icons/react/dist/csr/ArrowsClockwise"
 import { FilePdf } from "@phosphor-icons/react/dist/csr/FilePdf";
 import { DownloadSimple } from "@phosphor-icons/react/dist/csr/DownloadSimple";
 import { Clock } from "@phosphor-icons/react/dist/csr/Clock";
-import { Trash } from "@phosphor-icons/react/dist/csr/Trash";
+// import { Trash } from "@phosphor-icons/react/dist/csr/Trash"; // Removed - delete only from sidebar
 import { GitDiff } from "@phosphor-icons/react/dist/csr/GitDiff";
 import { PipelineOrchestrator } from "@/lib/pipeline";
 import { OUTPUT_FILES, PIPELINE_STEPS } from "@/lib/constants";
@@ -71,10 +71,10 @@ function stripMarkdownCodeFence(content: string): string {
 interface JobDetailProps {
   job: Job;
   onJobUpdated: (job: Job) => void;
-  onJobDeleted: (jobId: string) => Promise<void>;
+  // onJobDeleted removed - deletion only available from sidebar
 }
 
-export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
+export function JobDetail({ job, onJobUpdated }: JobDetailProps) {
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState<string>("");
@@ -86,7 +86,7 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
   const [viewingVersion, setViewingVersion] = useState<number>(job.version);
   const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
   const [isReferencesOpen, setIsReferencesOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  // const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false); // Removed - delete only from sidebar
   const [isChangelogDialogOpen, setIsChangelogDialogOpen] = useState(false);
 
   // Reset viewing version when job changes
@@ -335,20 +335,7 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
     }
   };
 
-  const handleDeleteClick = () => {
-    setIsDeleteDialogOpen(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    try {
-      await onJobDeleted(job.id);
-      toast.success("Task deleted successfully");
-    } catch (error) {
-      toast.error("Failed to delete task");
-      console.error("Error deleting job:", error);
-    }
-    setIsDeleteDialogOpen(false);
-  };
+  // Delete handlers removed - deletion only available from sidebar
 
   const outputContent = currentViewData.outputs[selectedOutput];
   const hasOutputs = Object.keys(currentViewData.outputs).length > 0;
@@ -401,15 +388,7 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
               </div>
             )}
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleDeleteClick}
-            title="Delete task"
-            className="shrink-0"
-          >
-            <Trash size={20} className="text-destructive" />
-          </Button>
+          {/* Delete button removed - deletion only available from sidebar */}
         </div>
 
         <div className="flex items-center gap-4 mb-4">
@@ -708,23 +687,7 @@ export function JobDetail({ job, onJobUpdated, onJobDeleted }: JobDetailProps) {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Task?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete "{job.title}"? This action cannot be undone.
-              All version history and generated outputs will be permanently deleted.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive hover:bg-destructive/90">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Delete dialog removed - deletion only available from sidebar */}
     </div>
   );
 }
