@@ -2,6 +2,17 @@ import jsPDF from "jspdf";
 import { Job } from "./types";
 import { OUTPUT_FILES } from "./constants";
 
+// PDF Export Constants
+const CODE_BG_COLOR: [number, number, number] = [245, 245, 245];
+const CODE_BG_PADDING = 1;
+const CODE_BG_HEIGHT_MULTIPLIER = 0.45;
+const CODE_BG_OFFSET = 0.35;
+const CODE_BLOCK_LINE_HEIGHT = 5;
+const CODE_BLOCK_PADDING = 4;
+const FULL_REPORT_PREVIEW_LENGTH = 3000;
+const INDENT_SPACES_PER_LEVEL = 2;
+const INDENT_WIDTH_PER_LEVEL = 5;
+
 // Helper to parse markdown and render with formatting
 function parseMarkdownLine(line: string): { text: string; style: 'normal' | 'bold'; fontSize: number; indent: number; color: [number, number, number] } {
   // Headers
@@ -26,12 +37,12 @@ function parseMarkdownLine(line: string): { text: string; style: 'normal' | 'bol
   
   // List items
   if (line.match(/^\s*[\*\-\+]\s/)) {
-    const indent = (line.match(/^\s*/)?.[0].length || 0) / 2;
-    return { text: '• ' + line.replace(/^\s*[\*\-\+]\s/, ''), style: 'normal', fontSize: 10, indent: indent * 5, color: [0, 0, 0] };
+    const indent = (line.match(/^\s*/)?.[0].length || 0) / INDENT_SPACES_PER_LEVEL;
+    return { text: '• ' + line.replace(/^\s*[\*\-\+]\s/, ''), style: 'normal', fontSize: 10, indent: indent * INDENT_WIDTH_PER_LEVEL, color: [0, 0, 0] };
   }
   if (line.match(/^\s*\d+\.\s/)) {
-    const indent = (line.match(/^\s*/)?.[0].length || 0) / 2;
-    return { text: line, style: 'normal', fontSize: 10, indent: indent * 5, color: [0, 0, 0] };
+    const indent = (line.match(/^\s*/)?.[0].length || 0) / INDENT_SPACES_PER_LEVEL;
+    return { text: line, style: 'normal', fontSize: 10, indent: indent * INDENT_WIDTH_PER_LEVEL, color: [0, 0, 0] };
   }
   
   // Horizontal rules
@@ -56,7 +67,7 @@ function processInlineFormatting(text: string): Array<{ text: string; bold: bool
   
   while (i < text.length) {
     // Check for code (single backtick)
-    if (text[i] === '`' && !inBold) {
+    if (text[i] === '`') {
       if (current) {
         segments.push({ text: current, bold: inBold, code: inCode });
         current = '';
@@ -175,8 +186,14 @@ export function exportJobToPDF(job: Job, outputFilename?: string) {
       // Add background for code
       if (segment.code) {
         const textWidth = doc.getTextWidth(segment.text);
-        doc.setFillColor(245, 245, 245);
-        doc.rect(xPosition - 1, yPosition - fontSize * 0.35, textWidth + 2, fontSize * 0.45, 'F');
+        doc.setFillColor(...CODE_BG_COLOR);
+        doc.rect(
+          xPosition - CODE_BG_PADDING, 
+          yPosition - fontSize * CODE_BG_OFFSET, 
+          textWidth + CODE_BG_PADDING * 2, 
+          fontSize * CODE_BG_HEIGHT_MULTIPLIER, 
+          'F'
+        );
       }
       
       doc.text(segment.text, xPosition, yPosition);
@@ -237,8 +254,8 @@ export function exportJobToPDF(job: Job, outputFilename?: string) {
           // End of code block - render it
           if (codeBlockContent.length > 0) {
             addPageIfNeeded(15);
-            doc.setFillColor(245, 245, 245);
-            const codeHeight = codeBlockContent.length * 5 + 4;
+            doc.setFillColor(...CODE_BG_COLOR);
+            const codeHeight = codeBlockContent.length * CODE_BLOCK_LINE_HEIGHT + CODE_BLOCK_PADDING;
             doc.rect(margin, yPosition - 2, maxWidth, codeHeight, 'F');
             
             doc.setFontSize(9);
@@ -246,9 +263,9 @@ export function exportJobToPDF(job: Job, outputFilename?: string) {
             doc.setTextColor(0, 0, 0);
             
             for (const codeLine of codeBlockContent) {
-              addPageIfNeeded(5);
+              addPageIfNeeded(CODE_BLOCK_LINE_HEIGHT);
               doc.text(codeLine, margin + 2, yPosition);
-              yPosition += 5;
+              yPosition += CODE_BLOCK_LINE_HEIGHT;
             }
             yPosition += 3;
           }
@@ -299,9 +316,9 @@ export function exportJobToPDF(job: Job, outputFilename?: string) {
         addFormattedText(outputFile.label, 16, "bold", [37, 99, 235], 0);
         yPosition += 5;
 
-        // For full report, render first 3000 characters with formatting
-        const preview = outputData.substring(0, 3000);
-        renderMarkdownContent(preview + (outputData.length > 3000 ? "\n\n... (content truncated)" : ""));
+        // For full report, render first FULL_REPORT_PREVIEW_LENGTH characters with formatting
+        const preview = outputData.substring(0, FULL_REPORT_PREVIEW_LENGTH);
+        renderMarkdownContent(preview + (outputData.length > FULL_REPORT_PREVIEW_LENGTH ? "\n\n... (content truncated)" : ""));
         yPosition += 5;
       }
     });
