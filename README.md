@@ -9,6 +9,7 @@ A multi-agent orchestration system for generating comprehensive requirements doc
 - **Flexible Gemini Authentication**: Use CLI-based auth (gcloud) or API key
 - **Customizable prompts**: Modify agent prompts to fit your workflow
 - **Document generation**: Produces technical specs, business analysis, requirements, and product backlogs
+- **Document upload support**: Upload and analyze PDF, DOCX, and various text files as reference materials
 
 ## Getting Started
 
@@ -74,6 +75,24 @@ If you prefer to use OpenAI models instead:
 4. Select GPT-4o or GPT-4o Mini as your model
 
 **Note:** Your API keys are stored locally in your browser and are only sent directly to the respective AI provider's API.
+
+## Supported File Formats
+
+I.A.N. can process and analyze various file types as reference materials:
+
+### Text Files
+- Code files: `.js`, `.ts`, `.tsx`, `.jsx`, `.py`, `.java`, `.c`, `.cpp`, `.go`, `.rs`, `.php`, `.rb`, `.swift`, `.kt`, `.scala`
+- Markup/Config: `.html`, `.xml`, `.json`, `.yaml`, `.yml`, `.md`, `.txt`, `.csv`
+- Web styles: `.css`, `.scss`
+- Shell scripts: `.sh`, `.bash`, `.zsh`
+- Database: `.sql`
+- Other: `.graphql`, `.vue`, `.svelte`, `.conf`, `.ini`, `.env`, `.toml`
+
+### Document Files
+- **PDF** (`.pdf`): Text content is automatically extracted from PDF documents
+- **DOCX** (`.docx`): Text content is automatically extracted from Word documents
+
+All extracted text from these files is provided to the AI agents as reference context during analysis.
 
 ## Development
 
