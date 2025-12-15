@@ -58,7 +58,7 @@ export function LicenseProvider({ children }: LicenseProviderProps) {
     validation,
     isLoading,
     revalidate,
-    isLicenseValid: validation?.isValid || false,
+    isLicenseValid: !isLoading && (validation?.isValid ?? false),
   };
   
   return (

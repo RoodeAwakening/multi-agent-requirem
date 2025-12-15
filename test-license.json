@@ -1,0 +1,16 @@
+{
+  "customerId": "DEMO-001",
+  "customerName": "Demo Customer Inc.",
+  "expiryDate": "2026-12-15T20:56:59.328Z",
+  "issuedDate": "2025-12-15T20:56:59.328Z",
+  "licenseType": "commercial",
+  "allowedFeatures": [
+    "ai_api_access",
+    "pipeline_execution",
+    "pdf_export",
+    "version_management",
+    "file_upload"
+  ],
+  "maxVersions": null,
+  "signature": "UPe0mWrXr3XFJsSaV5CWw4BaE+3oUarIj3R5OYWFAOa5pZPSYC/AibIUCj/sRmgEbjjONNeG1XyA9kbfH4i4yj7KkoZpjo+tPYL7iEKJu15iAQLnohm6wiKo56O8eH11XNtAHSFLBRQKyEm6MNwRcqbxvmwBGtnEY+E4GF68/NhCSZUb7RJJtURyKnWvnqS1DoLlP1h15OeUfRdhWgOQt5Gt6xbJNBxw5LintizCPFgkfAyqtoTVVCwmcO4rdxUymKWZOjqy0RTZ89EDQwkPRLnuACKM9WSu2JJoWpgs/25mnbVhVecxfNwwpYto6p+4MiAnX40+GcNOWA/yKeG6nQ=="
+}

@@ -20,40 +20,31 @@ import type { LicenseData, LicenseValidationResult, RequiredFeature } from './li
  * This is the public key corresponding to the private key used to sign licenses.
  * In a production environment, this would be your actual public key.
  * 
- * Note: This is a development/example key. Generate your own key pair for production.
+ * Generated: 2025-12-15
  */
 const PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyVwKq8cJYq0h7XGZxqWw
-kzr3KYvjF8J1LwI4R7K4F5qU8XJm8fF3E7qE5zGLvQ8XcR2tKwH9F4Z7cT6Y3J8Q
-qR5LcP7T3dF6qD9mR8wK4L5T2hV9F3xQ7dR5mP8wT4K9F2qH5xL7cR3mT8wP4K9F
-6qU8XJm8fF3E7qE5zGLvQ8XcR2tKwH9F4Z7cT6Y3J8QqR5LcP7T3dF6qD9mR8wK4
-L5T2hV9F3xQ7dR5mP8wT4K9F2qH5xL7cR3mT8wP4K9F6qU8XJm8fF3E7qE5zGLvQ
-8XcR2tKwH9F4Z7cT6Y3J8QqR5LcP7T3dF6qD9mR8wK4L5T2hV9F3xQ7dR5mP8wT4
-K9F2qH5xL7cR3mT8wP4K9FQIDAQAB
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtmwryHdEY4HrHvKbDHdF
+IVB5vQuCa7WcDJw6tfZFPQxc8QxeRfLIeOfIlYR6S8Jblt3w5PleDmrGI/6uoAU8
+HCryhbSlMckJ0PvpsYTssoFD5nlhS2jqC+uZRvqEl1eFAH2A99Yi3Xhu8jOOkyZi
+Iu4coYm7WsNy3dl4dvpgKLgaCpwhCCN0DZDmZvBpS7HUji9yD8KSoqZhX6D9KoZR
+teL+zL9nFp4sP005XZ6SW0uUOinrL3bCqKlxGt0+WL8V/buvF+/pIXhvK8181TT1
+5eGABf8ad/hVSwnEjacoaYztZlrCAw52atixxxvWqVMRPUndkunmbm4Qzuxzm1cf
+bwIDAQAB
 -----END PUBLIC KEY-----`;
 
 /**
  * Convert a string to ArrayBuffer for crypto operations
+ * Uses TextEncoder for proper Unicode handling
  */
 function str2ab(str: string): ArrayBuffer {
-  const buf = new ArrayBuffer(str.length);
-  const bufView = new Uint8Array(buf);
-  for (let i = 0; i < str.length; i++) {
-    bufView[i] = str.charCodeAt(i);
-  }
-  return buf;
+  return new TextEncoder().encode(str).buffer;
 }
 
 /**
  * Convert ArrayBuffer to base64 string
  */
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
-  const bytes = new Uint8Array(buffer);
-  let binary = '';
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary);
+  return btoa(String.fromCharCode(...new Uint8Array(buffer)));
 }
 
 /**

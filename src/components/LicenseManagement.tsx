@@ -38,8 +38,10 @@ export function LicenseManagement() {
       const result = await licenseManager.importLicenseFile(file);
       
       if (result.isValid) {
+        const license = licenseManager.getLicense();
+        const expiryDate = license?.expiryDate ? new Date(license.expiryDate).toLocaleDateString() : 'Unknown';
         toast.success("License imported successfully!", {
-          description: `Valid until ${new Date(licenseManager.getLicense()?.expiryDate || '').toLocaleDateString()}`,
+          description: `Valid until ${expiryDate}`,
         });
         await revalidate();
       } else {

@@ -126,16 +126,7 @@ class LicenseManager {
     
     const result = await validateLicense(license);
     
-    // Cache the result
-    try {
-      localStorage.setItem(LICENSE_VALIDATION_KEY, JSON.stringify({
-        result,
-        timestamp: new Date().toISOString(),
-      }));
-    } catch (error) {
-      console.error('Failed to cache validation result:', error);
-    }
-    
+    // Don't cache the result - always validate fresh
     return result;
   }
   

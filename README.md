@@ -113,6 +113,50 @@ The backend server (`server/index.js`) provides:
 - Reading `GOOGLE_CLOUD_PROJECT` from environment
 - Proxying requests to Vertex AI with proper credentials
 
-## License
+## License Enforcement
 
-This project is licensed under the MIT license.
+This application includes a cryptographic license enforcement system to control continued use based on an active commercial license. 
+
+### Features
+- **Cryptographic Validation**: RSA-2048 signatures ensure license authenticity
+- **Tamper-Resistant**: Any modification to license data invalidates the signature
+- **Feature-Based Control**: Different license types enable different features
+- **Expiration Management**: Licenses have defined validity periods
+- **User-Friendly**: Clear error messages and license management UI
+
+### For End Users
+
+1. **Installing a License**:
+   - Open Settings (gear icon) → License tab
+   - Click "Select License File"
+   - Choose your license file (.json)
+   - The license will be validated and activated
+
+2. **License Requirements**:
+   - A valid license is required to access AI features and run pipelines
+   - License files are cryptographically signed
+   - Contact your vendor for license renewal or support
+
+### For Administrators/Vendors
+
+1. **Generating Licenses**:
+   ```bash
+   # Generate a test license with default values
+   node scripts/quick-license.js
+   
+   # Or use the interactive generator
+   node scripts/generate-license.js customer-license.json
+   ```
+
+2. **Key Management**:
+   - Private key: Keep secure, use only for signing licenses
+   - Public key: Already embedded in application code
+   - Keys stored in `license-keys.json` (DO NOT distribute private key)
+
+3. **Documentation**:
+   - See [docs/LICENSE_SYSTEM.md](docs/LICENSE_SYSTEM.md) for complete documentation
+   - Includes architecture, security features, and best practices
+
+## Project License
+
+This project code is licensed under the MIT license.
