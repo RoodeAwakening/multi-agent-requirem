@@ -108,8 +108,7 @@ export function JobList({ jobs, selectedJobId, onSelectJob, onDeleteJob }: JobLi
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Task?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{jobToDelete?.title}"? This action cannot be undone.
-              All version history and generated outputs will be permanently deleted.
+              Are you sure you want to delete "{jobToDelete?.title}"? The task will be moved to trash where you can restore it later if needed.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

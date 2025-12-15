@@ -151,7 +151,7 @@ export function MainLayout() {
 
       <main className="flex-1 overflow-auto">
         {selectedJob ? (
-          <JobDetail job={selectedJob} onJobUpdated={handleJobUpdated} onJobDeleted={handleJobDeleted} />
+          <JobDetail job={selectedJob} onJobUpdated={handleJobUpdated} />
         ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
