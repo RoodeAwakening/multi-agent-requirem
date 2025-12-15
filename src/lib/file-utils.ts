@@ -2,8 +2,11 @@ import { ReferenceFile } from "./types";
 import * as pdfjsLib from "pdfjs-dist";
 import mammoth from "mammoth";
 
-// Configure PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+// Configure PDF.js worker - use the bundled worker from node_modules
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url
+).toString();
 
 // Text file extensions that can be read as text
 const TEXT_EXTENSIONS = [
@@ -67,8 +70,9 @@ export const extractPdfText = async (file: File): Promise<string> => {
     for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
       const page = await pdf.getPage(pageNum);
       const textContent = await page.getTextContent();
+      // Use proper type for text items - they have a 'str' property
       const pageText = textContent.items
-        .map((item: any) => item.str)
+        .map((item) => ('str' in item ? item.str : ''))
         .join(' ');
       textParts.push(`--- Page ${pageNum} ---\n${pageText}`);
     }
