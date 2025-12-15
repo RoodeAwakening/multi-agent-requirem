@@ -1,4 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { licenseManager } from "./license-manager";
+import { canAccessAI } from "./license-validator";
 
 export type AIModel = "gpt-4o" | "gpt-4o-mini" | "gemini-2.5-pro" | "gemini-2.5-flash" | "gemini-2.0-flash-lite";
 export type GeminiAuthMode = "api-key" | "cli-auth";
@@ -24,8 +26,27 @@ const GEMINI_MODEL_MAP: Record<string, string> = {
  * For Gemini models, uses the Google Generative AI SDK or CLI auth
  * For OpenAI models, uses the OpenAI API directly
  * API keys are configured via the Settings dialog and stored in localStorage
+ * 
+ * License Check: This function requires a valid license with AI API access.
  */
 export async function callAI(prompt: string, model: AIModel, authMode?: GeminiAuthMode): Promise<string> {
+  // Check license before making API call
+  const validation = await licenseManager.validateCurrentLicense();
+  
+  if (!validation.isValid) {
+    throw new Error(
+      `License Error: ${validation.errorMessage || 'No valid license found'}. ` +
+      'Please install a valid license to use AI features.'
+    );
+  }
+  
+  if (!canAccessAI(validation)) {
+    throw new Error(
+      'License Error: Your current license does not include AI API access. ' +
+      'Please upgrade your license to use AI features.'
+    );
+  }
+  
   if (model === "gemini-2.5-pro" || model === "gemini-2.5-flash" || model === "gemini-2.0-flash-lite") {
     return callGemini(prompt, model, authMode);
   } else {

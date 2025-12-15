@@ -74,6 +74,7 @@ import { Browser } from "@phosphor-icons/react/dist/csr/Browser";
 import { Warning } from "@phosphor-icons/react/dist/csr/Warning";
 import { PlayCircle } from "@phosphor-icons/react/dist/csr/PlayCircle";
 import { createDemoJob, getDemoDescription } from "@/lib/demo-data";
+import { LicenseManagement } from "@/components/LicenseManagement";
 
 interface SettingsDialogProps {
   open: boolean;
@@ -294,6 +295,7 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemo
             <TabsTrigger value="model">AI Model</TabsTrigger>
             <TabsTrigger value="prompts">Agent Prompts</TabsTrigger>
             <TabsTrigger value="storage">Data Storage</TabsTrigger>
+            <TabsTrigger value="license">License</TabsTrigger>
             <TabsTrigger value="demo">Demo</TabsTrigger>
           </TabsList>
 
@@ -1028,6 +1030,12 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemo
                     </ul>
                   </div>
                 </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="license" className="m-0 h-full overflow-y-auto">
+              <div className="p-6 max-w-3xl">
+                <LicenseManagement />
               </div>
             </TabsContent>
 

@@ -32,3 +32,8 @@ pids
 .devcontainer/
 
 .spark-workbench-id
+
+# License system private keys (DO NOT COMMIT)
+license-keys.json
+*.license.json
+
