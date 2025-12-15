@@ -55,7 +55,11 @@ npm run dev
 2. Fill in:
    - **Task Title**: Brief name for your task
    - **Description**: Detailed description of what needs to be analyzed
-   - **Reference Materials** (optional): Paths, URLs, or descriptions of supporting documents
+   - **Reference Materials** (optional): Upload files or folders for context
+     - Supported formats: PDF, DOCX, and various text/code files
+     - Click "Add File" to upload individual files
+     - Click "Add Folder" to upload entire directories
+     - Uploaded files are automatically processed and their content extracted
 3. Click **"Create Task"**
 
 ### Running the Pipeline
@@ -156,6 +160,7 @@ If you prefer GPT models:
 - `src/lib/prompts.ts` - Agent prompt templates
 - `src/lib/pipeline.ts` - Pipeline orchestration logic
 - `src/lib/ai-client.ts` - AI provider integration (Gemini & OpenAI)
+- `src/lib/file-utils.ts` - File upload and processing (PDF, DOCX, text)
 - `src/components/MainLayout.tsx` - Main application layout
 - `src/components/JobDetail.tsx` - Task detail and output viewer
 - `src/components/JobList.tsx` - Task list sidebar
@@ -241,6 +246,8 @@ export const PROMPTS: Record<PipelineStepId, string> = {
 - **Marked** - Markdown rendering
 - **Phosphor Icons** - Icons
 - **Google Generative AI SDK** - Gemini integration
+- **PDF.js** - PDF text extraction
+- **Mammoth** - DOCX text extraction
 
 ## License
 

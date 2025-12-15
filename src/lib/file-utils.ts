@@ -1,4 +1,12 @@
 import { ReferenceFile } from "./types";
+import * as pdfjsLib from "pdfjs-dist";
+import mammoth from "mammoth";
+
+// Configure PDF.js worker - use the bundled worker from node_modules
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url
+).toString();
 
 // Text file extensions that can be read as text
 const TEXT_EXTENSIONS = [
@@ -10,6 +18,9 @@ const TEXT_EXTENSIONS = [
   '.makefile', '.cmake', '.gradle', '.properties', '.toml', '.lock'
 ];
 
+// Document file extensions that require special processing
+const DOCUMENT_EXTENSIONS = ['.pdf', '.docx'];
+
 /**
  * Check if a file is likely to be a text file based on its extension
  */
@@ -17,6 +28,21 @@ export const isTextFile = (filename: string): boolean => {
   const lowerName = filename.toLowerCase();
   return TEXT_EXTENSIONS.some(ext => lowerName.endsWith(ext)) || 
          !lowerName.includes('.'); // Files without extension are often text
+};
+
+/**
+ * Check if a file is a document that requires special processing (PDF, DOCX)
+ */
+export const isDocumentFile = (filename: string): boolean => {
+  const lowerName = filename.toLowerCase();
+  return DOCUMENT_EXTENSIONS.some(ext => lowerName.endsWith(ext));
+};
+
+/**
+ * Check if a file is processable (text, PDF, or DOCX)
+ */
+export const isProcessableFile = (filename: string): boolean => {
+  return isTextFile(filename) || isDocumentFile(filename);
 };
 
 /**
@@ -32,6 +58,67 @@ export const readFileContent = (file: File): Promise<string> => {
 };
 
 /**
+ * Extract text content from a document file (PDF or DOCX)
+ */
+const extractDocumentContent = async (file: File): Promise<string> => {
+  const lowerName = file.name.toLowerCase();
+  
+  if (lowerName.endsWith('.pdf')) {
+    return await extractPdfText(file);
+  } else if (lowerName.endsWith('.docx')) {
+    return await extractDocxText(file);
+  }
+  
+  throw new Error(`Unsupported document format: ${file.name}`);
+};
+
+/**
+ * Extract text content from a PDF file
+ */
+export const extractPdfText = async (file: File): Promise<string> => {
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const textParts: string[] = [];
+
+    // Extract text from each page
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      const page = await pdf.getPage(pageNum);
+      const textContent = await page.getTextContent();
+      // Use proper type for text items - they have a 'str' property
+      const pageText = textContent.items
+        .map((item) => ('str' in item ? item.str : ''))
+        .join(' ');
+      textParts.push(`--- Page ${pageNum} ---\n${pageText}`);
+    }
+
+    return textParts.join('\n\n');
+  } catch (error) {
+    console.error('Error extracting PDF text:', error);
+    throw new Error(`Failed to extract text from PDF: ${error}`);
+  }
+};
+
+/**
+ * Extract text content from a DOCX file
+ */
+export const extractDocxText = async (file: File): Promise<string> => {
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const result = await mammoth.extractRawText({ arrayBuffer });
+    
+    if (result.messages.length > 0) {
+      console.warn('DOCX extraction warnings:', result.messages);
+    }
+    
+    return result.value || '';
+  } catch (error) {
+    console.error('Error extracting DOCX text:', error);
+    throw new Error(`Failed to extract text from DOCX: ${error}`);
+  }
+};
+
+/**
  * Process multiple files and read their contents
  */
 export const processFiles = async (
@@ -42,15 +129,39 @@ export const processFiles = async (
   const newPaths: string[] = [];
   
   for (const file of Array.from(files)) {
-    const filePath = (file as any).path || file.name;
+    // Use File.webkitRelativePath if it is a non-empty string, otherwise fall back to name
+    const filePath = (typeof file.webkitRelativePath === "string" && file.webkitRelativePath.length > 0)
+      ? file.webkitRelativePath
+      : file.name;
     
     // Skip if already added
     if (existingPaths.includes(filePath)) continue;
     
     newPaths.push(filePath);
     
-    // Only read text files
-    if (isTextFile(file.name)) {
+    // Process based on file type
+    if (isDocumentFile(file.name)) {
+      // Handle PDF and DOCX files
+      try {
+        const content = await extractDocumentContent(file);
+        
+        newFiles.push({
+          name: file.name,
+          path: filePath,
+          content: content,
+          type: file.type || 'application/octet-stream'
+        });
+      } catch (err) {
+        console.warn(`Could not extract text from document ${file.name}:`, err);
+        newFiles.push({
+          name: file.name,
+          path: filePath,
+          content: `[Could not extract text from document: ${file.name}. ${err instanceof Error ? err.message : 'Unknown error'}]`,
+          type: file.type || 'unknown'
+        });
+      }
+    } else if (isTextFile(file.name)) {
+      // Handle regular text files
       try {
         const content = await readFileContent(file);
         newFiles.push({
@@ -69,6 +180,7 @@ export const processFiles = async (
         });
       }
     } else {
+      // Mark binary files
       newFiles.push({
         name: file.name,
         path: filePath,
@@ -99,8 +211,25 @@ export const processFolderFiles = async (
     // Skip if already processed
     if (addedPaths.has(relativePath)) return null;
     addedPaths.add(relativePath);
-    // Only read text files
-    if (isTextFile(file.name)) {
+    
+    // Process based on file type
+    if (isDocumentFile(file.name)) {
+      // Handle PDF and DOCX files
+      try {
+        const content = await extractDocumentContent(file);
+        
+        return {
+          name: file.name,
+          path: relativePath,
+          content: content,
+          type: file.type || 'application/octet-stream'
+        } as ReferenceFile;
+      } catch (err) {
+        console.warn(`Could not extract text from document ${file.name}:`, err);
+        return null;
+      }
+    } else if (isTextFile(file.name)) {
+      // Handle regular text files
       try {
         const content = await readFileContent(file);
         return {
