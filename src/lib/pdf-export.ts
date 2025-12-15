@@ -3,7 +3,14 @@ import { Job } from "./types";
 import { OUTPUT_FILES } from "./constants";
 
 // PDF Export Constants
-const CODE_BG_COLOR: [number, number, number] = [245, 245, 245];
+interface ParsedMarkdownLine {
+  text: string;
+  style: 'normal' | 'bold';
+  fontSize: number;
+  indent: number;
+  color: [number, number, number];
+}
+function parseMarkdownLine(line: string): ParsedMarkdownLine {
 const CODE_BG_PADDING = 1;
 const CODE_BG_HEIGHT_MULTIPLIER = 0.45;
 const CODE_BG_OFFSET = 0.35;
