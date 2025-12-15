@@ -58,6 +58,21 @@ export const readFileContent = (file: File): Promise<string> => {
 };
 
 /**
+ * Extract text content from a document file (PDF or DOCX)
+ */
+const extractDocumentContent = async (file: File): Promise<string> => {
+  const lowerName = file.name.toLowerCase();
+  
+  if (lowerName.endsWith('.pdf')) {
+    return await extractPdfText(file);
+  } else if (lowerName.endsWith('.docx')) {
+    return await extractDocxText(file);
+  }
+  
+  throw new Error(`Unsupported document format: ${file.name}`);
+};
+
+/**
  * Extract text content from a PDF file
  */
 export const extractPdfText = async (file: File): Promise<string> => {
@@ -114,7 +129,10 @@ export const processFiles = async (
   const newPaths: string[] = [];
   
   for (const file of Array.from(files)) {
-    const filePath = (file as any).path || file.name;
+    // Use File.webkitRelativePath if available, otherwise fall back to name
+    const filePath = ('webkitRelativePath' in file && file.webkitRelativePath) 
+      ? file.webkitRelativePath 
+      : file.name;
     
     // Skip if already added
     if (existingPaths.includes(filePath)) continue;
@@ -125,16 +143,7 @@ export const processFiles = async (
     if (isDocumentFile(file.name)) {
       // Handle PDF and DOCX files
       try {
-        let content: string;
-        const lowerName = file.name.toLowerCase();
-        
-        if (lowerName.endsWith('.pdf')) {
-          content = await extractPdfText(file);
-        } else if (lowerName.endsWith('.docx')) {
-          content = await extractDocxText(file);
-        } else {
-          content = '[Unsupported document format]';
-        }
+        const content = await extractDocumentContent(file);
         
         newFiles.push({
           name: file.name,
@@ -207,16 +216,7 @@ export const processFolderFiles = async (
     if (isDocumentFile(file.name)) {
       // Handle PDF and DOCX files
       try {
-        let content: string;
-        const lowerName = file.name.toLowerCase();
-        
-        if (lowerName.endsWith('.pdf')) {
-          content = await extractPdfText(file);
-        } else if (lowerName.endsWith('.docx')) {
-          content = await extractDocxText(file);
-        } else {
-          return null; // Unsupported document format
-        }
+        const content = await extractDocumentContent(file);
         
         return {
           name: file.name,
