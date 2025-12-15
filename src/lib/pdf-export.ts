@@ -2,6 +2,92 @@ import jsPDF from "jspdf";
 import { Job } from "./types";
 import { OUTPUT_FILES } from "./constants";
 
+// Helper to parse markdown and render with formatting
+function parseMarkdownLine(line: string): { text: string; style: 'normal' | 'bold'; fontSize: number; indent: number; color: [number, number, number] } {
+  // Headers
+  if (line.startsWith('# ')) {
+    return { text: line.substring(2), style: 'bold', fontSize: 18, indent: 0, color: [0, 0, 0] };
+  }
+  if (line.startsWith('## ')) {
+    return { text: line.substring(3), style: 'bold', fontSize: 15, indent: 0, color: [0, 0, 0] };
+  }
+  if (line.startsWith('### ')) {
+    return { text: line.substring(4), style: 'bold', fontSize: 13, indent: 0, color: [0, 0, 0] };
+  }
+  if (line.startsWith('#### ')) {
+    return { text: line.substring(5), style: 'bold', fontSize: 12, indent: 0, color: [0, 0, 0] };
+  }
+  if (line.startsWith('##### ')) {
+    return { text: line.substring(6), style: 'bold', fontSize: 11, indent: 0, color: [0, 0, 0] };
+  }
+  if (line.startsWith('###### ')) {
+    return { text: line.substring(7), style: 'bold', fontSize: 10, indent: 0, color: [0, 0, 0] };
+  }
+  
+  // List items
+  if (line.match(/^\s*[\*\-\+]\s/)) {
+    const indent = (line.match(/^\s*/)?.[0].length || 0) / 2;
+    return { text: '• ' + line.replace(/^\s*[\*\-\+]\s/, ''), style: 'normal', fontSize: 10, indent: indent * 5, color: [0, 0, 0] };
+  }
+  if (line.match(/^\s*\d+\.\s/)) {
+    const indent = (line.match(/^\s*/)?.[0].length || 0) / 2;
+    return { text: line, style: 'normal', fontSize: 10, indent: indent * 5, color: [0, 0, 0] };
+  }
+  
+  // Horizontal rules
+  if (line.match(/^[\-\*_]{3,}$/)) {
+    return { text: '', style: 'normal', fontSize: 10, indent: 0, color: [0, 0, 0] };
+  }
+  
+  // Bold text (preserve ** formatting for now, will handle in rendering)
+  // Code blocks and inline code (preserve ` formatting)
+  
+  // Normal paragraph
+  return { text: line, style: 'normal', fontSize: 10, indent: 0, color: [0, 0, 0] };
+}
+
+// Helper to process bold and code formatting within text
+function processInlineFormatting(text: string): Array<{ text: string; bold: boolean; code: boolean }> {
+  const segments: Array<{ text: string; bold: boolean; code: boolean }> = [];
+  let current = '';
+  let i = 0;
+  let inBold = false;
+  let inCode = false;
+  
+  while (i < text.length) {
+    // Check for code (single backtick)
+    if (text[i] === '`' && !inBold) {
+      if (current) {
+        segments.push({ text: current, bold: inBold, code: inCode });
+        current = '';
+      }
+      inCode = !inCode;
+      i++;
+      continue;
+    }
+    
+    // Check for bold (double asterisk or double underscore)
+    if (!inCode && ((text[i] === '*' && text[i + 1] === '*') || (text[i] === '_' && text[i + 1] === '_'))) {
+      if (current) {
+        segments.push({ text: current, bold: inBold, code: inCode });
+        current = '';
+      }
+      inBold = !inBold;
+      i += 2;
+      continue;
+    }
+    
+    current += text[i];
+    i++;
+  }
+  
+  if (current) {
+    segments.push({ text: current, bold: inBold, code: inCode });
+  }
+  
+  return segments;
+}
+
 export function exportJobToPDF(job: Job, outputFilename?: string) {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -19,26 +105,85 @@ export function exportJobToPDF(job: Job, outputFilename?: string) {
     return false;
   };
 
-  const addText = (
+  const addFormattedText = (
     text: string,
     fontSize: number,
     fontStyle: "normal" | "bold" = "normal",
-    color: [number, number, number] = [0, 0, 0]
+    color: [number, number, number] = [0, 0, 0],
+    indent: number = 0
   ) => {
-    doc.setFontSize(fontSize);
-    doc.setFont("helvetica", fontStyle);
-    doc.setTextColor(...color);
-
-    const lines = doc.splitTextToSize(text, maxWidth);
-    const lineHeight = fontSize * 0.5;
-
-    for (let i = 0; i < lines.length; i++) {
-      addPageIfNeeded(lineHeight);
-      doc.text(lines[i], margin, yPosition);
-      yPosition += lineHeight;
+    if (!text.trim()) {
+      yPosition += fontSize * 0.3;
+      return;
     }
 
+    const segments = processInlineFormatting(text);
+    const lineHeight = fontSize * 0.5;
+    let currentLineWidth = indent;
+    let currentLine: Array<{ text: string; bold: boolean; code: boolean }> = [];
+    
+    for (const segment of segments) {
+      const style = segment.bold ? 'bold' : fontStyle;
+      const bgColor = segment.code ? [245, 245, 245] : null;
+      
+      doc.setFontSize(fontSize);
+      doc.setFont("helvetica", style);
+      
+      const words = segment.text.split(' ');
+      
+      for (let i = 0; i < words.length; i++) {
+        const word = words[i] + (i < words.length - 1 ? ' ' : '');
+        const wordWidth = doc.getTextWidth(word);
+        
+        if (currentLineWidth + wordWidth > maxWidth) {
+          // Render current line
+          renderLine(currentLine, fontSize, lineHeight, color, indent, margin);
+          currentLine = [];
+          currentLineWidth = indent;
+        }
+        
+        currentLine.push({ text: word, bold: segment.bold, code: segment.code });
+        currentLineWidth += wordWidth;
+      }
+    }
+    
+    // Render remaining line
+    if (currentLine.length > 0) {
+      renderLine(currentLine, fontSize, lineHeight, color, indent, margin);
+    }
+    
     yPosition += lineHeight * 0.3;
+  };
+  
+  const renderLine = (
+    segments: Array<{ text: string; bold: boolean; code: boolean }>,
+    fontSize: number,
+    lineHeight: number,
+    color: [number, number, number],
+    indent: number,
+    margin: number
+  ) => {
+    addPageIfNeeded(lineHeight);
+    let xPosition = margin + indent;
+    
+    for (const segment of segments) {
+      const style = segment.bold ? 'bold' : 'normal';
+      doc.setFontSize(fontSize);
+      doc.setFont("helvetica", style);
+      doc.setTextColor(...color);
+      
+      // Add background for code
+      if (segment.code) {
+        const textWidth = doc.getTextWidth(segment.text);
+        doc.setFillColor(245, 245, 245);
+        doc.rect(xPosition - 1, yPosition - fontSize * 0.35, textWidth + 2, fontSize * 0.45, 'F');
+      }
+      
+      doc.text(segment.text, xPosition, yPosition);
+      xPosition += doc.getTextWidth(segment.text);
+    }
+    
+    yPosition += lineHeight;
   };
 
   const addSeparator = () => {
@@ -66,57 +211,97 @@ export function exportJobToPDF(job: Job, outputFilename?: string) {
 
   addSeparator();
 
-  addText("Description", 14, "bold", [0, 0, 0]);
-  addText(job.description, 11, "normal", [50, 50, 50]);
+  addFormattedText("Description", 14, "bold", [0, 0, 0], 0);
+  addFormattedText(job.description, 11, "normal", [50, 50, 50], 0);
   yPosition += 5;
 
   if (job.referenceFolders.length > 0) {
     addSeparator();
-    addText("Reference Folders", 14, "bold", [0, 0, 0]);
+    addFormattedText("Reference Folders", 14, "bold", [0, 0, 0], 0);
     job.referenceFolders.forEach((folder) => {
-      addText(`• ${folder}`, 10, "normal", [50, 50, 50]);
+      addFormattedText(`• ${folder}`, 10, "normal", [50, 50, 50], 0);
     });
     yPosition += 5;
   }
+
+  // Helper to render markdown content with formatting
+  const renderMarkdownContent = (content: string) => {
+    const lines = content.split('\n');
+    let inCodeBlock = false;
+    let codeBlockContent: string[] = [];
+    
+    for (const line of lines) {
+      // Handle code blocks
+      if (line.trim().startsWith('```')) {
+        if (inCodeBlock) {
+          // End of code block - render it
+          if (codeBlockContent.length > 0) {
+            addPageIfNeeded(15);
+            doc.setFillColor(245, 245, 245);
+            const codeHeight = codeBlockContent.length * 5 + 4;
+            doc.rect(margin, yPosition - 2, maxWidth, codeHeight, 'F');
+            
+            doc.setFontSize(9);
+            doc.setFont("courier", "normal");
+            doc.setTextColor(0, 0, 0);
+            
+            for (const codeLine of codeBlockContent) {
+              addPageIfNeeded(5);
+              doc.text(codeLine, margin + 2, yPosition);
+              yPosition += 5;
+            }
+            yPosition += 3;
+          }
+          codeBlockContent = [];
+        }
+        inCodeBlock = !inCodeBlock;
+        continue;
+      }
+      
+      if (inCodeBlock) {
+        codeBlockContent.push(line);
+        continue;
+      }
+      
+      // Skip empty lines but add spacing
+      if (!line.trim()) {
+        yPosition += 3;
+        continue;
+      }
+      
+      // Skip horizontal rules (already handled by separators)
+      if (line.match(/^[\-\*_]{3,}$/)) {
+        addSeparator();
+        continue;
+      }
+      
+      // Parse and render line with formatting
+      const parsed = parseMarkdownLine(line);
+      addFormattedText(parsed.text, parsed.fontSize, parsed.style, parsed.color, parsed.indent);
+    }
+  };
 
   if (outputFilename) {
     const outputData = job.outputs[outputFilename];
     if (outputData) {
       const outputFile = OUTPUT_FILES.find((f) => f.filename === outputFilename);
       addSeparator();
-      addText(outputFile?.label || outputFilename, 16, "bold", [37, 99, 235]);
+      addFormattedText(outputFile?.label || outputFilename, 16, "bold", [37, 99, 235], 0);
       yPosition += 5;
 
-      const cleanedContent = outputData
-        .replace(/#{1,6}\s/g, "")
-        .replace(/\*\*/g, "")
-        .replace(/\*/g, "")
-        .replace(/\[([^\]]+)\]\([^\)]+\)/g, "$1")
-        .replace(/`([^`]+)`/g, "$1")
-        .replace(/---+/g, "")
-        .trim();
-
-      addText(cleanedContent, 10, "normal", [0, 0, 0]);
+      renderMarkdownContent(outputData);
     }
   } else {
     OUTPUT_FILES.forEach((outputFile) => {
       const outputData = job.outputs[outputFile.filename];
       if (outputData) {
         addSeparator();
-        addText(outputFile.label, 16, "bold", [37, 99, 235]);
+        addFormattedText(outputFile.label, 16, "bold", [37, 99, 235], 0);
         yPosition += 5;
 
-        const cleanedContent = outputData
-          .replace(/#{1,6}\s/g, "")
-          .replace(/\*\*/g, "")
-          .replace(/\*/g, "")
-          .replace(/\[([^\]]+)\]\([^\)]+\)/g, "$1")
-          .replace(/`([^`]+)`/g, "$1")
-          .replace(/---+/g, "")
-          .trim();
-
-        const preview = cleanedContent.substring(0, 1500);
-        addText(preview + (cleanedContent.length > 1500 ? "..." : ""), 10, "normal", [0, 0, 0]);
+        // For full report, render first 3000 characters with formatting
+        const preview = outputData.substring(0, 3000);
+        renderMarkdownContent(preview + (outputData.length > 3000 ? "\n\n... (content truncated)" : ""));
         yPosition += 5;
       }
     });
