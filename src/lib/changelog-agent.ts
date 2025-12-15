@@ -85,7 +85,7 @@ async function buildChangelogPrompt(
   const getCurrContent = (key: string) => (currOutputs[key] || "Not available").slice(0, 2000);
 
   // Get the changelog prompt template (custom or default)
-  const promptTemplate = await getPromptTemplate("changelog_agent" as PipelineStepId);
+  const promptTemplate = await getPromptTemplate("changelog_agent");
   
   // Build the variables for the template
   const variables: Record<string, string> = {
