@@ -129,9 +129,9 @@ export const processFiles = async (
   const newPaths: string[] = [];
   
   for (const file of Array.from(files)) {
-    // Use File.webkitRelativePath if available, otherwise fall back to name
-    const filePath = ('webkitRelativePath' in file && file.webkitRelativePath) 
-      ? file.webkitRelativePath 
+    // Use File.webkitRelativePath if it is a non-empty string, otherwise fall back to name
+    const filePath = (typeof file.webkitRelativePath === "string" && file.webkitRelativePath.length > 0)
+      ? file.webkitRelativePath
       : file.name;
     
     // Skip if already added
