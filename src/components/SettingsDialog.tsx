@@ -272,6 +272,11 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemo
       label: "Executive Assistant",
       description: "Executive summary",
     },
+    {
+      id: "changelog_agent",
+      label: "Changelog Agent",
+      description: "Version change documentation",
+    },
   ];
 
   return (
@@ -630,7 +635,7 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemo
             <TabsContent value="prompts" className="m-0 h-full">
               <div className="grid grid-cols-[280px_1fr] h-full">
                 <div className="border-r flex flex-col min-h-0">
-                  <ScrollArea className="flex-1">
+                  <ScrollArea className="flex-1 h-[calc(92vh-200px)]">
                     <div className="p-4 space-y-1">
                       {promptSteps.map((step) => (
                         <button

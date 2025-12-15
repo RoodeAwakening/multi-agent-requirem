@@ -8,7 +8,8 @@ export type PipelineStepId =
   | "business_analyst_update"
   | "requirements_agent"
   | "product_owner"
-  | "executive_assistant";
+  | "executive_assistant"
+  | "changelog_agent";
 
 export interface ReferenceFile {
   name: string;
