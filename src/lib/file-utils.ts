@@ -156,7 +156,7 @@ export const processFiles = async (
         newFiles.push({
           name: file.name,
           path: filePath,
-          content: `[Could not extract text from document: ${file.name}]`,
+          content: `[Could not extract text from document: ${file.name}. ${err instanceof Error ? err.message : 'Unknown error'}]`,
           type: file.type || 'unknown'
         });
       }
