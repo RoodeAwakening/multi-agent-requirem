@@ -10,6 +10,9 @@ A multi-agent orchestration system for generating comprehensive requirements doc
 - **Customizable prompts**: Modify agent prompts to fit your workflow
 - **Document generation**: Produces technical specs, business analysis, requirements, and product backlogs
 - **Document upload support**: Upload and analyze PDF, DOCX, and various text files as reference materials
+- **License enforcement**: Cryptographic license system for commercial deployment
+
+> **Note**: This application includes a license enforcement system. See the [License Enforcement](#license-enforcement) section below for details.
 
 ## Getting Started
 
