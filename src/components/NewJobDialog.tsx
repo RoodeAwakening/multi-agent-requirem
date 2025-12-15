@@ -183,6 +183,7 @@ export function NewJobDialog({
               ref={fileInputRef}
               type="file"
               multiple
+              accept=".txt,.md,.json,.js,.ts,.tsx,.jsx,.css,.scss,.html,.xml,.yaml,.yml,.csv,.py,.java,.c,.cpp,.h,.hpp,.rb,.go,.rs,.php,.sh,.bash,.zsh,.sql,.graphql,.vue,.svelte,.swift,.kt,.scala,.conf,.config,.ini,.env,.pdf,.docx"
               className="hidden"
               onChange={handleFileSelect}
             />
