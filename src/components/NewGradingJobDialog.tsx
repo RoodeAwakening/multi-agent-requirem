@@ -170,16 +170,15 @@ export function NewGradingJobDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
-        <DialogHeader className="shrink-0">
+      <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+        <DialogHeader>
           <DialogTitle>New Requirements Grading Job</DialogTitle>
           <DialogDescription>
             Grade and route project requirements to appropriate teams.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          <ScrollArea className="max-h-[60vh] pr-4">
+        <form id="new-job-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto pr-4">
             <div className="space-y-6 pb-6">
               <div className="space-y-2">
                 <Label htmlFor="title">Job Title *</Label>
@@ -260,26 +259,27 @@ export function NewGradingJobDialog({
                   </Button>
                 </div>
 
-                {teams.length > 0 && (
-                  <ScrollArea className="max-h-32 pr-2">
-                    <div className="space-y-2">
+                <div className="border rounded-lg flex flex-col">
+                  <ScrollArea className="max-h-60">
+                    <div className="p-4 space-y-2 pr-6 max-h-60">
                       {teams.map((team) => (
                         <div
                           key={team.name}
-                          className="flex items-start justify-between p-3 border rounded-lg"
+                          className="flex items-start justify-between p-3 border rounded-lg bg-background"
                         >
-                          <div className="flex-1">
+                          <div className="flex-1 pr-2">
                             <div className="font-medium">{team.name}</div>
                             {team.description && (
-                              <div className="text-sm text-muted-foreground">
+                              <p className="text-sm text-muted-foreground break-words">
                                 {team.description}
-                              </div>
+                              </p>
                             )}
                           </div>
                           <Button
                             type="button"
                             variant="ghost"
-                            size="sm"
+                            size="icon"
+                            className="shrink-0"
                             onClick={() => removeTeam(team.name)}
                           >
                             <X size={16} />
@@ -288,57 +288,55 @@ export function NewGradingJobDialog({
                       ))}
                     </div>
                   </ScrollArea>
-                )}
-
-                <div className="space-y-2 p-4 border rounded-lg bg-muted/50">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label htmlFor="teamName" className="text-sm">Team Name</Label>
-                      <Input
-                        id="teamName"
-                        value={newTeamName}
-                        onChange={(e) => setNewTeamName(e.target.value)}
-                        placeholder="e.g., Data Supply Chain"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            addTeam();
-                          }
-                        }}
-                      />
+                  <div className="space-y-2 p-4 border-t bg-muted/50">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label htmlFor="teamName" className="text-sm">Team Name</Label>
+                        <Input
+                          id="teamName"
+                          value={newTeamName}
+                          onChange={(e) => setNewTeamName(e.target.value)}
+                          placeholder="e.g., Data Supply Chain"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              addTeam();
+                            }
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="teamDesc" className="text-sm">Description</Label>
+                        <Input
+                          id="teamDesc"
+                          value={newTeamDescription}
+                          onChange={(e) => setNewTeamDescription(e.target.value)}
+                          placeholder="What this team handles..."
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              addTeam();
+                            }
+                          }}
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <Label htmlFor="teamDesc" className="text-sm">Description</Label>
-                      <Input
-                        id="teamDesc"
-                        value={newTeamDescription}
-                        onChange={(e) => setNewTeamDescription(e.target.value)}
-                        placeholder="What this team handles..."
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            addTeam();
-                          }
-                        }}
-                      />
-                    </div>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={addTeam}
+                      className="w-full"
+                    >
+                      <Plus className="mr-2" size={16} />
+                      Add Team
+                    </Button>
                   </div>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    onClick={addTeam}
-                    className="w-full"
-                  >
-                    <Plus className="mr-2" size={16} />
-                    Add Team
-                  </Button>
                 </div>
               </div>
             </div>
-          </ScrollArea>
-
-          <DialogFooter className="mt-4 pt-4 shrink-0 border-t">
+        </form>
+        <DialogFooter className="pt-4 border-t">
             <Button
               type="button"
               variant="outline"
@@ -346,11 +344,10 @@ export function NewGradingJobDialog({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" form="new-job-form" disabled={isLoading}>
               Create Grading Job
             </Button>
-          </DialogFooter>
-        </form>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
