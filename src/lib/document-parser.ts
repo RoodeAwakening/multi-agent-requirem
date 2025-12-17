@@ -266,6 +266,81 @@ function extractFunctionalRequirements(sectionContent: string): Requirement[] {
 }
 
 /**
+ * Parse CSV/Excel format documents where requirements are in comma-separated rows
+ * Common in Excel exports with structure like:
+ * Row#, RequirementID, Title, UserStory, AcceptanceCriteria, ...
+ */
+function parseExcelCsvFormat(text: string): Requirement[] {
+  const requirements: Requirement[] = [];
+  
+  // Look for requirement IDs in the format: ARC-XX.XX_US-XX.XX or similar patterns
+  const lines = text.split('\n');
+  
+  console.log('[Excel/CSV Parser] Processing', lines.length, 'lines');
+  
+  // Pattern to match requirement IDs like: ARC-01.01_US-01.a, REQ-001, FR-001, etc.
+  const reqIdPattern = /\b([A-Z]{2,}-\d+(?:\.\d+)?(?:_[A-Z]+-\d+(?:\.[a-z]\d*)?)?)\b/;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const match = line.match(reqIdPattern);
+    
+    if (match) {
+      const reqId = match[1];
+      
+      // Look ahead to collect related content (next few lines usually contain user story, acceptance criteria)
+      let content = line;
+      let titleLine = '';
+      let userStoryLines: string[] = [];
+      let acceptanceCriteriaLines: string[] = [];
+      
+      // Scan the next 20 lines to gather requirement details
+      for (let j = i + 1; j < Math.min(i + 20, lines.length); j++) {
+        const nextLine = lines[j];
+        
+        // Stop if we hit another requirement ID
+        if (reqIdPattern.test(nextLine)) {
+          break;
+        }
+        
+        content += '\n' + nextLine;
+        
+        // Check for user story markers
+        if (nextLine.includes('As a') || nextLine.includes('I want') || nextLine.includes('So that')) {
+          userStoryLines.push(nextLine);
+        }
+        
+        // Check for acceptance criteria markers  
+        if (nextLine.includes('Given') || nextLine.includes('When') || nextLine.includes('Then') || nextLine.includes('And')) {
+          acceptanceCriteriaLines.push(nextLine);
+        }
+        
+        // Capture title (usually first meaningful line after ID)
+        if (!titleLine && nextLine.trim() && nextLine.trim().length > 10 && 
+            !nextLine.includes('As a') && !nextLine.includes('Given')) {
+          titleLine = nextLine.trim();
+        }
+      }
+      
+      const title = titleLine || `Requirement ${reqId}`;
+      
+      console.log('[Excel/CSV Parser] Extracted requirement:', reqId, '-', title);
+      
+      requirements.push({
+        id: reqId,
+        name: title,
+        content: content.trim()
+      });
+      
+      // Skip ahead to avoid re-processing same requirement
+      i += Math.min(10, userStoryLines.length + acceptanceCriteriaLines.length);
+    }
+  }
+  
+  return requirements;
+}
+
+/**
  * Intelligently parse a document to extract requirements
  * Focuses on Functional Requirements section if present
  */
@@ -281,6 +356,17 @@ export function parseStructuredDocument(text: string): Requirement[] {
     if (htmlRequirements.length > 0) {
       console.log('[Document Parser] Successfully extracted', htmlRequirements.length, 'requirements from HTML tables');
       return htmlRequirements;
+    }
+  }
+  
+  // Try Excel/CSV format parsing (for spreadsheet exports)
+  // Look for patterns like "Sheet:" which indicate Excel extraction
+  if (text.includes('Sheet:') || text.includes(',')) {
+    console.log('[Document Parser] Detected possible Excel/CSV format, trying CSV parser');
+    const csvRequirements = parseExcelCsvFormat(text);
+    if (csvRequirements.length > 1) { // Need at least 2 requirements to be confident
+      console.log('[Document Parser] Successfully extracted', csvRequirements.length, 'requirements from Excel/CSV format');
+      return csvRequirements;
     }
   }
   
