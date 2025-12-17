@@ -129,7 +129,7 @@ async function gradeRequirement(
       id: requirement.id,
       name: requirement.name,
       grade: "F",
-      explanation: `Error during grading: ${error}`,
+      explanation: `Error during grading: ${error instanceof Error ? error.message : String(error)}`,
       readyForHandoff: false,
     };
   }

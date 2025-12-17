@@ -10,6 +10,9 @@ import { SettingsDialog } from "./SettingsDialog";
 import { StorageSetupDialog, isStorageSetupComplete } from "./StorageSetupDialog";
 import { ReconnectStorageDialog, needsStorageReconnect } from "./ReconnectStorageDialog";
 import { Button } from "@/components/ui/button";
+// Note: Tabs and TabsList are used for navigation only. TabsContent is not needed
+// as the content areas (JobList/JobDetail vs GradingJobList/GradingJobDetail) are
+// managed separately based on the activeTab state.
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   AlertDialog,

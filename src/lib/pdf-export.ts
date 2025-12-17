@@ -1,5 +1,5 @@
 import jsPDF from "jspdf";
-import { Job } from "./types";
+import { Job, GradingJob, GradedRequirement } from "./types";
 import { OUTPUT_FILES } from "./constants";
 
 // PDF Export Constants
@@ -341,7 +341,7 @@ export function exportJobToPDF(job: Job, outputFilename?: string) {
 /**
  * Export a grading job to PDF
  */
-export function exportGradingJobToPDF(job: any) {
+export function exportGradingJobToPDF(job: GradingJob) {
   const doc = new jsPDF();
   let yPosition = 20;
   const pageHeight = doc.internal.pageSize.height;
@@ -389,13 +389,13 @@ export function exportGradingJobToPDF(job: any) {
   doc.setFont("helvetica", "normal");
   
   const totalRequirements = job.gradedRequirements?.length || 0;
-  const readyCount = job.gradedRequirements?.filter((r: any) => r.readyForHandoff).length || 0;
+  const readyCount = job.gradedRequirements?.filter((r: GradedRequirement) => r.readyForHandoff).length || 0;
   const gradeDistribution = {
-    A: job.gradedRequirements?.filter((r: any) => r.grade === 'A').length || 0,
-    B: job.gradedRequirements?.filter((r: any) => r.grade === 'B').length || 0,
-    C: job.gradedRequirements?.filter((r: any) => r.grade === 'C').length || 0,
-    D: job.gradedRequirements?.filter((r: any) => r.grade === 'D').length || 0,
-    F: job.gradedRequirements?.filter((r: any) => r.grade === 'F').length || 0,
+    A: job.gradedRequirements?.filter((r: GradedRequirement) => r.grade === 'A').length || 0,
+    B: job.gradedRequirements?.filter((r: GradedRequirement) => r.grade === 'B').length || 0,
+    C: job.gradedRequirements?.filter((r: GradedRequirement) => r.grade === 'C').length || 0,
+    D: job.gradedRequirements?.filter((r: GradedRequirement) => r.grade === 'D').length || 0,
+    F: job.gradedRequirements?.filter((r: GradedRequirement) => r.grade === 'F').length || 0,
   };
 
   doc.text(`Total Requirements: ${totalRequirements}`, margin, yPosition);
@@ -423,7 +423,7 @@ export function exportGradingJobToPDF(job: any) {
     doc.text("Graded Requirements", margin, yPosition);
     yPosition += 10;
 
-    job.gradedRequirements.forEach((req: any) => {
+    job.gradedRequirements.forEach((req: GradedRequirement) => {
       checkNewPage(25);
       
       doc.setFontSize(11);
