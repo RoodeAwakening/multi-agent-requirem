@@ -18,6 +18,7 @@ import { Plus } from "@phosphor-icons/react/dist/csr/Plus";
 import { X } from "@phosphor-icons/react/dist/csr/X";
 import { File } from "@phosphor-icons/react/dist/csr/File";
 import { processFiles } from "@/lib/file-utils";
+import { parseStructuredDocument } from "@/lib/document-parser";
 import { toast } from "sonner";
 
 // Default teams from the issue
@@ -117,55 +118,9 @@ export function NewGradingJobDialog({
 
   const parseRequirements = (text: string): Requirement[] => {
     if (!text.trim()) return [];
-
-    // Try to parse requirements from the text
-    // Expected format: Each requirement should be separated by "---" or similar
-    // or have numbered format like "1. Name: description"
-    const requirements: Requirement[] = [];
     
-    // Split by section breaks or numbered items
-    const sections = text.split(/\n---+\n|\n(?=\d+\.\s)/);
-    
-    let idCounter = 1;
-    sections.forEach(section => {
-      const trimmed = section.trim();
-      if (!trimmed) return;
-
-      // Try to extract name from first line or numbered format
-      const lines = trimmed.split('\n');
-      let name = '';
-      let content = trimmed;
-
-      // Check for "# Title" format
-      const titleMatch = trimmed.match(/^#\s+(.+)/m);
-      if (titleMatch) {
-        name = titleMatch[1].trim();
-      } 
-      // Check for "1. Name:" format or just "Name:"
-      else {
-        const nameMatch = trimmed.match(/^(?:\d+\.\s*)?(.+?)(?:\n|$)/);
-        if (nameMatch) {
-          name = nameMatch[1].trim().replace(/:\s*$/, '');
-          // Limit name length
-          if (name.length > 100) {
-            name = name.substring(0, 100);
-          }
-        }
-      }
-
-      if (!name) {
-        name = `Requirement ${idCounter}`;
-      }
-
-      requirements.push({
-        id: `REQ-${String(idCounter).padStart(3, '0')}`,
-        name,
-        content: trimmed,
-      });
-      idCounter++;
-    });
-
-    return requirements;
+    // Use the intelligent document parser
+    return parseStructuredDocument(text);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -277,13 +232,13 @@ export function NewGradingJobDialog({
                     id="requirements"
                     value={requirementsText}
                     onChange={(e) => setRequirementsText(e.target.value)}
-                    placeholder="Paste requirements here... Separate requirements with '---' or use numbered format. You can also load from files."
+                    placeholder="Paste requirements here or load from files. The system will intelligently extract individual requirements from structured documents."
                     className="font-mono text-sm min-h-64 border-0 focus-visible:ring-0"
                     required
                   />
                 </ScrollArea>
                 <p className="text-xs text-muted-foreground">
-                  Tip: Separate requirements with "---" or use numbered format (1. Requirement name...)
+                  Tip: For structured documents with sections like "Functional Requirements", the system will automatically extract each requirement. For plain text, separate requirements with "---" or numbered format.
                 </p>
               </div>
 
