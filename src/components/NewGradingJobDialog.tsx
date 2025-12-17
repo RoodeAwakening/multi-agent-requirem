@@ -17,6 +17,7 @@ import { generateJobId } from "@/lib/constants";
 import { Plus } from "@phosphor-icons/react/dist/csr/Plus";
 import { X } from "@phosphor-icons/react/dist/csr/X";
 import { File } from "@phosphor-icons/react/dist/csr/File";
+import { CircleNotch } from "@phosphor-icons/react/dist/csr/CircleNotch";
 import { processFiles } from "@/lib/file-utils";
 import { parseStructuredDocumentWithPreprocessing, parseStructuredDocument } from "@/lib/document-parser";
 import { toast } from "sonner";
@@ -51,6 +52,8 @@ export function NewGradingJobDialog({
   const [newTeamName, setNewTeamName] = useState("");
   const [newTeamDescription, setNewTeamDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingMessage, setProcessingMessage] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -122,25 +125,34 @@ export function NewGradingJobDialog({
     try {
       // Use the intelligent document parser with preprocessing
       console.log('[Parse Requirements] Starting parsing with preprocessing...');
+      setIsProcessing(true);
+      setProcessingMessage("Preprocessing document...");
+      
       const requirements = await parseStructuredDocumentWithPreprocessing(text);
       console.log('[Parse Requirements] Parsed', requirements.length, 'requirement(s)');
       
       // If preprocessing didn't find many requirements, try without preprocessing as fallback
       if (requirements.length <= 1 && text.length > 500) {
         console.log('[Parse Requirements] Trying fallback without preprocessing...');
+        setProcessingMessage("Trying alternative parsing method...");
         const fallbackRequirements = parseStructuredDocument(text);
         if (fallbackRequirements.length > requirements.length) {
           console.log('[Parse Requirements] Fallback found more requirements:', fallbackRequirements.length);
+          setIsProcessing(false);
           return fallbackRequirements;
         }
       }
       
+      setIsProcessing(false);
       return requirements;
     } catch (error) {
       console.error('[Parse Requirements] Error during parsing:', error);
       // Fallback to synchronous parsing without preprocessing
       console.log('[Parse Requirements] Falling back to synchronous parsing');
-      return parseStructuredDocument(text);
+      setProcessingMessage("Using fallback parsing...");
+      const result = parseStructuredDocument(text);
+      setIsProcessing(false);
+      return result;
     }
   };
 
@@ -157,12 +169,13 @@ export function NewGradingJobDialog({
       return;
     }
 
-    // Show parsing progress
-    toast.info("Parsing and preprocessing requirements...");
+    setIsProcessing(true);
+    setProcessingMessage("Parsing and preprocessing requirements...");
     
     const requirements = await parseRequirements(requirementsText);
     
     if (requirements.length === 0) {
+      setIsProcessing(false);
       toast.error("Could not parse any requirements from the input");
       return;
     }
@@ -191,6 +204,8 @@ export function NewGradingJobDialog({
     setTeams([]);
     setNewTeamName("");
     setNewTeamDescription("");
+    setIsProcessing(false);
+    setProcessingMessage("");
     
     onOpenChange(false);
     toast.success(`Created grading job with ${requirements.length} requirements`);
@@ -198,7 +213,20 @@ export function NewGradingJobDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+      <DialogContent className="max-w-4xl h-[90vh] flex flex-col relative">
+        {/* Loading Overlay */}
+        {isProcessing && (
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+            <div className="flex flex-col items-center space-y-4">
+              <CircleNotch size={48} className="animate-spin text-primary" />
+              <div className="text-center">
+                <p className="text-lg font-semibold">{processingMessage}</p>
+                <p className="text-sm text-muted-foreground">Please wait...</p>
+              </div>
+            </div>
+          </div>
+        )}
+        
         <DialogHeader>
           <DialogTitle>New Requirements Grading Job</DialogTitle>
           <DialogDescription>
@@ -369,10 +397,11 @@ export function NewGradingJobDialog({
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
+              disabled={isProcessing}
             >
               Cancel
             </Button>
-            <Button type="submit" form="new-job-form" disabled={isLoading}>
+            <Button type="submit" form="new-job-form" disabled={isLoading || isProcessing}>
               Create Grading Job
             </Button>
         </DialogFooter>
