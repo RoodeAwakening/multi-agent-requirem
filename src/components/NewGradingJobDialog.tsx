@@ -120,7 +120,9 @@ export function NewGradingJobDialog({
     if (!text.trim()) return [];
     
     // Use the intelligent document parser
-    return parseStructuredDocument(text);
+    const requirements = parseStructuredDocument(text);
+    console.log('[Parse Requirements] Parsed', requirements.length, 'requirement(s)');
+    return requirements;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -142,6 +144,10 @@ export function NewGradingJobDialog({
       toast.error("Could not parse any requirements from the input");
       return;
     }
+    
+    // Show count of parsed requirements
+    console.log('[Submit] Creating grading job with', requirements.length, 'requirement(s)');
+    toast.success(`Parsed ${requirements.length} requirement(s) - creating grading job...`);
 
     const newJob: GradingJob = {
       id: generateJobId(),
@@ -210,7 +216,7 @@ export function NewGradingJobDialog({
                       ref={fileInputRef}
                       type="file"
                       onChange={handleFileSelect}
-                      accept=".txt,.md,.pdf,.docx,.doc"
+                      accept=".txt,.md,.pdf,.docx,.doc,.xlsx,.xls"
                       multiple
                       className="hidden"
                     />

@@ -1,6 +1,7 @@
 import { ReferenceFile } from "./types";
 import * as pdfjsLib from "pdfjs-dist";
 import mammoth from "mammoth";
+import * as XLSX from 'xlsx';
 
 // Configure PDF.js worker - use the bundled worker from node_modules
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -19,7 +20,7 @@ const TEXT_EXTENSIONS = [
 ];
 
 // Document file extensions that require special processing
-const DOCUMENT_EXTENSIONS = ['.pdf', '.docx', '.doc'];
+const DOCUMENT_EXTENSIONS = ['.pdf', '.docx', '.doc', '.xlsx', '.xls'];
 
 /**
  * Check if a file is likely to be a text file based on its extension
@@ -58,15 +59,19 @@ export const readFileContent = (file: File): Promise<string> => {
 };
 
 /**
- * Extract text content from a document file (PDF, DOCX, or DOC)
+ * Extract text content from a document file (PDF, DOCX, DOC, XLSX, XLS)
  */
 const extractDocumentContent = async (file: File): Promise<string> => {
   const lowerName = file.name.toLowerCase();
+  
+  console.log('[Document Extraction] Processing:', file.name, 'Type:', file.type, 'Size:', file.size);
   
   if (lowerName.endsWith('.pdf')) {
     return await extractPdfText(file);
   } else if (lowerName.endsWith('.docx') || lowerName.endsWith('.doc')) {
     return await extractDocxText(file);
+  } else if (lowerName.endsWith('.xlsx') || lowerName.endsWith('.xls')) {
+    return await extractExcelText(file);
   }
   
   throw new Error(`Unsupported document format: ${file.name}`);
@@ -111,10 +116,43 @@ export const extractDocxText = async (file: File): Promise<string> => {
       console.warn('DOCX extraction warnings:', result.messages);
     }
     
-    return result.value || '';
+    const text = result.value || '';
+    console.log('[DOCX Extraction] Extracted', text.length, 'characters');
+    return text;
   } catch (error) {
     console.error('Error extracting DOCX text:', error);
     throw new Error(`Failed to extract text from DOCX: ${error}`);
+  }
+};
+
+/**
+ * Extract text content from an Excel file (XLSX/XLS)
+ */
+export const extractExcelText = async (file: File): Promise<string> => {
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+    
+    const allText: string[] = [];
+    
+    // Process each sheet
+    workbook.SheetNames.forEach((sheetName) => {
+      const worksheet = workbook.Sheets[sheetName];
+      
+      // Convert sheet to CSV format, which preserves structure better
+      const csv = XLSX.utils.sheet_to_csv(worksheet);
+      
+      if (csv.trim()) {
+        allText.push(`## Sheet: ${sheetName}\n\n${csv}`);
+      }
+    });
+    
+    const text = allText.join('\n\n');
+    console.log('[Excel Extraction] Extracted', text.length, 'characters from', workbook.SheetNames.length, 'sheet(s)');
+    return text;
+  } catch (error) {
+    console.error('Error extracting Excel text:', error);
+    throw new Error(`Failed to extract text from Excel: ${error}`);
   }
 };
 
