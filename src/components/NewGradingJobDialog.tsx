@@ -179,7 +179,7 @@ export function NewGradingJobDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          <ScrollArea className="flex-1 pr-4">
+          <ScrollArea className="max-h-[60vh] pr-4">
             <div className="space-y-6 pb-6">
               <div className="space-y-2">
                 <Label htmlFor="title">Job Title *</Label>
