@@ -227,13 +227,13 @@ export function NewGradingJobDialog({
                     </Button>
                   </div>
                 </div>
-                <ScrollArea className="h-52 w-full rounded-md border">
+                <ScrollArea className="h-40 w-full rounded-md border">
                   <Textarea
                     id="requirements"
                     value={requirementsText}
                     onChange={(e) => setRequirementsText(e.target.value)}
                     placeholder="Paste requirements here or load from files. The system will intelligently extract individual requirements from structured documents."
-                    className="font-mono text-sm min-h-52 border-0 focus-visible:ring-0"
+                    className="font-mono text-sm min-h-40 border-0 focus-visible:ring-0"
                     required
                   />
                 </ScrollArea>
@@ -261,7 +261,7 @@ export function NewGradingJobDialog({
                 </div>
 
                 {teams.length > 0 && (
-                  <ScrollArea className="max-h-36 pr-2">
+                  <ScrollArea className="max-h-32 pr-2">
                     <div className="space-y-2">
                       {teams.map((team) => (
                         <div
