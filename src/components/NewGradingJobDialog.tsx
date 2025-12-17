@@ -20,6 +20,18 @@ import { File } from "@phosphor-icons/react/dist/csr/File";
 import { processFiles } from "@/lib/file-utils";
 import { toast } from "sonner";
 
+// Default teams from the issue
+const DEFAULT_TEAMS: Team[] = [
+  { name: "Data Supply Chain (DSC)", description: "Handles data pipeline and supply chain systems" },
+  { name: "Apigee", description: "API gateway management and implementation" },
+  { name: "Wealth Domain Layer (WDL)", description: "Wealth management domain logic and services" },
+  { name: "Online Banking (IBX)", description: "Online banking platform and features" },
+  { name: "Salesforce (B2C)", description: "B2C CRM and customer engagement" },
+  { name: "Wealth Technology", description: "Wealth management technology solutions" },
+  { name: "Mail Systems", description: "Email and messaging systems" },
+  { name: "CMOD", description: "CMOD system maintenance and development" },
+];
+
 interface NewGradingJobDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -89,6 +101,18 @@ export function NewGradingJobDialog({
 
   const removeTeam = (teamName: string) => {
     setTeams(teams.filter(t => t.name !== teamName));
+  };
+
+  const loadDefaultTeams = () => {
+    // Merge with existing teams, avoiding duplicates
+    const existingNames = new Set(teams.map(t => t.name));
+    const newTeams = DEFAULT_TEAMS.filter(t => !existingNames.has(t.name));
+    if (newTeams.length > 0) {
+      setTeams([...teams, ...newTeams]);
+      toast.success(`Added ${newTeams.length} default team(s)`);
+    } else {
+      toast.info("All default teams are already added");
+    }
   };
 
   const parseRequirements = (text: string): Requirement[] => {
@@ -263,11 +287,21 @@ export function NewGradingJobDialog({
               </div>
 
               <div className="space-y-4">
-                <div>
-                  <Label>Teams (Optional)</Label>
-                  <p className="text-xs text-muted-foreground mb-2">
-                    Add teams that can handle requirements. Graded requirements will be automatically assigned.
-                  </p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Teams (Optional)</Label>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Add teams that can handle requirements. Graded requirements will be automatically assigned.
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={loadDefaultTeams}
+                  >
+                    Load Default Teams
+                  </Button>
                 </div>
 
                 {teams.length > 0 && (
