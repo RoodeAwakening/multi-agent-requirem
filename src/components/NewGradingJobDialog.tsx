@@ -213,10 +213,10 @@ export function NewGradingJobDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col relative">
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
         {/* Loading Overlay */}
         {isProcessing && (
-          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center rounded-lg">
             <div className="flex flex-col items-center space-y-4">
               <CircleNotch size={48} className="animate-spin text-primary" />
               <div className="text-center">
@@ -227,14 +227,14 @@ export function NewGradingJobDialog({
           </div>
         )}
         
-        <DialogHeader>
+        <DialogHeader className="shrink-0">
           <DialogTitle>New Requirements Grading Job</DialogTitle>
           <DialogDescription>
             Grade and route project requirements to appropriate teams.
           </DialogDescription>
         </DialogHeader>
 
-        <form id="new-job-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto pr-4">
+        <form id="new-job-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto pr-4 min-h-0">
             <div className="space-y-6 pb-6">
               <div className="space-y-2">
                 <Label htmlFor="title">Job Title *</Label>
@@ -392,7 +392,7 @@ export function NewGradingJobDialog({
               </div>
             </div>
         </form>
-        <DialogFooter className="pt-4 border-t">
+        <DialogFooter className="shrink-0 pt-4 border-t">
             <Button
               type="button"
               variant="outline"
