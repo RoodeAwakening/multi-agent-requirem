@@ -4,12 +4,21 @@ A multi-agent orchestration system for generating comprehensive requirements doc
 
 ## Features
 
+### Requirements Analysis Pipeline
 - **Multi-agent pipeline**: Sequential processing through specialized AI agents
 - **AI Model Selection**: Support for Gemini Flash (default), Gemini Pro, GPT-4o, and GPT-4o Mini
 - **Flexible Gemini Authentication**: Use CLI-based auth (gcloud) or API key
 - **Customizable prompts**: Modify agent prompts to fit your workflow
 - **Document generation**: Produces technical specs, business analysis, requirements, and product backlogs
 - **Document upload support**: Upload and analyze PDF, DOCX, and various text files as reference materials
+
+### Requirements Grading & Routing
+- **Automated requirement grading**: Grade requirements against a comprehensive rubric (A-F)
+- **Team assignment**: Automatically route requirements to appropriate teams
+- **Quality assessment**: Determine which requirements are ready for handoff
+- **Batch processing**: Grade multiple requirements in one job
+- **PDF export**: Export grading reports with detailed results
+- **Team management**: Define custom teams or use built-in defaults
 
 ## Getting Started
 
@@ -101,6 +110,52 @@ All extracted text from these files is provided to the AI agents as reference co
 - `npm run server` - Start backend only (Node.js server)
 - `npm run build` - Build for production
 - `npm run lint` - Run ESLint
+
+## Using the Requirements Grading Feature
+
+The Requirements Grading feature allows you to automatically assess the quality and readiness of project requirements.
+
+### Creating a Grading Job
+
+1. Switch to the **Grading** tab in the sidebar
+2. Click **New Grading Task**
+3. Enter a job title and description
+4. Add requirements:
+   - Paste requirements directly (separate with `---` or use numbered format)
+   - Upload from files (PDF, DOCX, TXT, MD)
+5. Define teams (optional):
+   - Add teams manually with name and description
+   - Or click **Load Default Teams** for pre-configured teams
+6. Click **Create Grading Job**
+
+### Grading Rubric
+
+Requirements are graded on a scale from A to F:
+
+- **Grade A (Excellent)**: Ready for handoff. Contains complete user story, detailed acceptance criteria, clear scope, no placeholders.
+- **Grade B (Good)**: Ready for handoff with minor follow-up. Has user story and acceptance criteria but may be slightly high-level.
+- **Grade C (Fair)**: Needs refinement. Missing major sections like acceptance criteria or has undefined scope.
+- **Grade D (Poor)**: Incomplete. Just a vague sentence without context or clear goal.
+- **Grade F (Unacceptable)**: Not a software requirement. Business goal, contradictory, or nonsensical.
+
+### Running Grading
+
+1. Select a grading job from the list
+2. Click **Run Grading**
+3. Watch progress as each requirement is evaluated
+4. Review the comprehensive report with:
+   - Overall summary and grade distribution
+   - Detailed results for each requirement
+   - Team assignments (if teams were provided)
+   - Recommendations for improvements
+
+### Exporting Results
+
+Click **Export PDF** to download a formatted report containing:
+- Job summary with statistics
+- Grade distribution
+- Detailed grading results for all requirements
+- Explanations and recommendations
 
 ## Architecture
 
