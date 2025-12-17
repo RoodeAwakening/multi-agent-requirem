@@ -8,7 +8,142 @@ import { Requirement } from "./types";
  * - High Level Scope
  * - Detailed Scope
  * - Functional Requirements (focus area)
+ * 
+ * Also handles HTML table-based requirements exported from Confluence
  */
+
+/**
+ * Parse HTML tables to extract requirements
+ * Handles Confluence-exported HTML with table structures
+ */
+function parseHtmlTables(text: string): Requirement[] {
+  const requirements: Requirement[] = [];
+  
+  // Check if this looks like HTML
+  if (!text.includes('<table') && !text.includes('<tr')) {
+    return requirements;
+  }
+  
+  console.log('[HTML Parser] Detected HTML table content');
+  
+  // Extract all table rows
+  const tableRegex = /<table[^>]*>(.*?)<\/table>/gis;
+  const tables = Array.from(text.matchAll(tableRegex));
+  
+  console.log('[HTML Parser] Found', tables.length, 'tables');
+  
+  for (const tableMatch of tables) {
+    const tableContent = tableMatch[1];
+    const rowRegex = /<tr[^>]*>(.*?)<\/tr>/gis;
+    const rows = Array.from(tableContent.matchAll(rowRegex));
+    
+    // Try to identify if this is a requirements table
+    // Look for header row with "Requirement ID" or similar
+    let isReqTable = false;
+    let headerCells: string[] = [];
+    
+    if (rows.length > 0) {
+      const firstRow = rows[0][1];
+      const cellRegex = /<t[hd][^>]*>(.*?)<\/t[hd]>/gis;
+      const cells = Array.from(firstRow.matchAll(cellRegex));
+      headerCells = cells.map(c => stripHtml(c[1]).toLowerCase().trim());
+      
+      // Check if this looks like a requirements table
+      isReqTable = headerCells.some(h => 
+        h.includes('requirement') || 
+        h.includes('user story') || 
+        h.includes('acceptance')
+      );
+    }
+    
+    if (isReqTable && rows.length > 1) {
+      console.log('[HTML Parser] Found requirements table with', rows.length - 1, 'potential rows');
+      
+      // Process data rows (skip header)
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i][1];
+        const cellRegex = /<td[^>]*>(.*?)<\/td>/gis;
+        const cells = Array.from(row.matchAll(cellRegex));
+        const cellTexts = cells.map(c => stripHtml(c[1]).trim());
+        
+        // Skip empty or header-like rows
+        if (cellTexts.length < 2 || cellTexts.every(c => c.length < 5)) {
+          continue;
+        }
+        
+        // Try to extract requirement data based on common patterns
+        let reqId = '';
+        let title = '';
+        let userStory = '';
+        let acceptanceCriteria = '';
+        
+        // Pattern 1: [Number, ID, Title, User Story, Acceptance Criteria, ...]
+        if (cellTexts.length >= 5) {
+          reqId = cellTexts[1]; // Cell 2 is usually ID
+          title = cellTexts[2]; // Cell 3 is usually Title
+          userStory = cellTexts[3]; // Cell 4 is usually User Story
+          acceptanceCriteria = cellTexts[4]; // Cell 5 is usually Acceptance Criteria
+        }
+        // Pattern 2: [ID, Title, Other...]
+        else if (cellTexts.length >= 2) {
+          reqId = cellTexts[0];
+          title = cellTexts[1];
+          userStory = cellTexts.length > 2 ? cellTexts[2] : '';
+        }
+        
+        // Clean up the ID - should look like REQ-XXX, ARC-XX.XX, etc.
+        reqId = reqId.replace(/\s+/g, ' ').trim();
+        
+        // Skip if no valid ID found (should have alphanumeric with dashes/dots)
+        if (!reqId || !/[A-Z]+[-\.]\d+/.test(reqId)) {
+          continue;
+        }
+        
+        // Build content
+        const contentParts = [`ID: ${reqId}`];
+        if (title) contentParts.push(`Title: ${title}`);
+        if (userStory) contentParts.push(`User Story: ${userStory}`);
+        if (acceptanceCriteria) contentParts.push(`Acceptance Criteria: ${acceptanceCriteria}`);
+        
+        // Add any additional cells as notes
+        if (cellTexts.length > 5) {
+          const notes = cellTexts.slice(5).filter(c => c.length > 0).join('\n');
+          if (notes) contentParts.push(`Additional Info: ${notes}`);
+        }
+        
+        requirements.push({
+          id: reqId,
+          name: title || reqId,
+          content: contentParts.join('\n\n')
+        });
+      }
+    }
+  }
+  
+  console.log('[HTML Parser] Extracted', requirements.length, 'requirements from HTML tables');
+  return requirements;
+}
+
+/**
+ * Strip HTML tags and decode entities
+ */
+function stripHtml(html: string): string {
+  // Remove HTML tags
+  let text = html.replace(/<[^>]+>/g, ' ');
+  
+  // Decode common HTML entities
+  text = text.replace(/&amp;/g, '&');
+  text = text.replace(/&lt;/g, '<');
+  text = text.replace(/&gt;/g, '>');
+  text = text.replace(/&quot;/g, '"');
+  text = text.replace(/&#39;/g, "'");
+  text = text.replace(/&nbsp;/g, ' ');
+  
+  // Clean up whitespace
+  text = text.replace(/\s+/g, ' ').trim();
+  
+  return text;
+}
 
 interface ParsedSection {
   name: string;
@@ -138,6 +273,16 @@ export function parseStructuredDocument(text: string): Requirement[] {
   if (!text.trim()) return [];
   
   console.log('[Document Parser] Parsing document, length:', text.length);
+  
+  // First, try HTML table parsing (for Confluence exports)
+  if (text.includes('<table') || text.includes('<tr')) {
+    console.log('[Document Parser] Detected HTML content, trying HTML parser');
+    const htmlRequirements = parseHtmlTables(text);
+    if (htmlRequirements.length > 0) {
+      console.log('[Document Parser] Successfully extracted', htmlRequirements.length, 'requirements from HTML tables');
+      return htmlRequirements;
+    }
+  }
   
   // Find all sections in the document
   const sections = findSections(text);
