@@ -305,31 +305,33 @@ export function NewGradingJobDialog({
                 </div>
 
                 {teams.length > 0 && (
-                  <div className="space-y-2">
-                    {teams.map((team) => (
-                      <div
-                        key={team.name}
-                        className="flex items-start justify-between p-3 border rounded-lg"
-                      >
-                        <div className="flex-1">
-                          <div className="font-medium">{team.name}</div>
-                          {team.description && (
-                            <div className="text-sm text-muted-foreground">
-                              {team.description}
-                            </div>
-                          )}
-                        </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeTeam(team.name)}
+                  <ScrollArea className="max-h-60 pr-2">
+                    <div className="space-y-2">
+                      {teams.map((team) => (
+                        <div
+                          key={team.name}
+                          className="flex items-start justify-between p-3 border rounded-lg"
                         >
-                          <X size={16} />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
+                          <div className="flex-1">
+                            <div className="font-medium">{team.name}</div>
+                            {team.description && (
+                              <div className="text-sm text-muted-foreground">
+                                {team.description}
+                              </div>
+                            )}
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeTeam(team.name)}
+                          >
+                            <X size={16} />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
                 )}
 
                 <div className="space-y-2 p-4 border rounded-lg bg-muted/50">
