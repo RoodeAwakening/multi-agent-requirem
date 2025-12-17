@@ -10,7 +10,7 @@ import { FilePdf } from "@phosphor-icons/react/dist/csr/FilePdf";
 import { processGradingJob } from "@/lib/requirement-grading-agent";
 import { toast } from "sonner";
 import { marked } from "marked";
-import { exportJobToPDF } from "@/lib/pdf-export";
+import { exportGradingJobToPDF } from "@/lib/pdf-export";
 
 interface GradingJobDetailProps {
   job: GradingJob;
@@ -78,10 +78,8 @@ export function GradingJobDetail({ job, onJobUpdated }: GradingJobDetailProps) {
 
   const handleExportPDF = async () => {
     try {
-      // Create a simple PDF export for grading jobs
-      // We'll use the existing exportJobToPDF but adapt it for grading jobs
-      // For now, just show a message - we'll implement PDF export separately
-      toast.info("PDF export for grading jobs coming soon!");
+      exportGradingJobToPDF(job);
+      toast.success("PDF exported successfully!");
     } catch (error) {
       toast.error(`Failed to export PDF: ${error}`);
     }
