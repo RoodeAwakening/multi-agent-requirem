@@ -19,7 +19,7 @@ const TEXT_EXTENSIONS = [
 ];
 
 // Document file extensions that require special processing
-const DOCUMENT_EXTENSIONS = ['.pdf', '.docx'];
+const DOCUMENT_EXTENSIONS = ['.pdf', '.docx', '.doc'];
 
 /**
  * Check if a file is likely to be a text file based on its extension
@@ -58,14 +58,14 @@ export const readFileContent = (file: File): Promise<string> => {
 };
 
 /**
- * Extract text content from a document file (PDF or DOCX)
+ * Extract text content from a document file (PDF, DOCX, or DOC)
  */
 const extractDocumentContent = async (file: File): Promise<string> => {
   const lowerName = file.name.toLowerCase();
   
   if (lowerName.endsWith('.pdf')) {
     return await extractPdfText(file);
-  } else if (lowerName.endsWith('.docx')) {
+  } else if (lowerName.endsWith('.docx') || lowerName.endsWith('.doc')) {
     return await extractDocxText(file);
   }
   

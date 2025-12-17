@@ -242,6 +242,9 @@ export async function processGradingJob(
     // Call progress BEFORE grading to show current progress
     onProgress?.(i, total, requirement.name);
     
+    // Add a small delay to make progress visible
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
     const graded = await gradeRequirement(requirement, job.teams, aiSettings);
     gradedRequirements.push(graded);
   }

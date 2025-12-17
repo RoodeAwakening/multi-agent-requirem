@@ -211,7 +211,7 @@ export function NewGradingJobDialog({
                       ref={fileInputRef}
                       type="file"
                       onChange={handleFileSelect}
-                      accept=".txt,.md,.pdf,.docx"
+                      accept=".txt,.md,.pdf,.docx,.doc"
                       multiple
                       className="hidden"
                     />
