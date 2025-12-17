@@ -3,14 +3,6 @@ import { Job } from "./types";
 import { OUTPUT_FILES } from "./constants";
 
 // PDF Export Constants
-interface ParsedMarkdownLine {
-  text: string;
-  style: 'normal' | 'bold';
-  fontSize: number;
-  indent: number;
-  color: [number, number, number];
-}
-function parseMarkdownLine(line: string): ParsedMarkdownLine {
 const CODE_BG_PADDING = 1;
 const CODE_BG_HEIGHT_MULTIPLIER = 0.45;
 const CODE_BG_OFFSET = 0.35;
@@ -19,6 +11,14 @@ const CODE_BLOCK_PADDING = 4;
 const FULL_REPORT_PREVIEW_LENGTH = 3000;
 const INDENT_SPACES_PER_LEVEL = 2;
 const INDENT_WIDTH_PER_LEVEL = 5;
+
+interface ParsedMarkdownLine {
+  text: string;
+  style: 'normal' | 'bold';
+  fontSize: number;
+  indent: number;
+  color: [number, number, number];
+}
 
 // Helper to parse markdown and render with formatting
 function parseMarkdownLine(line: string): { text: string; style: 'normal' | 'bold'; fontSize: number; indent: number; color: [number, number, number] } {
