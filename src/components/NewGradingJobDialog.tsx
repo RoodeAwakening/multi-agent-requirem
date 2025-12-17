@@ -170,15 +170,15 @@ export function NewGradingJobDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
-        <DialogHeader>
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+        <DialogHeader className="shrink-0">
           <DialogTitle>New Requirements Grading Job</DialogTitle>
           <DialogDescription>
             Grade and route project requirements to appropriate teams.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
           <ScrollArea className="flex-1 pr-4">
             <div className="space-y-6 pb-6">
               <div className="space-y-2">
@@ -338,7 +338,7 @@ export function NewGradingJobDialog({
             </div>
           </ScrollArea>
 
-          <DialogFooter className="mt-4 shrink-0">
+          <DialogFooter className="mt-4 pt-4 shrink-0 border-t">
             <Button
               type="button"
               variant="outline"
