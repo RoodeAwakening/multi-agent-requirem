@@ -1,4 +1,5 @@
 import { Requirement } from "./types";
+import { callAI, AIModel } from "./ai-client";
 
 /**
  * Parse structured documents to extract individual functional requirements
@@ -10,7 +11,84 @@ import { Requirement } from "./types";
  * - Functional Requirements (focus area)
  * 
  * Also handles HTML table-based requirements exported from Confluence
+ * 
+ * Includes preprocessing agent to clean and organize documents before parsing
  */
+
+/**
+ * Preprocessing agent that cleans and organizes uploaded documents
+ * This agent:
+ * - Standardizes formatting for better parsing
+ * - Identifies and clearly delineates individual requirements
+ * - Preserves all original information (doesn't add or remove content)
+ * - Structures requirements consistently
+ */
+async function preprocessDocument(text: string): Promise<string> {
+  console.log('[Preprocessing Agent] Starting document preprocessing, length:', text.length);
+  
+  // Skip preprocessing for very short documents or if already well-structured
+  if (text.length < 100) {
+    console.log('[Preprocessing Agent] Document too short, skipping preprocessing');
+    return text;
+  }
+  
+  // Skip if already HTML (has good structure)
+  if (text.includes('<table') || text.includes('<tr')) {
+    console.log('[Preprocessing Agent] HTML document detected, skipping preprocessing');
+    return text;
+  }
+  
+  try {
+    // Get AI model from localStorage (same way as ai-client does)
+    const storedModel = localStorage.getItem("ai-model") as AIModel;
+    const model = storedModel || "gemini-2.0-flash-lite"; // Default to fastest model for preprocessing
+    
+    console.log('[Preprocessing Agent] Using model:', model);
+    
+    const prompt = `You are a document preprocessing agent. Your task is to clean and organize the following document to make it easier to parse individual requirements.
+
+IMPORTANT RULES:
+1. DO NOT add any new requirements or information
+2. DO NOT remove any requirements or information
+3. ONLY clean up formatting and organize the content
+4. Clearly separate and label each individual requirement
+5. Preserve all requirement IDs, titles, user stories, acceptance criteria, dependencies, and notes
+6. If requirements are already well-structured, return them as-is with minimal changes
+7. Focus on identifying the "Functional Requirements" section if present
+
+INPUT DOCUMENT:
+${text}
+
+OUTPUT INSTRUCTIONS:
+- Return a cleaned, well-organized version of the document
+- Use clear section headers like "## Functional Requirements"
+- Separate each requirement with a blank line
+- Start each requirement with its ID (if present) on its own line
+- Format like:
+
+Requirement ID: REQ-001
+Title: [Title here]
+User Story: [User story here]
+Acceptance Criteria:
+- [Criteria 1]
+- [Criteria 2]
+
+Requirement ID: REQ-002
+...
+
+Return ONLY the cleaned document, no explanations.`;
+
+    const cleanedText = await callAI(prompt, model);
+    
+    console.log('[Preprocessing Agent] Document preprocessed successfully, new length:', cleanedText.length);
+    return cleanedText;
+    
+  } catch (error) {
+    console.error('[Preprocessing Agent] Error during preprocessing:', error);
+    console.log('[Preprocessing Agent] Falling back to original document');
+    return text; // Fall back to original if preprocessing fails
+  }
+}
 
 /**
  * Parse HTML tables to extract requirements
@@ -343,6 +421,23 @@ function parseExcelCsvFormat(text: string): Requirement[] {
 /**
  * Intelligently parse a document to extract requirements
  * Focuses on Functional Requirements section if present
+ * Uses preprocessing agent to clean and organize the document first
+ */
+export async function parseStructuredDocumentWithPreprocessing(text: string): Promise<Requirement[]> {
+  if (!text.trim()) return [];
+  
+  console.log('[Document Parser] Starting document parsing with preprocessing, length:', text.length);
+  
+  // First, preprocess the document to clean and organize it
+  const preprocessedText = await preprocessDocument(text);
+  
+  // Now parse the preprocessed document
+  return parseStructuredDocument(preprocessedText);
+}
+
+/**
+ * Synchronous version of document parser (without preprocessing)
+ * Used as fallback or when preprocessing is not needed
  */
 export function parseStructuredDocument(text: string): Requirement[] {
   if (!text.trim()) return [];

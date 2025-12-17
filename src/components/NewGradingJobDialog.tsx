@@ -18,7 +18,7 @@ import { Plus } from "@phosphor-icons/react/dist/csr/Plus";
 import { X } from "@phosphor-icons/react/dist/csr/X";
 import { File } from "@phosphor-icons/react/dist/csr/File";
 import { processFiles } from "@/lib/file-utils";
-import { parseStructuredDocument } from "@/lib/document-parser";
+import { parseStructuredDocumentWithPreprocessing, parseStructuredDocument } from "@/lib/document-parser";
 import { toast } from "sonner";
 
 // Default teams from the issue
@@ -116,16 +116,35 @@ export function NewGradingJobDialog({
     }
   };
 
-  const parseRequirements = (text: string): Requirement[] => {
+  const parseRequirements = async (text: string): Promise<Requirement[]> => {
     if (!text.trim()) return [];
     
-    // Use the intelligent document parser
-    const requirements = parseStructuredDocument(text);
-    console.log('[Parse Requirements] Parsed', requirements.length, 'requirement(s)');
-    return requirements;
+    try {
+      // Use the intelligent document parser with preprocessing
+      console.log('[Parse Requirements] Starting parsing with preprocessing...');
+      const requirements = await parseStructuredDocumentWithPreprocessing(text);
+      console.log('[Parse Requirements] Parsed', requirements.length, 'requirement(s)');
+      
+      // If preprocessing didn't find many requirements, try without preprocessing as fallback
+      if (requirements.length <= 1 && text.length > 500) {
+        console.log('[Parse Requirements] Trying fallback without preprocessing...');
+        const fallbackRequirements = parseStructuredDocument(text);
+        if (fallbackRequirements.length > requirements.length) {
+          console.log('[Parse Requirements] Fallback found more requirements:', fallbackRequirements.length);
+          return fallbackRequirements;
+        }
+      }
+      
+      return requirements;
+    } catch (error) {
+      console.error('[Parse Requirements] Error during parsing:', error);
+      // Fallback to synchronous parsing without preprocessing
+      console.log('[Parse Requirements] Falling back to synchronous parsing');
+      return parseStructuredDocument(text);
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!title.trim()) {
@@ -138,7 +157,10 @@ export function NewGradingJobDialog({
       return;
     }
 
-    const requirements = parseRequirements(requirementsText);
+    // Show parsing progress
+    toast.info("Parsing and preprocessing requirements...");
+    
+    const requirements = await parseRequirements(requirementsText);
     
     if (requirements.length === 0) {
       toast.error("Could not parse any requirements from the input");
