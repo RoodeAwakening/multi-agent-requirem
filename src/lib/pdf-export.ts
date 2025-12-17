@@ -428,8 +428,9 @@ export function exportGradingJobToPDF(job: GradingJob) {
       
       doc.setFontSize(11);
       doc.setFont("helvetica", "bold");
-      doc.text(`${req.id}: ${req.name}`, margin, yPosition);
-      yPosition += 6;
+      const titleLines = doc.splitTextToSize(`${req.id}: ${req.name}`, maxWidth);
+      doc.text(titleLines, margin, yPosition);
+      yPosition += titleLines.length * 6;
 
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
