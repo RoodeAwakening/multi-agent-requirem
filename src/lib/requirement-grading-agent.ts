@@ -238,11 +238,16 @@ export async function processGradingJob(
 
   for (let i = 0; i < total; i++) {
     const requirement = job.requirements[i];
-    onProgress?.(i + 1, total, requirement.name);
+    
+    // Call progress BEFORE grading to show current progress
+    onProgress?.(i, total, requirement.name);
     
     const graded = await gradeRequirement(requirement, job.teams, aiSettings);
     gradedRequirements.push(graded);
   }
+  
+  // Call one final time to show completion
+  onProgress?.(total, total, "Generating report...");
 
   // Generate the comprehensive report
   const reportContent = generateGradingReport(job, gradedRequirements);

@@ -215,7 +215,7 @@ export function NewGradingJobDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+      <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>New Requirements Grading Job</DialogTitle>
           <DialogDescription>
@@ -223,7 +223,7 @@ export function NewGradingJobDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
           <ScrollArea className="flex-1 pr-4">
             <div className="space-y-6 pb-4">
               <div className="space-y-2">
@@ -256,7 +256,7 @@ export function NewGradingJobDialog({
                       ref={fileInputRef}
                       type="file"
                       onChange={handleFileSelect}
-                      accept=".txt,.md,.pdf,.doc,.docx"
+                      accept=".txt,.md,.pdf,.docx"
                       multiple
                       className="hidden"
                     />
@@ -272,15 +272,16 @@ export function NewGradingJobDialog({
                     </Button>
                   </div>
                 </div>
-                <Textarea
-                  id="requirements"
-                  value={requirementsText}
-                  onChange={(e) => setRequirementsText(e.target.value)}
-                  placeholder="Paste requirements here... Separate requirements with '---' or use numbered format. You can also load from files."
-                  rows={10}
-                  className="font-mono text-sm"
-                  required
-                />
+                <ScrollArea className="h-64 w-full rounded-md border">
+                  <Textarea
+                    id="requirements"
+                    value={requirementsText}
+                    onChange={(e) => setRequirementsText(e.target.value)}
+                    placeholder="Paste requirements here... Separate requirements with '---' or use numbered format. You can also load from files."
+                    className="font-mono text-sm min-h-64 border-0 focus-visible:ring-0"
+                    required
+                  />
+                </ScrollArea>
                 <p className="text-xs text-muted-foreground">
                   Tip: Separate requirements with "---" or use numbered format (1. Requirement name...)
                 </p>
@@ -305,7 +306,7 @@ export function NewGradingJobDialog({
                 </div>
 
                 {teams.length > 0 && (
-                  <ScrollArea className="max-h-60 pr-2">
+                  <ScrollArea className="max-h-48 pr-2">
                     <div className="space-y-2">
                       {teams.map((team) => (
                         <div
@@ -382,7 +383,7 @@ export function NewGradingJobDialog({
             </div>
           </ScrollArea>
 
-          <DialogFooter className="mt-4">
+          <DialogFooter className="mt-4 shrink-0">
             <Button
               type="button"
               variant="outline"
