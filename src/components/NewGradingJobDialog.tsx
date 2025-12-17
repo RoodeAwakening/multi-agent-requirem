@@ -213,7 +213,7 @@ export function NewGradingJobDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl h-[90vh] flex flex-col relative">
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col relative">
         {/* Loading Overlay */}
         {isProcessing && (
           <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
