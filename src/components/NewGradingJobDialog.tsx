@@ -1,0 +1,365 @@
+import { useState, useRef } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { GradingJob, Requirement, Team } from "@/lib/types";
+import { generateJobId } from "@/lib/constants";
+import { Plus } from "@phosphor-icons/react/dist/csr/Plus";
+import { X } from "@phosphor-icons/react/dist/csr/X";
+import { File } from "@phosphor-icons/react/dist/csr/File";
+import { processFiles } from "@/lib/file-utils";
+import { toast } from "sonner";
+
+interface NewGradingJobDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onJobCreated: (job: GradingJob) => void;
+}
+
+export function NewGradingJobDialog({
+  open,
+  onOpenChange,
+  onJobCreated,
+}: NewGradingJobDialogProps) {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [requirementsText, setRequirementsText] = useState("");
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [newTeamName, setNewTeamName] = useState("");
+  const [newTeamDescription, setNewTeamDescription] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    setIsLoading(true);
+    try {
+      const result = await processFiles(files, []);
+      
+      // Combine all file contents as requirements text
+      const combinedContent = result.referenceFiles
+        .map(f => `# ${f.name}\n\n${f.content}`)
+        .join('\n\n---\n\n');
+      
+      setRequirementsText(prev => 
+        prev ? `${prev}\n\n---\n\n${combinedContent}` : combinedContent
+      );
+      
+      toast.success(`Loaded ${result.referenceFiles.length} file(s)`);
+    } catch (error) {
+      toast.error(`Failed to load files: ${error}`);
+    } finally {
+      setIsLoading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const addTeam = () => {
+    if (!newTeamName.trim()) {
+      toast.error("Team name is required");
+      return;
+    }
+    
+    if (teams.some(t => t.name === newTeamName.trim())) {
+      toast.error("Team already exists");
+      return;
+    }
+
+    setTeams([...teams, { 
+      name: newTeamName.trim(), 
+      description: newTeamDescription.trim() 
+    }]);
+    setNewTeamName("");
+    setNewTeamDescription("");
+  };
+
+  const removeTeam = (teamName: string) => {
+    setTeams(teams.filter(t => t.name !== teamName));
+  };
+
+  const parseRequirements = (text: string): Requirement[] => {
+    if (!text.trim()) return [];
+
+    // Try to parse requirements from the text
+    // Expected format: Each requirement should be separated by "---" or similar
+    // or have numbered format like "1. Name: description"
+    const requirements: Requirement[] = [];
+    
+    // Split by section breaks or numbered items
+    const sections = text.split(/\n---+\n|\n(?=\d+\.\s)/);
+    
+    let idCounter = 1;
+    sections.forEach(section => {
+      const trimmed = section.trim();
+      if (!trimmed) return;
+
+      // Try to extract name from first line or numbered format
+      const lines = trimmed.split('\n');
+      let name = '';
+      let content = trimmed;
+
+      // Check for "# Title" format
+      const titleMatch = trimmed.match(/^#\s+(.+)/m);
+      if (titleMatch) {
+        name = titleMatch[1].trim();
+      } 
+      // Check for "1. Name:" format or just "Name:"
+      else {
+        const nameMatch = trimmed.match(/^(?:\d+\.\s*)?(.+?)(?:\n|$)/);
+        if (nameMatch) {
+          name = nameMatch[1].trim().replace(/:\s*$/, '');
+          // Limit name length
+          if (name.length > 100) {
+            name = name.substring(0, 100);
+          }
+        }
+      }
+
+      if (!name) {
+        name = `Requirement ${idCounter}`;
+      }
+
+      requirements.push({
+        id: `REQ-${String(idCounter).padStart(3, '0')}`,
+        name,
+        content: trimmed,
+      });
+      idCounter++;
+    });
+
+    return requirements;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!title.trim()) {
+      toast.error("Title is required");
+      return;
+    }
+
+    if (!requirementsText.trim()) {
+      toast.error("Requirements are required");
+      return;
+    }
+
+    const requirements = parseRequirements(requirementsText);
+    
+    if (requirements.length === 0) {
+      toast.error("Could not parse any requirements from the input");
+      return;
+    }
+
+    const newJob: GradingJob = {
+      id: generateJobId(),
+      title: title.trim(),
+      description: description.trim(),
+      requirements,
+      teams,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      status: "new",
+    };
+
+    onJobCreated(newJob);
+    
+    // Reset form
+    setTitle("");
+    setDescription("");
+    setRequirementsText("");
+    setTeams([]);
+    setNewTeamName("");
+    setNewTeamDescription("");
+    
+    onOpenChange(false);
+    toast.success(`Created grading job with ${requirements.length} requirements`);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle>New Requirements Grading Job</DialogTitle>
+          <DialogDescription>
+            Grade and route project requirements to appropriate teams.
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+          <ScrollArea className="flex-1 pr-4">
+            <div className="space-y-6 pb-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Job Title *</Label>
+                <Input
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="e.g., Q1 2024 Requirements Review"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Brief description of this grading job..."
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="requirements">Requirements *</Label>
+                  <div>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      onChange={handleFileSelect}
+                      accept=".txt,.md,.pdf,.doc,.docx"
+                      multiple
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isLoading}
+                    >
+                      <File className="mr-2" size={16} />
+                      Load from File(s)
+                    </Button>
+                  </div>
+                </div>
+                <Textarea
+                  id="requirements"
+                  value={requirementsText}
+                  onChange={(e) => setRequirementsText(e.target.value)}
+                  placeholder="Paste requirements here... Separate requirements with '---' or use numbered format. You can also load from files."
+                  rows={10}
+                  className="font-mono text-sm"
+                  required
+                />
+                <p className="text-xs text-muted-foreground">
+                  Tip: Separate requirements with "---" or use numbered format (1. Requirement name...)
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <Label>Teams (Optional)</Label>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Add teams that can handle requirements. Graded requirements will be automatically assigned.
+                  </p>
+                </div>
+
+                {teams.length > 0 && (
+                  <div className="space-y-2">
+                    {teams.map((team) => (
+                      <div
+                        key={team.name}
+                        className="flex items-start justify-between p-3 border rounded-lg"
+                      >
+                        <div className="flex-1">
+                          <div className="font-medium">{team.name}</div>
+                          {team.description && (
+                            <div className="text-sm text-muted-foreground">
+                              {team.description}
+                            </div>
+                          )}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeTeam(team.name)}
+                        >
+                          <X size={16} />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="space-y-2 p-4 border rounded-lg bg-muted/50">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="teamName" className="text-sm">Team Name</Label>
+                      <Input
+                        id="teamName"
+                        value={newTeamName}
+                        onChange={(e) => setNewTeamName(e.target.value)}
+                        placeholder="e.g., Data Supply Chain"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addTeam();
+                          }
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="teamDesc" className="text-sm">Description</Label>
+                      <Input
+                        id="teamDesc"
+                        value={newTeamDescription}
+                        onChange={(e) => setNewTeamDescription(e.target.value)}
+                        placeholder="What this team handles..."
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addTeam();
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={addTeam}
+                    className="w-full"
+                  >
+                    <Plus className="mr-2" size={16} />
+                    Add Team
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </ScrollArea>
+
+          <DialogFooter className="mt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isLoading}>
+              Create Grading Job
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
