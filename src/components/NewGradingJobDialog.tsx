@@ -282,6 +282,11 @@ export function NewGradingJobDialog({
                     </Button>
                   </div>
                 </div>
+                <div className="rounded-md border border-blue-200 bg-blue-50 p-3 mb-2">
+                  <p className="text-xs text-blue-900 font-medium">
+                    📊 <strong>Recommended:</strong> Excel/XLSX format is the preferred document type for best results. Clean, formatted Excel spreadsheets with requirement IDs, titles, user stories, and acceptance criteria parse most reliably.
+                  </p>
+                </div>
                 <ScrollArea className="h-40 w-full rounded-md border">
                   <Textarea
                     id="requirements"
