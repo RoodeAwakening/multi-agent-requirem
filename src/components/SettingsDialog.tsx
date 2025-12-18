@@ -1255,9 +1255,10 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemo
             >
               Switch Without Migrating
             </Button>
-            <AlertDialogAction
-              disabled={isMigrating || isSelectingDirectory}
+              <AlertDialogAction
+                disabled={isMigrating || isSelectingDirectory}
               onClick={async () => {
+                let shouldCloseDialog = true;
                 try {
                   let directoryHandle = getCachedDirectoryHandle();
                   
@@ -1268,6 +1269,7 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemo
 
                       if (!directoryHandle) {
                         toast.error("Please select a storage directory to migrate your data.");
+                        shouldCloseDialog = false;
                         return;
                       }
 
@@ -1277,6 +1279,7 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemo
                       const selectionErrorMessage =
                         selectionError instanceof Error ? selectionError.message : "Unknown error";
                       toast.error(`Failed to select storage directory: ${selectionErrorMessage}`);
+                      shouldCloseDialog = false;
                       return;
                     } finally {
                       setIsSelectingDirectory(false);
@@ -1311,7 +1314,9 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemo
                 } finally {
                   setIsMigrating(false);
                   setIsSelectingDirectory(false);
-                  setShowMigrationWarning(false);
+                  if (shouldCloseDialog) {
+                    setShowMigrationWarning(false);
+                  }
                 }
               }}
             >
