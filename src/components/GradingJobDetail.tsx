@@ -210,7 +210,7 @@ export function GradingJobDetail({ job, onJobUpdated }: GradingJobDetailProps) {
               )}
               {req.splitNote && (
                 <div className="flex items-center gap-2 text-sm text-amber-700 font-medium">
-                  <Warning size={16} aria-hidden="true" />
+                  <Warning size={16} aria-label="Split warning" role="img" />
                   <span>
                     <span className="sr-only">Split warning:</span> Split: {req.splitNote}
                   </span>
@@ -235,7 +235,7 @@ export function GradingJobDetail({ job, onJobUpdated }: GradingJobDetailProps) {
 
             {!req.teamReady && req.notReadyNotes && (
               <div className="mt-3 flex items-center gap-2 text-sm text-amber-700">
-                <Warning size={16} aria-hidden="true" />
+                <Warning size={16} aria-label="Not ready warning" role="img" />
                 <span>
                   <span className="sr-only">Not ready:</span>
                   Not Ready: {req.notReadyNotes}
