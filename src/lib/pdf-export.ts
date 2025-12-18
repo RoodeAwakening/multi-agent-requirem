@@ -1,6 +1,7 @@
 import jsPDF from "jspdf";
 import { Job, GradingJob, GradedRequirement } from "./types";
 import { OUTPUT_FILES } from "./constants";
+import { normalizeRequirementName } from "./requirement-grading-agent";
 
 // PDF Export Constants
 const CODE_BG_PADDING = 1;
