@@ -381,7 +381,7 @@ function parseExcelCsvFormat(text: string): Requirement[] {
         const nextLine = lines[j];
         
         // Stop if we hit another requirement ID
-        if (reqIdPattern.test(nextLine)) {
+        if (nextLine.match(reqIdPattern)) {
           break;
         }
         
