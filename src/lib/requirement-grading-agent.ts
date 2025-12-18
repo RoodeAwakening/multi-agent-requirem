@@ -217,6 +217,10 @@ async function reviewTeamReadyRequirement(
         ? parsed.acceptanceCriteria.filter((item: unknown) => typeof item === "string" && item.trim().length > 0)
         : [];
 
+    const splitNote = needsSplit
+      ? parsed.splitNote || "Estimated effort exceeds 8 points; split into two deliverable stories."
+      : undefined;
+
     return {
       id: requirement.id,
       name: requirement.name,
@@ -225,15 +229,11 @@ async function reviewTeamReadyRequirement(
       acceptanceCriteria,
       storyPoints: isTeamReady ? normalizedPoints : undefined,
       needsSplit,
-      splitNote: needsSplit
-        ? parsed.splitNote || "Estimated effort exceeds 8 points; split into two deliverable stories."
-        : parsed.splitNote,
+      splitNote,
       productOwnerNotes: parsed.productOwnerNotes || parsed.poNotes || "",
       technicalLeadNotes: parsed.technicalLeadNotes || parsed.techNotes || "",
       notReadyNotes: !isTeamReady
         ? parsed.notReadyNotes ||
-          parsed.productOwnerNotes ||
-          parsed.technicalLeadNotes ||
           "Does not meet the team Definition of Ready."
         : undefined,
       assignedTeam: parsed.assignedTeam || graded.assignedTeam,

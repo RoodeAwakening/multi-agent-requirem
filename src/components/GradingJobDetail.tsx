@@ -207,7 +207,7 @@ export function GradingJobDetail({ job, onJobUpdated }: GradingJobDetailProps) {
                   <span className="font-medium">{req.storyPoints}</span>
                 </div>
               )}
-              {req.needsSplit && req.splitNote && (
+              {req.splitNote && (
                 <div className="text-amber-700 font-medium">
                   Split: {req.splitNote}
                 </div>
