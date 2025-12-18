@@ -215,7 +215,7 @@ export function GradingJobDetail({ job, onJobUpdated }: GradingJobDetailProps) {
                                 Grade {req.grade}
                               </Badge>
                             </div>
-                            <h3 className="font-semibold">{normalizeRequirementName(req.name)}</h3>
+                            <h3 className="font-semibold">{req.name}</h3>
                           </div>
                         </div>
                         
