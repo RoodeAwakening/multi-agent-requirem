@@ -65,3 +65,39 @@ export interface OutputFile {
   step: PipelineStepId;
   icon: string;
 }
+
+// Requirement Grading Types
+export type RequirementGrade = "A" | "B" | "C" | "D" | "F";
+
+export interface Team {
+  name: string;
+  description: string;
+}
+
+export interface Requirement {
+  id: string;
+  name: string;
+  content: string;
+}
+
+export interface GradedRequirement {
+  id: string;
+  name: string;
+  grade: RequirementGrade;
+  explanation: string;
+  readyForHandoff: boolean;
+  assignedTeam?: string;
+}
+
+export interface GradingJob {
+  id: string;
+  title: string;
+  description: string;
+  requirements: Requirement[];
+  teams: Team[];
+  createdAt: string;
+  updatedAt: string;
+  status: JobStatus;
+  gradedRequirements?: GradedRequirement[];
+  reportContent?: string; // Full markdown report
+}

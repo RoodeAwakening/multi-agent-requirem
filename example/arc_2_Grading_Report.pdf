@@ -1,0 +1,706 @@
+%PDF-1.3
+%ºß¬à
+3 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 4 0 R
+>>
+endobj
+4 0 obj
+<<
+/Length 4298
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F2 18 Tf
+20.6999999999999993 TL
+0 g
+56.6929133858267775 785.1970866141732586 Td
+(Requirements Grading Report) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 756.8506299212598378 Td
+(Job: arc 2) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 739.8427559055118081 Td
+(Date: 12/17/2025, 2:57:46 PM) Tj
+ET
+BT
+/F2 14 Tf
+16.0999999999999979 TL
+0 g
+56.6929133858267775 711.4962992125983874 Td
+(Summary) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 688.819133858267719 Td
+(Total Requirements: 10) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 671.8112598425196893 Td
+(Ready for Handoff: 5 \(50%\)) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 654.8033858267716596 Td
+(Grade Distribution:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+70.8661417322834666 637.7955118110235162 Td
+(  A \(Excellent\): 1) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+70.8661417322834666 620.7876377952754865 Td
+(  B \(Good\): 4) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+70.8661417322834666 603.7797637795274568 Td
+(  C \(Fair\): 0) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+70.8661417322834666 586.7718897637794271 Td
+(  D \(Poor\): 0) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+70.8661417322834666 569.7640157480313974 Td
+(  F \(Unacceptable\): 5) Tj
+ET
+BT
+/F2 14 Tf
+16.0999999999999979 TL
+0 g
+56.6929133858267775 535.748267716535338 Td
+(Graded Requirements) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0 g
+56.6929133858267775 507.4018110236219741 Td
+(ARC-01.01_US-01.a1: ,,,I want to automate Provisioning of Front and Home office employees in Envestnet \(when appropriate\),When a user with a role that requires Envestnet access is present,EVN,Requirements - ARC | ARC 01.01_US 01.a3,KIS: Onboarding a FO user - Wealth / Trust - Confluence) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 490.3939370078739444 Td
+(Grade: B) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 473.3860629921259147 Td
+(Ready for Handoff: Yes) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 456.378188976377885 Td
+(Assigned Team: Wealth Technology) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 439.3703149606298552 Td
+(Explanation: The requirement has a clear user story and a high-level acceptance criterion in a) Tj
+T* (Given/When/Then format. It earns a B because the acceptance criterion is vague \(e.g., 'manually pushed) Tj
+T* (forward'\) and it contains placeholder notes like 'explore RBAC further'. To reach an A, the acceptance criteria) Tj
+T* (must be expanded into a complete list of specific scenarios and all placeholders must be resolved.) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0 g
+56.6929133858267775 360.0002362204724022 Td
+(ARC-01.01_US-01.a2: ,,,I want to have an E2E process flow diagram of the FO-user onboarding process,When that process is being developed,EVN,,) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 342.9923622047243725 Td
+(Grade: F) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 325.9844881889763428 Td
+(Ready for Handoff: No) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 308.9766141732283131 Td
+(Explanation: This requirement describes a request for a documentation artifact \(a process flow diagram\), not) Tj
+T* (a functional software feature. While it uses a user story format, the deliverable is an analysis task for a) Tj
+T* (business analyst or architect, not a software development task. To reach grade A, it must be re-framed to) Tj
+T* (describe a feature to be built within a specific software system.) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0 g
+56.6929133858267775 229.6065354330708033 Td
+(ARC-01.01_US-01.a3: ,,,I want lapses in appropriate FO-related licenses to trigger the temporary disabling of related systems,When these licenses expire,EVN,QAS,) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 212.5986614173227736 Td
+(Grade: F) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 195.5907874015747439 Td
+(Ready for Handoff: No) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 178.5829133858267141 Td
+(Explanation: The requirement is graded F because the formatting is nonsensical, filled with stray commas) Tj
+T* (and unexplained acronyms that make it confusing and indecipherable. To reach grade A, it must be) Tj
+T* (completely rewritten into a clean format, clearly stating the user story and acceptance criteria without the) Tj
+T* (extraneous data.) Tj
+ET
+endstream
+endobj
+5 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 6 0 R
+>>
+endobj
+6 0 obj
+<<
+/Length 5098
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0 g
+56.6929133858267775 785.1970866141732586 Td
+(ARC-01.01_US-01.b: ,,,I want to be automatically granted the appropriate levels of entitlements and access as befits my role,Or a new Envestnet user,EVN,QAS,) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 768.1892125984252289 Td
+(Grade: B) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 751.1813385826771992 Td
+(Ready for Handoff: Yes) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 734.1734645669291695 Td
+(Assigned Team: Data Supply Chain \(DSC\)) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 717.1655905511811397 Td
+(Explanation: The requirement has a clear user story and acceptance criteria, but the criteria are too) Tj
+T* (high-level. To reach Grade A, it needs to specify the exact mapping of user roles to the specific entitlements,) Tj
+T* (clients, and accounts they should be granted in Envestnet.) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0 g
+56.6929133858267775 654.8033858267716596 Td
+(ARC-01.01_US-01.c: ,,,"I want the ability to check that the roles/entitlements specified in IIQ, match the roles/entitlements applied in Envestnet",And that same user has been provisioned with Envestnet access,EVN,QAS,) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 637.7955118110235162 Td
+(Grade: B) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 620.7876377952754865 Td
+(Ready for Handoff: Yes) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 603.7797637795274568 Td
+(Assigned Team: Data Supply Chain \(DSC\)) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 586.7718897637794271 Td
+(Explanation: This requirement received a B because while it contains all necessary sections, the acceptance) Tj
+T* (criteria are too high-level. The 'Then' clause describes the desired capability \('ability to reconcile'\) rather than) Tj
+T* (a specific, testable outcome. To reach grade A, the acceptance criteria should specify what happens when a) Tj
+T* (mismatch is found \(e.g., a report is generated, an alert is sent\).) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0 g
+56.6929133858267775 507.4018110236219741 Td
+(ARC-01.01_US-01.d: ,,,I want to ensure that IIQ’s records will always supersede Envestnet’s records,"When there is a difference between the above, and IIQ’s records",EVN,,) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 490.3939370078739444 Td
+(Grade: A) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 473.3860629921259147 Td
+(Ready for Handoff: Yes) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 456.378188976377885 Td
+(Assigned Team: Data Supply Chain \(DSC\)) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 439.3703149606298552 Td
+(Explanation: This requirement is graded A because the core content is complete, clear, and specific,) Tj
+T* (containing a full user story and actionable Given/When/Then acceptance criteria with a defined scope) Tj
+T* (involving the IIQ and Envestnet systems. Although the content itself meets the A-grade standard, the) Tj
+T* (formatting is extremely poor; cleaning the jumbled text into a standard readable format is recommended for) Tj
+T* (clarity but the requirement is technically complete.) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0 g
+56.6929133858267775 342.9923622047243725 Td
+(ARC-01.01_US-01.e: ,,and the specific capabilities for each role,"I want to identify all of the different unique wealth roles that exist across the FO,MO, and BO, and their capabilities",When we identify all of these roles and capabilities,SF,,) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 325.9844881889763428 Td
+(Grade: F) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 308.9766141732283131 Td
+(Ready for Handoff: No) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 291.9687401574802834 Td
+(Explanation: This requirement is graded F because it describes a business analysis objective \(identify all) Tj
+T* (roles and capabilities\) rather than a specific, actionable software feature. To reach grade A, this analysis must) Tj
+T* (be completed, and the findings must be used to create specific user stories with clear, testable acceptance) Tj
+T* (criteria for a software system.) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0 g
+56.6929133858267775 212.5986614173227736 Td
+(ARC-01.01_US-01.f: ,,,I want all future state roles and responsibilities identified,When those roles are being created and detailed,IDM,,) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 195.5907874015747439 Td
+(Grade: F) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 178.5829133858267141 Td
+(Ready for Handoff: No) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 161.5750393700786844 Td
+(Explanation: The requirement is graded 'F' because the content is poorly formatted and nonsensical as) Tj
+T* (written, appearing to be a garbled data export rather than a coherent user story. To reach Grade A, it must be) Tj
+T* (completely rewritten into a clean, standard format with a clear user story and specific, testable acceptance) Tj
+T* (criteria describing an actual software feature, not a business process.) Tj
+ET
+endstream
+endobj
+7 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 8 0 R
+>>
+endobj
+8 0 obj
+<<
+/Length 1915
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0 g
+56.6929133858267775 785.1970866141732586 Td
+(ARC-01.01_US-01.g: ,,,I want to define and document entitlement criteria for each user type accessing ENV,When a user is assigned to a role within Envestnet,IIQ,,) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 768.1892125984252289 Td
+(Grade: F) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 751.1813385826771992 Td
+(Ready for Handoff: No) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 734.1734645669291695 Td
+(Explanation: This requirement describes a high-level business analysis task \('define and document) Tj
+T* (entitlement criteria'\) rather than a specific, buildable software feature. To reach Grade A, the output of this) Tj
+T* (task should be used to create concrete user stories with testable outcomes, such as configuring a specific) Tj
+T* (role with specific permissions in a particular system.) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0 g
+56.6929133858267775 654.8033858267716596 Td
+(ARC-01.01_US-01.h: ,,,"I want all future state roles that require Envestnet access, to have a unique role in IIQ",When we are creating all these roles in the future state in IIQ,IIQ,,) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 637.7955118110235162 Td
+(Grade: B) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 620.7876377952754865 Td
+(Ready for Handoff: Yes) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 603.7797637795274568 Td
+(Assigned Team: Wealth Technology) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 586.7718897637794271 Td
+(Explanation: The requirement contains a clear user story and a high-level acceptance criterion, but it lacks) Tj
+T* (specificity. To reach Grade A, the acceptance criteria should be expanded to include a list of the specific) Tj
+T* ('future state roles' in Envestnet and how their mapping to unique IIQ roles will be verified.) Tj
+ET
+endstream
+endobj
+1 0 obj
+<</Type /Pages
+/Kids [3 0 R 5 0 R 7 0 R ]
+/Count 3
+>>
+endobj
+9 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+10 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+11 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+12 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+13 0 obj
+<<
+/Type /Font
+/BaseFont /Courier
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+14 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+15 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+16 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+17 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Roman
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+18 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+19 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Italic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+20 0 obj
+<<
+/Type /Font
+/BaseFont /Times-BoldItalic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+21 0 obj
+<<
+/Type /Font
+/BaseFont /ZapfDingbats
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+22 0 obj
+<<
+/Type /Font
+/BaseFont /Symbol
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+2 0 obj
+<<
+/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
+/Font <<
+/F1 9 0 R
+/F2 10 0 R
+/F3 11 0 R
+/F4 12 0 R
+/F5 13 0 R
+/F6 14 0 R
+/F7 15 0 R
+/F8 16 0 R
+/F9 17 0 R
+/F10 18 0 R
+/F11 19 0 R
+/F12 20 0 R
+/F13 21 0 R
+/F14 22 0 R
+>>
+/XObject <<
+>>
+>>
+endobj
+23 0 obj
+<<
+/Producer (jsPDF 3.0.4)
+/CreationDate (D:20251217145832-05'00')
+>>
+endobj
+24 0 obj
+<<
+/Type /Catalog
+/Pages 1 0 R
+/OpenAction [3 0 R /FitH null]
+/PageLayout /OneColumn
+>>
+endobj
+xref
+0 25
+0000000000 65535 f 
+0000011893 00000 n 
+0000013726 00000 n 
+0000000015 00000 n 
+0000000152 00000 n 
+0000004502 00000 n 
+0000004639 00000 n 
+0000009789 00000 n 
+0000009926 00000 n 
+0000011962 00000 n 
+0000012087 00000 n 
+0000012218 00000 n 
+0000012352 00000 n 
+0000012490 00000 n 
+0000012614 00000 n 
+0000012743 00000 n 
+0000012875 00000 n 
+0000013011 00000 n 
+0000013139 00000 n 
+0000013266 00000 n 
+0000013395 00000 n 
+0000013528 00000 n 
+0000013630 00000 n 
+0000013978 00000 n 
+0000014064 00000 n 
+trailer
+<<
+/Size 25
+/Root 24 0 R
+/Info 23 0 R
+/ID [ <BB2C68695D00A93DF46FBC69D266774A> <BB2C68695D00A93DF46FBC69D266774A> ]
+>>
+startxref
+14168
+%%EOF

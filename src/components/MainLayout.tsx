@@ -1,12 +1,19 @@
 import { useState, useEffect } from "react";
-import { Job } from "@/lib/types";
+import { Job, GradingJob } from "@/lib/types";
 import { JobList } from "./JobList";
 import { JobDetail } from "./JobDetail";
 import { NewJobDialog } from "./NewJobDialog";
+import { NewGradingJobDialog } from "./NewGradingJobDialog";
+import { GradingJobList } from "./GradingJobList";
+import { GradingJobDetail } from "./GradingJobDetail";
 import { SettingsDialog } from "./SettingsDialog";
 import { StorageSetupDialog, isStorageSetupComplete } from "./StorageSetupDialog";
 import { ReconnectStorageDialog, needsStorageReconnect } from "./ReconnectStorageDialog";
 import { Button } from "@/components/ui/button";
+// Note: Tabs and TabsList are used for navigation only. TabsContent is not needed
+// as the content areas (JobList/JobDetail vs GradingJobList/GradingJobDetail) are
+// managed separately based on the activeTab state.
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,6 +30,7 @@ import { Gear } from "@phosphor-icons/react/dist/csr/Gear";
 import { Warning } from "@phosphor-icons/react/dist/csr/Warning";
 import { StorageMode } from "@/lib/filesystem-storage";
 import { useJobs } from "@/lib/use-jobs";
+import { useGradingJobs } from "@/lib/use-grading-jobs";
 
 export function MainLayout() {
   // Check if storage setup needs to be shown
@@ -32,8 +40,14 @@ export function MainLayout() {
   // Use the new jobs hook for hybrid storage
   const { jobs, fileSystemError, addJob, updateJob, deleteJob, refreshJobs, setStorageMode, clearFileSystemError } = useJobs();
   
+  // Use grading jobs hook
+  const { gradingJobs, addGradingJob, updateGradingJob, deleteGradingJob } = useGradingJobs();
+  
+  const [activeTab, setActiveTab] = useState<"analysis" | "grading">("analysis");
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  const [selectedGradingJobId, setSelectedGradingJobId] = useState<string | null>(null);
   const [isNewJobDialogOpen, setIsNewJobDialogOpen] = useState(false);
+  const [isNewGradingJobDialogOpen, setIsNewGradingJobDialogOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Check if we need to show storage setup or reconnect dialog on mount
@@ -49,10 +63,12 @@ export function MainLayout() {
   }, []);
 
   const selectedJob = jobs?.find((job) => job.id === selectedJobId);
+  const selectedGradingJob = gradingJobs?.find((job) => job.id === selectedGradingJobId);
 
   const handleJobCreated = async (newJob: Job) => {
     await addJob(newJob);
     setSelectedJobId(newJob.id);
+    setActiveTab("analysis");
   };
 
   const handleJobUpdated = async (updatedJob: Job) => {
@@ -64,6 +80,23 @@ export function MainLayout() {
     // If the deleted job was selected, clear selection
     if (selectedJobId === jobId) {
       setSelectedJobId(null);
+    }
+  };
+
+  const handleGradingJobCreated = async (newJob: GradingJob) => {
+    await addGradingJob(newJob);
+    setSelectedGradingJobId(newJob.id);
+    setActiveTab("grading");
+  };
+
+  const handleGradingJobUpdated = async (updatedJob: GradingJob) => {
+    await updateGradingJob(updatedJob);
+  };
+
+  const handleGradingJobDeleted = async (jobId: string) => {
+    await deleteGradingJob(jobId);
+    if (selectedGradingJobId === jobId) {
+      setSelectedGradingJobId(null);
     }
   };
   
@@ -126,47 +159,101 @@ export function MainLayout() {
               <Gear size={20} />
             </Button>
           </div>
+          
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "analysis" | "grading")} className="mt-4">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="analysis">Analysis</TabsTrigger>
+              <TabsTrigger value="grading">Grading</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
 
         <div className="flex-1 overflow-auto p-4">
-          <JobList
-            jobs={jobs}
-            selectedJobId={selectedJobId}
-            onSelectJob={setSelectedJobId}
-            onDeleteJob={handleJobDeleted}
-          />
+          {activeTab === "analysis" ? (
+            <JobList
+              jobs={jobs}
+              selectedJobId={selectedJobId}
+              onSelectJob={(id) => {
+                setSelectedJobId(id);
+                setSelectedGradingJobId(null);
+              }}
+              onDeleteJob={handleJobDeleted}
+            />
+          ) : (
+            <GradingJobList
+              jobs={gradingJobs}
+              selectedJobId={selectedGradingJobId}
+              onSelectJob={(id) => {
+                setSelectedGradingJobId(id);
+                setSelectedJobId(null);
+              }}
+              onDeleteJob={handleGradingJobDeleted}
+            />
+          )}
         </div>
 
         <div className="p-4 border-t border-border">
-          <Button
-            onClick={() => setIsNewJobDialogOpen(true)}
-            className="w-full"
-            size="lg"
-          >
-            <Plus className="mr-2" />
-            New Task
-          </Button>
+          {activeTab === "analysis" ? (
+            <Button
+              onClick={() => setIsNewJobDialogOpen(true)}
+              className="w-full"
+              size="lg"
+            >
+              <Plus className="mr-2" />
+              New Analysis Task
+            </Button>
+          ) : (
+            <Button
+              onClick={() => setIsNewGradingJobDialogOpen(true)}
+              className="w-full"
+              size="lg"
+            >
+              <Plus className="mr-2" />
+              New Grading Task
+            </Button>
+          )}
         </div>
       </aside>
 
       <main className="flex-1 overflow-auto">
-        {selectedJob ? (
-          <JobDetail job={selectedJob} onJobUpdated={handleJobUpdated} />
-        ) : (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <h2 className="text-2xl font-semibold mb-2">
-                No task selected
-              </h2>
-              <p className="text-muted-foreground mb-6">
-                Create a new task or select one from the list
-              </p>
-              <Button onClick={() => setIsNewJobDialogOpen(true)} size="lg">
-                <Plus className="mr-2" />
-                Create Your First Task
-              </Button>
+        {activeTab === "analysis" ? (
+          selectedJob ? (
+            <JobDetail job={selectedJob} onJobUpdated={handleJobUpdated} />
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <h2 className="text-2xl font-semibold mb-2">
+                  No analysis task selected
+                </h2>
+                <p className="text-muted-foreground mb-6">
+                  Create a new analysis task or select one from the list
+                </p>
+                <Button onClick={() => setIsNewJobDialogOpen(true)} size="lg">
+                  <Plus className="mr-2" />
+                  Create Your First Analysis Task
+                </Button>
+              </div>
             </div>
-          </div>
+          )
+        ) : (
+          selectedGradingJob ? (
+            <GradingJobDetail job={selectedGradingJob} onJobUpdated={handleGradingJobUpdated} />
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <h2 className="text-2xl font-semibold mb-2">
+                  No grading task selected
+                </h2>
+                <p className="text-muted-foreground mb-6">
+                  Create a new grading task or select one from the list
+                </p>
+                <Button onClick={() => setIsNewGradingJobDialogOpen(true)} size="lg">
+                  <Plus className="mr-2" />
+                  Create Your First Grading Task
+                </Button>
+              </div>
+            </div>
+          )
         )}
       </main>
 
@@ -174,6 +261,12 @@ export function MainLayout() {
         open={isNewJobDialogOpen}
         onOpenChange={setIsNewJobDialogOpen}
         onJobCreated={handleJobCreated}
+      />
+
+      <NewGradingJobDialog
+        open={isNewGradingJobDialogOpen}
+        onOpenChange={setIsNewGradingJobDialogOpen}
+        onJobCreated={handleGradingJobCreated}
       />
 
       <SettingsDialog

@@ -1,16 +1,8 @@
 import jsPDF from "jspdf";
-import { Job } from "./types";
+import { Job, GradingJob, GradedRequirement } from "./types";
 import { OUTPUT_FILES } from "./constants";
 
 // PDF Export Constants
-interface ParsedMarkdownLine {
-  text: string;
-  style: 'normal' | 'bold';
-  fontSize: number;
-  indent: number;
-  color: [number, number, number];
-}
-function parseMarkdownLine(line: string): ParsedMarkdownLine {
 const CODE_BG_PADDING = 1;
 const CODE_BG_HEIGHT_MULTIPLIER = 0.45;
 const CODE_BG_OFFSET = 0.35;
@@ -19,6 +11,14 @@ const CODE_BLOCK_PADDING = 4;
 const FULL_REPORT_PREVIEW_LENGTH = 3000;
 const INDENT_SPACES_PER_LEVEL = 2;
 const INDENT_WIDTH_PER_LEVEL = 5;
+
+interface ParsedMarkdownLine {
+  text: string;
+  style: 'normal' | 'bold';
+  fontSize: number;
+  indent: number;
+  color: [number, number, number];
+}
 
 // Helper to parse markdown and render with formatting
 function parseMarkdownLine(line: string): { text: string; style: 'normal' | 'bold'; fontSize: number; indent: number; color: [number, number, number] } {
@@ -335,5 +335,127 @@ export function exportJobToPDF(job: Job, outputFilename?: string) {
     ? `${job.title.replace(/[^a-z0-9]/gi, "_")}_${outputFilename.replace(".md", "")}_v${job.version}.pdf`
     : `${job.title.replace(/[^a-z0-9]/gi, "_")}_Full_Report_v${job.version}.pdf`;
 
+  doc.save(filename);
+}
+
+/**
+ * Export a grading job to PDF
+ */
+export function exportGradingJobToPDF(job: GradingJob) {
+  const doc = new jsPDF();
+  let yPosition = 20;
+  const pageHeight = doc.internal.pageSize.height;
+  const pageWidth = doc.internal.pageSize.width;
+  const margin = 20;
+  const maxWidth = pageWidth - 2 * margin;
+
+  // Helper to check if we need a new page
+  const checkNewPage = (requiredSpace: number = 10) => {
+    if (yPosition + requiredSpace > pageHeight - 20) {
+      doc.addPage();
+      yPosition = 20;
+    }
+  };
+
+  // Add title
+  doc.setFontSize(18);
+  doc.setFont("helvetica", "bold");
+  doc.text("Requirements Grading Report", margin, yPosition);
+  yPosition += 10;
+
+  // Add job info
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.text(`Job: ${job.title}`, margin, yPosition);
+  yPosition += 6;
+  
+  if (job.description) {
+    const descLines = doc.splitTextToSize(job.description, maxWidth);
+    doc.text(descLines, margin, yPosition);
+    yPosition += descLines.length * 6;
+  }
+  
+  doc.text(`Date: ${new Date(job.updatedAt).toLocaleString()}`, margin, yPosition);
+  yPosition += 10;
+
+  // Add summary
+  checkNewPage(30);
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text("Summary", margin, yPosition);
+  yPosition += 8;
+
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  
+  const totalRequirements = job.gradedRequirements?.length || 0;
+  const readyCount = job.gradedRequirements?.filter((r: GradedRequirement) => r.readyForHandoff).length || 0;
+  const gradeDistribution = {
+    A: job.gradedRequirements?.filter((r: GradedRequirement) => r.grade === 'A').length || 0,
+    B: job.gradedRequirements?.filter((r: GradedRequirement) => r.grade === 'B').length || 0,
+    C: job.gradedRequirements?.filter((r: GradedRequirement) => r.grade === 'C').length || 0,
+    D: job.gradedRequirements?.filter((r: GradedRequirement) => r.grade === 'D').length || 0,
+    F: job.gradedRequirements?.filter((r: GradedRequirement) => r.grade === 'F').length || 0,
+  };
+
+  doc.text(`Total Requirements: ${totalRequirements}`, margin, yPosition);
+  yPosition += 6;
+  doc.text(`Ready for Handoff: ${readyCount} (${totalRequirements > 0 ? Math.round(readyCount/totalRequirements*100) : 0}%)`, margin, yPosition);
+  yPosition += 6;
+  doc.text(`Grade Distribution:`, margin, yPosition);
+  yPosition += 6;
+  doc.text(`  A (Excellent): ${gradeDistribution.A}`, margin + 5, yPosition);
+  yPosition += 6;
+  doc.text(`  B (Good): ${gradeDistribution.B}`, margin + 5, yPosition);
+  yPosition += 6;
+  doc.text(`  C (Fair): ${gradeDistribution.C}`, margin + 5, yPosition);
+  yPosition += 6;
+  doc.text(`  D (Poor): ${gradeDistribution.D}`, margin + 5, yPosition);
+  yPosition += 6;
+  doc.text(`  F (Unacceptable): ${gradeDistribution.F}`, margin + 5, yPosition);
+  yPosition += 12;
+
+  // Add graded requirements
+  if (job.gradedRequirements && job.gradedRequirements.length > 0) {
+    checkNewPage(30);
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Graded Requirements", margin, yPosition);
+    yPosition += 10;
+
+    job.gradedRequirements.forEach((req: GradedRequirement) => {
+      checkNewPage(25);
+      
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      const titleLines = doc.splitTextToSize(`${req.id}: ${req.name}`, maxWidth);
+      doc.text(titleLines, margin, yPosition);
+      yPosition += titleLines.length * 6;
+
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      
+      // Grade
+      doc.text(`Grade: ${req.grade}`, margin, yPosition);
+      yPosition += 6;
+      
+      // Ready for handoff
+      doc.text(`Ready for Handoff: ${req.readyForHandoff ? 'Yes' : 'No'}`, margin, yPosition);
+      yPosition += 6;
+      
+      // Assigned team
+      if (req.assignedTeam) {
+        doc.text(`Assigned Team: ${req.assignedTeam}`, margin, yPosition);
+        yPosition += 6;
+      }
+      
+      // Explanation
+      const explLines = doc.splitTextToSize(`Explanation: ${req.explanation}`, maxWidth);
+      doc.text(explLines, margin, yPosition);
+      yPosition += explLines.length * 6 + 4;
+    });
+  }
+
+  const filename = `${job.title.replace(/[^a-z0-9]/gi, "_")}_Grading_Report.pdf`;
   doc.save(filename);
 }
