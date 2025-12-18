@@ -1262,17 +1262,25 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemo
                   let directoryHandle = getCachedDirectoryHandle();
                   
                   if (!directoryHandle) {
-                    setIsSelectingDirectory(true);
-                    directoryHandle = await selectStorageDirectory();
-                    setIsSelectingDirectory(false);
-                    
-                    if (!directoryHandle) {
-                      toast.error("Please select a storage directory to migrate your data.");
+                    try {
+                      setIsSelectingDirectory(true);
+                      directoryHandle = await selectStorageDirectory();
+
+                      if (!directoryHandle) {
+                        toast.error("Please select a storage directory to migrate your data.");
+                        return;
+                      }
+
+                      setDirectoryName(directoryHandle.name);
+                      toast.success(`Storage directory set to: ${directoryHandle.name}`);
+                    } catch (selectionError) {
+                      const selectionErrorMessage =
+                        selectionError instanceof Error ? selectionError.message : "Unknown error";
+                      toast.error(`Failed to select storage directory: ${selectionErrorMessage}`);
                       return;
+                    } finally {
+                      setIsSelectingDirectory(false);
                     }
-                    
-                    setDirectoryName(directoryHandle.name);
-                    toast.success(`Storage directory set to: ${directoryHandle.name}`);
                   }
                   
                   setIsMigrating(true);
