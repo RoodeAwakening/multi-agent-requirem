@@ -760,13 +760,13 @@ export async function saveGradingJobToFileSystem(job: GradingJob): Promise<void>
 /**
  * Load a grading job from the file system
  */
-export async function loadGradingJobFromFileSystem(jobId: string): Promise<GradingJob | null> {
+async function loadGradingJobFromDirectory(baseDir: "grading-jobs" | "grading", jobId: string): Promise<GradingJob | null> {
   if (!cachedDirectoryHandle) {
     return null;
   }
 
   try {
-    const jobPath = ["grading-jobs", jobId];
+    const jobPath = [baseDir, jobId];
 
     // Read job data
     const jobContent = await readFile(cachedDirectoryHandle, jobPath, "job.json");
@@ -782,6 +782,13 @@ export async function loadGradingJobFromFileSystem(jobId: string): Promise<Gradi
   }
 }
 
+export async function loadGradingJobFromFileSystem(jobId: string): Promise<GradingJob | null> {
+  // Prefer current directory structure, but fall back to legacy "grading" folder
+  const job = await loadGradingJobFromDirectory("grading-jobs", jobId);
+  if (job) return job;
+  return loadGradingJobFromDirectory("grading", jobId);
+}
+
 /**
  * Load all grading jobs from the file system
  */
@@ -791,10 +798,21 @@ export async function loadAllGradingJobsFromFileSystem(): Promise<GradingJob[]> 
   }
 
   try {
-    const jobIds = await listDirectory(cachedDirectoryHandle, ["grading-jobs"]);
-    
+    const primaryIds = await listDirectory(cachedDirectoryHandle, ["grading-jobs"]);
+    const legacyIds = await listDirectory(cachedDirectoryHandle, ["grading"]);
+
+    // Deduplicate ids (prefer primary directory when present)
+    const jobDescriptors: Array<{ id: string; dir: "grading-jobs" | "grading" }> = [
+      ...primaryIds.map((id) => ({ id, dir: "grading-jobs" as const })),
+    ];
+    legacyIds.forEach((id) => {
+      if (!primaryIds.includes(id)) {
+        jobDescriptors.push({ id, dir: "grading" });
+      }
+    });
+
     // Load all grading jobs concurrently for better performance
-    const jobPromises = jobIds.map((jobId) => loadGradingJobFromFileSystem(jobId));
+    const jobPromises = jobDescriptors.map(({ id, dir }) => loadGradingJobFromDirectory(dir, id));
     const loadedJobs = await Promise.all(jobPromises);
     const jobs = loadedJobs.filter((job): job is GradingJob => job !== null);
 

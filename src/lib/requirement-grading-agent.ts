@@ -2,6 +2,10 @@ import { GradingJob, GradedRequirement, RequirementGrade, Requirement, Team } fr
 import { callAI, AISettings } from "./ai-client";
 import { getStoredValue } from "./storage";
 
+export function normalizeRequirementName(name: string): string {
+  return name.replace(/^Title:\s*/i, "").trim();
+}
+
 /**
  * Grading rubric based on the issue requirements
  */
@@ -116,7 +120,7 @@ async function gradeRequirement(
     
     return {
       id: requirement.id,
-      name: requirement.name,
+      name: normalizeRequirementName(requirement.name),
       grade: parsed.grade as RequirementGrade,
       explanation: parsed.explanation,
       readyForHandoff: parsed.readyForHandoff,
@@ -127,7 +131,7 @@ async function gradeRequirement(
     // Return a default failed grade
     return {
       id: requirement.id,
-      name: requirement.name,
+      name: normalizeRequirementName(requirement.name),
       grade: "F",
       explanation: `Error during grading: ${error instanceof Error ? error.message : String(error)}`,
       readyForHandoff: false,
@@ -240,7 +244,7 @@ export async function processGradingJob(
     const requirement = job.requirements[i];
     
     // Call progress BEFORE grading to show current progress
-    onProgress?.(i, total, requirement.name);
+    onProgress?.(i, total, normalizeRequirementName(requirement.name));
     
     // Add a small delay to make progress visible
     await new Promise(resolve => setTimeout(resolve, 100));
