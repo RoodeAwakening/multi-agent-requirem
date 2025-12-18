@@ -180,8 +180,6 @@ export function NewGradingJobDialog({
       return;
     }
     
-    // Show count of parsed requirements
-    console.log('[Submit] Creating grading job with', requirements.length, 'requirement(s)');
     toast.success(`Parsed ${requirements.length} requirement(s) - creating grading job...`);
 
     const newJob: GradingJob = {
