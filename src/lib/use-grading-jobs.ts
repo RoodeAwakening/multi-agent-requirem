@@ -40,10 +40,15 @@ export function useGradingJobs(): {
     setStoredJobs((prev) => (prev || []).filter((j) => j.id !== jobId));
   }, [setStoredJobs]);
 
-  // Refresh grading jobs (mainly for consistency with useJobs interface)
+  // Refresh grading jobs.
+  // Note: This is intentionally a no-op. The `useStoredValue` hook already keeps
+  // `gradingJobs` in sync with localStorage/reactive state, so there is no extra
+  // work needed to "refresh" them. This function exists to keep the API surface
+  // consistent with other hooks (e.g. `useJobs`) and as a future extension point
+  // if explicit refresh behavior is ever required (for example, to re-read from a
+  // different backing store or to force-sync across tabs).
   const refreshGradingJobs = useCallback(() => {
-    // Jobs are already reactive through useStoredValue
-    // This is mainly a no-op but kept for API consistency
+    // Intentionally left blank: see detailed comment above.
   }, []);
 
   return {
