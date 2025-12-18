@@ -208,8 +208,9 @@ export function GradingJobDetail({ job, onJobUpdated }: GradingJobDetailProps) {
                 </div>
               )}
               {req.splitNote && (
-                <div className="text-amber-700 font-medium">
-                  Split: {req.splitNote}
+                <div className="flex items-center gap-2 text-sm text-amber-700 font-medium">
+                  <span aria-hidden="true">⚠️</span>
+                  <span>Split: {req.splitNote}</span>
                 </div>
               )}
             </div>
@@ -230,8 +231,9 @@ export function GradingJobDetail({ job, onJobUpdated }: GradingJobDetailProps) {
             </div>
 
             {!req.teamReady && req.notReadyNotes && (
-              <div className="mt-3 text-sm text-amber-700">
-                Not Ready: {req.notReadyNotes}
+              <div className="mt-3 flex items-center gap-2 text-sm text-amber-700">
+                <span aria-hidden="true">⚠️</span>
+                <span>Not Ready: {req.notReadyNotes}</span>
               </div>
             )}
           </Card>
