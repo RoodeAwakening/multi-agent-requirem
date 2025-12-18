@@ -64,12 +64,10 @@ const TEAM_READY_DEFINITION = `
 - Clear, INVEST-aligned user story (As a... I want... so that...).
 - Acceptance criteria in Given/When/Then that are testable and cover edge cases.
 - Dependencies, assumptions, and non-functional needs are explicit.
-- No unresolved placeholders; scope is small enough to deliver in a sprint.
-- Estimated at 8 story points or less. If larger, mark needsSplit=true and explain how it will be split into 2 smaller stories.
+- No unresolved placeholders; scope is well understood.
+- Estimate using Fibonacci sizing. If it feels too large, optionally suggest a sensible split, but do not block readiness solely on size.
 - Only create a user story when the item meets this definition. Otherwise, provide concise notes on what is missing.
 `;
-
-const MAX_STORY_POINTS = 8;
 
 /**
  * Generate the prompt for grading a single requirement
@@ -211,8 +209,8 @@ async function reviewTeamReadyRequirement(
 
     const parsed = JSON.parse(cleanedResponse);
     const rawStoryPoints = typeof parsed.storyPoints === "number" ? parsed.storyPoints : undefined;
-    const needsSplit = Boolean(parsed.needsSplit || (rawStoryPoints !== undefined && rawStoryPoints > MAX_STORY_POINTS));
-    const normalizedPoints = rawStoryPoints !== undefined ? Math.min(rawStoryPoints, MAX_STORY_POINTS) : undefined;
+    const needsSplit = Boolean(parsed.needsSplit);
+    const normalizedPoints = rawStoryPoints;
 
     const isTeamReady = Boolean(parsed.teamReady);
     const acceptanceCriteria =
