@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Play } from "@phosphor-icons/react/dist/csr/Play";
 import { FilePdf } from "@phosphor-icons/react/dist/csr/FilePdf";
+import { Warning } from "@phosphor-icons/react/dist/csr/Warning";
 import { processGradingJob, processTeamReadyReview } from "@/lib/requirement-grading-agent";
 import { toast } from "sonner";
 import { marked } from "marked";
@@ -209,8 +210,10 @@ export function GradingJobDetail({ job, onJobUpdated }: GradingJobDetailProps) {
               )}
               {req.splitNote && (
                 <div className="flex items-center gap-2 text-sm text-amber-700 font-medium">
-                  <span aria-hidden="true">⚠️</span>
-                  <span>Split: {req.splitNote}</span>
+                  <Warning size={16} aria-hidden="true" />
+                  <span>
+                    <span className="sr-only">Split warning:</span> Split: {req.splitNote}
+                  </span>
                 </div>
               )}
             </div>
@@ -232,8 +235,11 @@ export function GradingJobDetail({ job, onJobUpdated }: GradingJobDetailProps) {
 
             {!req.teamReady && req.notReadyNotes && (
               <div className="mt-3 flex items-center gap-2 text-sm text-amber-700">
-                <span aria-hidden="true">⚠️</span>
-                <span>Not Ready: {req.notReadyNotes}</span>
+                <Warning size={16} aria-hidden="true" />
+                <span>
+                  <span className="sr-only">Not ready:</span>
+                  Not Ready: {req.notReadyNotes}
+                </span>
               </div>
             )}
           </Card>
