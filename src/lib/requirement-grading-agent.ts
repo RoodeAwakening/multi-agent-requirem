@@ -2,6 +2,10 @@ import { GradingJob, GradedRequirement, RequirementGrade, Requirement, Team } fr
 import { callAI, AISettings } from "./ai-client";
 import { getStoredValue } from "./storage";
 
+export function normalizeRequirementName(name: string): string {
+  return name.replace(/^Title:\s*/i, "").trim();
+}
+
 /**
  * Grading rubric based on the issue requirements
  */
@@ -116,7 +120,7 @@ async function gradeRequirement(
     
     return {
       id: requirement.id,
-      name: requirement.name,
+      name: normalizeRequirementName(requirement.name),
       grade: parsed.grade as RequirementGrade,
       explanation: parsed.explanation,
       readyForHandoff: parsed.readyForHandoff,
@@ -127,7 +131,7 @@ async function gradeRequirement(
     // Return a default failed grade
     return {
       id: requirement.id,
-      name: requirement.name,
+      name: normalizeRequirementName(requirement.name),
       grade: "F",
       explanation: `Error during grading: ${error instanceof Error ? error.message : String(error)}`,
       readyForHandoff: false,
@@ -171,22 +175,24 @@ function generateGradingReport(
   report += `| Requirement ID | Requirement Name | Grade | Ready for Handoff | Assigned Team | Explanation |\n`;
   report += `|---------------|------------------|-------|-------------------|---------------|-------------|\n`;
   
-  gradedRequirements.forEach(req => {
-    const readyText = req.readyForHandoff ? 'Yes' : 'No';
-    const teamText = req.assignedTeam || '-';
-    report += `| ${req.id} | ${req.name} | ${req.grade} | ${readyText} | ${teamText} | ${req.explanation} |\n`;
-  });
+   gradedRequirements.forEach(req => {
+     const requirementName = normalizeRequirementName(req.name);
+     const readyText = req.readyForHandoff ? 'Yes' : 'No';
+     const teamText = req.assignedTeam || '-';
+     report += `| ${req.id} | ${requirementName} | ${req.grade} | ${readyText} | ${teamText} | ${req.explanation} |\n`;
+   });
 
   report += `\n## Recommendations\n\n`;
   
   const needsWork = gradedRequirements.filter(r => !r.readyForHandoff);
-  if (needsWork.length > 0) {
-    report += `### Requirements Needing Refinement (${needsWork.length})\n\n`;
-    needsWork.forEach(req => {
-      report += `#### ${req.id}: ${req.name}\n`;
-      report += `- **Grade:** ${req.grade}\n`;
-      report += `- **Issue:** ${req.explanation}\n\n`;
-    });
+   if (needsWork.length > 0) {
+     report += `### Requirements Needing Refinement (${needsWork.length})\n\n`;
+     needsWork.forEach(req => {
+       const requirementName = normalizeRequirementName(req.name);
+       report += `#### ${req.id}: ${requirementName}\n`;
+       report += `- **Grade:** ${req.grade}\n`;
+       report += `- **Issue:** ${req.explanation}\n\n`;
+     });
   }
 
   const ready = gradedRequirements.filter(r => r.readyForHandoff);
@@ -203,13 +209,14 @@ function generateGradingReport(
       byTeam.get(team)!.push(req);
     });
 
-    byTeam.forEach((reqs, team) => {
-      report += `#### ${team} (${reqs.length} requirements)\n`;
-      reqs.forEach(req => {
-        report += `- ${req.id}: ${req.name} (Grade: ${req.grade})\n`;
-      });
-      report += `\n`;
-    });
+     byTeam.forEach((reqs, team) => {
+       report += `#### ${team} (${reqs.length} requirements)\n`;
+       reqs.forEach(req => {
+         const requirementName = normalizeRequirementName(req.name);
+         report += `- ${req.id}: ${requirementName} (Grade: ${req.grade})\n`;
+       });
+       report += `\n`;
+     });
   }
 
   return report;
@@ -240,7 +247,7 @@ export async function processGradingJob(
     const requirement = job.requirements[i];
     
     // Call progress BEFORE grading to show current progress
-    onProgress?.(i, total, requirement.name);
+    onProgress?.(i, total, normalizeRequirementName(requirement.name));
     
     // Add a small delay to make progress visible
     await new Promise(resolve => setTimeout(resolve, 100));

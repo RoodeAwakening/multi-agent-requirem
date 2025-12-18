@@ -1,6 +1,7 @@
 import jsPDF from "jspdf";
 import { Job, GradingJob, GradedRequirement } from "./types";
 import { OUTPUT_FILES } from "./constants";
+import { normalizeRequirementName } from "./requirement-grading-agent";
 
 // PDF Export Constants
 const CODE_BG_PADDING = 1;
@@ -428,7 +429,8 @@ export function exportGradingJobToPDF(job: GradingJob) {
       
       doc.setFontSize(11);
       doc.setFont("helvetica", "bold");
-      const titleLines = doc.splitTextToSize(`${req.id}: ${req.name}`, maxWidth);
+      const displayName = normalizeRequirementName(req.name);
+      const titleLines = doc.splitTextToSize(`${req.id}: ${displayName}`, maxWidth);
       doc.text(titleLines, margin, yPosition);
       yPosition += titleLines.length * 6;
 

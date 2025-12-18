@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Play } from "@phosphor-icons/react/dist/csr/Play";
 import { FilePdf } from "@phosphor-icons/react/dist/csr/FilePdf";
-import { processGradingJob } from "@/lib/requirement-grading-agent";
+import { normalizeRequirementName, processGradingJob } from "@/lib/requirement-grading-agent";
 import { toast } from "sonner";
 import { marked } from "marked";
 import { exportGradingJobToPDF } from "@/lib/pdf-export";
@@ -215,7 +215,7 @@ export function GradingJobDetail({ job, onJobUpdated }: GradingJobDetailProps) {
                                 Grade {req.grade}
                               </Badge>
                             </div>
-                            <h3 className="font-semibold">{req.name}</h3>
+                            <h3 className="font-semibold">{normalizeRequirementName(req.name)}</h3>
                           </div>
                         </div>
                         
