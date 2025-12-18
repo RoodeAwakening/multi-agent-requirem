@@ -1208,15 +1208,22 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemo
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Migrate Data to File System?</AlertDialogTitle>
-            <AlertDialogDescription>
-              You have data stored in browser storage:
-              {localStorageJobs.length > 0 && (
-                <div className="mt-2">• {localStorageJobs.length} analysis task{localStorageJobs.length !== 1 ? 's' : ''}</div>
-              )}
-              {localStorageGradingJobs.length > 0 && (
-                <div>• {localStorageGradingJobs.length} grading job{localStorageGradingJobs.length !== 1 ? 's' : ''}</div>
-              )}
-              <div className="mt-2">Would you like to migrate all data to file system storage?</div>
+            <AlertDialogDescription asChild>
+              <div>
+                <p>You have data stored in browser storage:</p>
+                {localStorageJobs.length > 0 && (
+                  <p className="mt-2">• {localStorageJobs.length} analysis task{localStorageJobs.length !== 1 ? 's' : ''}</p>
+                )}
+                {localStorageGradingJobs.length > 0 && (
+                  <p>• {localStorageGradingJobs.length} grading job{localStorageGradingJobs.length !== 1 ? 's' : ''}</p>
+                )}
+                <p className="mt-2">Would you like to migrate all data to file system storage?</p>
+                {!getCachedDirectoryHandle() && (
+                  <p className="mt-3 text-amber-600 dark:text-amber-400 font-medium">
+                    ⚠️ Please select a storage directory using "Select Folder" button below before migrating.
+                  </p>
+                )}
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col sm:flex-row gap-2">
