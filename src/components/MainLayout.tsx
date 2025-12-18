@@ -41,7 +41,7 @@ export function MainLayout() {
   const { jobs, fileSystemError, addJob, updateJob, deleteJob, refreshJobs, setStorageMode, clearFileSystemError } = useJobs();
   
   // Use grading jobs hook
-  const { gradingJobs, addGradingJob, updateGradingJob, deleteGradingJob } = useGradingJobs();
+  const { gradingJobs, addGradingJob, updateGradingJob, deleteGradingJob, refreshGradingJobs, setStorageMode: setGradingStorageMode } = useGradingJobs();
   
   const [activeTab, setActiveTab] = useState<"analysis" | "grading">("analysis");
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
@@ -102,12 +102,15 @@ export function MainLayout() {
   
   const handleStorageSetupComplete = (mode: StorageMode) => {
     setStorageMode(mode);
+    setGradingStorageMode(mode);
     setShowStorageSetup(false);
   };
   
   const handleStorageModeChange = (mode: StorageMode) => {
     setStorageMode(mode);
     refreshJobs();
+    setGradingStorageMode(mode);
+    refreshGradingJobs();
   };
   
   const handleDemoCreated = async (demoJob: Job) => {
@@ -121,11 +124,14 @@ export function MainLayout() {
     setShowReconnectDialog(false);
     setStorageMode("fileSystem");
     refreshJobs();
+    setGradingStorageMode("fileSystem");
+    refreshGradingJobs();
   };
   
   const handleUseBrowserStorage = () => {
     setShowReconnectDialog(false);
     setStorageMode("localStorage");
+    setGradingStorageMode("localStorage");
   };
   
   const handleFileSystemErrorDismiss = () => {
