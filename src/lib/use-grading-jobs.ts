@@ -2,7 +2,7 @@
  * Custom hook for managing grading jobs with localStorage storage.
  */
 
-import { useState, useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { GradingJob } from "./types";
 import { useStoredValue } from "./storage";
 
@@ -12,14 +12,12 @@ import { useStoredValue } from "./storage";
  */
 export function useGradingJobs(): {
   gradingJobs: GradingJob[];
-  isLoading: boolean;
   addGradingJob: (job: GradingJob) => Promise<void>;
   updateGradingJob: (job: GradingJob) => Promise<void>;
   deleteGradingJob: (jobId: string) => Promise<void>;
   refreshGradingJobs: () => void;
 } {
   const [storedJobs, setStoredJobs] = useStoredValue<GradingJob[]>("grading-jobs", []);
-  const [isLoading, setIsLoading] = useState(false);
 
   const gradingJobs = storedJobs || [];
 
@@ -53,7 +51,6 @@ export function useGradingJobs(): {
 
   return {
     gradingJobs,
-    isLoading,
     addGradingJob,
     updateGradingJob,
     deleteGradingJob,

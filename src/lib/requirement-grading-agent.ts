@@ -159,7 +159,7 @@ function generateGradingReport(
   
   report += `## Summary\n\n`;
   report += `- **Total Requirements:** ${totalRequirements}\n`;
-  report += `- **Ready for Handoff:** ${readyCount} (${Math.round(readyCount/totalRequirements*100)}%)\n`;
+  report += `- **Ready for Handoff:** ${readyCount} (${totalRequirements > 0 ? Math.round(readyCount/totalRequirements*100) : 0}%)\n`;
   report += `- **Grade Distribution:**\n`;
   report += `  - A (Excellent): ${gradeDistribution.A}\n`;
   report += `  - B (Good): ${gradeDistribution.B}\n`;

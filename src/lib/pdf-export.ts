@@ -400,7 +400,7 @@ export function exportGradingJobToPDF(job: GradingJob) {
 
   doc.text(`Total Requirements: ${totalRequirements}`, margin, yPosition);
   yPosition += 6;
-  doc.text(`Ready for Handoff: ${readyCount} (${Math.round(readyCount/totalRequirements*100)}%)`, margin, yPosition);
+  doc.text(`Ready for Handoff: ${readyCount} (${totalRequirements > 0 ? Math.round(readyCount/totalRequirements*100) : 0}%)`, margin, yPosition);
   yPosition += 6;
   doc.text(`Grade Distribution:`, margin, yPosition);
   yPosition += 6;
