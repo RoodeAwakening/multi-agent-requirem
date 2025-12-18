@@ -460,3 +460,123 @@ export function exportGradingJobToPDF(job: GradingJob) {
   const filename = `${job.title.replace(/[^a-z0-9]/gi, "_")}_Grading_Report.pdf`;
   doc.save(filename);
 }
+
+/**
+ * Export team-ready output to PDF
+ */
+export function exportTeamReadyToPDF(job: GradingJob) {
+  if (!job.teamReadyRequirements || job.teamReadyRequirements.length === 0) {
+    throw new Error("No team-ready results to export");
+  }
+
+  const doc = new jsPDF();
+  const margin = 14;
+  const maxWidth = 182;
+  let yPosition = 20;
+
+  const checkNewPage = (spaceNeeded: number) => {
+    if (yPosition + spaceNeeded > 280) {
+      doc.addPage();
+      yPosition = 20;
+    }
+  };
+
+  doc.setFontSize(18);
+  doc.setFont("helvetica", "bold");
+  doc.text("Team-Ready Requirements", margin, yPosition);
+  yPosition += 10;
+
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.text(`Job: ${job.title}`, margin, yPosition);
+  yPosition += 6;
+
+  if (job.description) {
+    const descLines = doc.splitTextToSize(job.description, maxWidth);
+    doc.text(descLines, margin, yPosition);
+    yPosition += descLines.length * 6;
+  }
+
+  doc.text(`Date: ${new Date(job.updatedAt).toLocaleString()}`, margin, yPosition);
+  yPosition += 10;
+
+  const readyCount = job.teamReadyRequirements.filter((r) => r.teamReady).length;
+  const total = job.teamReadyRequirements.length;
+  checkNewPage(20);
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text("Summary", margin, yPosition);
+  yPosition += 8;
+
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.text(`Total Reviewed: ${total}`, margin, yPosition);
+  yPosition += 6;
+  doc.text(`Team Ready: ${readyCount}`, margin, yPosition);
+  yPosition += 6;
+  doc.text(`Needs Refinement: ${total - readyCount}`, margin, yPosition);
+  yPosition += 12;
+
+  checkNewPage(20);
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text("Details", margin, yPosition);
+  yPosition += 10;
+
+  job.teamReadyRequirements.forEach((req) => {
+    checkNewPage(40);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    const titleLines = doc.splitTextToSize(`${req.id}: ${req.name}`, maxWidth);
+    doc.text(titleLines, margin, yPosition);
+    yPosition += titleLines.length * 6;
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Status: ${req.teamReady ? "Team Ready" : "Needs Refinement"}`, margin, yPosition);
+    yPosition += 6;
+
+    if (req.assignedTeam) {
+      doc.text(`Team: ${req.assignedTeam}`, margin, yPosition);
+      yPosition += 6;
+    }
+
+    if (typeof req.storyPoints === "number") {
+      doc.text(`Story Points: ${req.storyPoints}`, margin, yPosition);
+      yPosition += 6;
+    }
+
+    if (req.needsSplit && req.splitNote) {
+      const splitLines = doc.splitTextToSize(`Split: ${req.splitNote}`, maxWidth);
+      doc.text(splitLines, margin, yPosition);
+      yPosition += splitLines.length * 6;
+    }
+
+    if (req.userStory) {
+      const storyLines = doc.splitTextToSize(`User Story: ${req.userStory}`, maxWidth);
+      doc.text(storyLines, margin, yPosition);
+      yPosition += storyLines.length * 6;
+    }
+
+    if (req.acceptanceCriteria && req.acceptanceCriteria.length > 0) {
+      doc.text("Acceptance Criteria:", margin, yPosition);
+      yPosition += 6;
+      req.acceptanceCriteria.forEach((ac) => {
+        const acLines = doc.splitTextToSize(`• ${ac}`, maxWidth);
+        doc.text(acLines, margin + 4, yPosition);
+        yPosition += acLines.length * 6;
+      });
+    }
+
+    if (!req.teamReady && req.notReadyNotes) {
+      const noteLines = doc.splitTextToSize(`Not Ready: ${req.notReadyNotes}`, maxWidth);
+      doc.text(noteLines, margin, yPosition);
+      yPosition += noteLines.length * 6;
+    }
+
+    yPosition += 6;
+  });
+
+  const filename = `${job.title.replace(/[^a-z0-9]/gi, "_")}_Team_Ready.pdf`;
+  doc.save(filename);
+}

@@ -11,7 +11,7 @@ import { Warning } from "@phosphor-icons/react/dist/csr/Warning";
 import { normalizeRequirementName, processGradingJob, processTeamReadyReview } from "@/lib/requirement-grading-agent";
 import { toast } from "sonner";
 import { marked } from "marked";
-import { exportGradingJobToPDF } from "@/lib/pdf-export";
+import { exportGradingJobToPDF, exportTeamReadyToPDF } from "@/lib/pdf-export";
 
 interface GradingJobDetailProps {
   job: GradingJob;
@@ -126,6 +126,15 @@ export function GradingJobDetail({ job, onJobUpdated }: GradingJobDetailProps) {
       toast.success("PDF exported successfully!");
     } catch (error) {
       toast.error(`Failed to export PDF: ${error}`);
+    }
+  };
+
+  const handleExportTeamReadyPDF = async () => {
+    try {
+      exportTeamReadyToPDF(job);
+      toast.success("Team-ready PDF exported successfully!");
+    } catch (error) {
+      toast.error(`Failed to export team-ready PDF: ${error}`);
     }
   };
 
@@ -309,6 +318,17 @@ export function GradingJobDetail({ job, onJobUpdated }: GradingJobDetailProps) {
             >
               <FilePdf className="mr-2" />
               Export PDF
+            </Button>
+          )}
+
+          {job.teamReadyStatus === "completed" && job.teamReadyRequirements?.length && (
+            <Button
+              onClick={handleExportTeamReadyPDF}
+              variant="outline"
+              size="lg"
+            >
+              <FilePdf className="mr-2" />
+              Export Team Ready PDF
             </Button>
           )}
 
