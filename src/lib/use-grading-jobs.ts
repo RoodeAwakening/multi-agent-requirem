@@ -66,7 +66,7 @@ export function useGradingJobs(): {
             const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
             console.error("Failed to load grading jobs from file system:", error);
             // Set error state so UI can show warning and offer to retry or switch storage
-            setFileSystemError(\`Failed to access file system storage: \${errorMessage}. Please re-select your storage folder or switch to browser storage.\`);
+            setFileSystemError(`Failed to access file system storage: ${errorMessage}. Please re-select your storage folder or switch to browser storage.`);
             // Fall back to localStorage and persist the change
             clearStorageConfig();
             setCurrentStorageMode("localStorage");
@@ -153,7 +153,7 @@ export function useGradingJobs(): {
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
         console.error("Failed to refresh grading jobs from file system:", error);
-        setFileSystemError(\`Failed to access file system storage: \${errorMessage}\`);
+        setFileSystemError(`Failed to access file system storage: ${errorMessage}`);
       } finally {
         setIsLoading(false);
       }
