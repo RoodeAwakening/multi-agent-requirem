@@ -65,6 +65,8 @@ const TEAM_READY_DEFINITION = `
 - Only create a user story when the item meets this definition. Otherwise, provide concise notes on what is missing.
 `;
 
+const MAX_STORY_POINTS = 8;
+
 /**
  * Generate the prompt for grading a single requirement
  */
@@ -208,8 +210,8 @@ async function reviewTeamReadyRequirement(
 
     const parsed = JSON.parse(cleanedResponse);
     const rawStoryPoints = typeof parsed.storyPoints === "number" ? parsed.storyPoints : undefined;
-    const needsSplit = Boolean(parsed.needsSplit || (rawStoryPoints !== undefined && rawStoryPoints > 8));
-    const normalizedPoints = rawStoryPoints !== undefined ? Math.min(rawStoryPoints, 8) : undefined;
+    const needsSplit = Boolean(parsed.needsSplit || (rawStoryPoints !== undefined && rawStoryPoints > MAX_STORY_POINTS));
+    const normalizedPoints = rawStoryPoints !== undefined ? Math.min(rawStoryPoints, MAX_STORY_POINTS) : undefined;
 
     const isTeamReady = Boolean(parsed.teamReady);
     const acceptanceCriteria =
@@ -230,6 +232,7 @@ async function reviewTeamReadyRequirement(
       storyPoints: isTeamReady ? normalizedPoints : undefined,
       needsSplit,
       splitNote,
+      // Allow common alias keys the model may emit
       productOwnerNotes: parsed.productOwnerNotes || parsed.poNotes || "",
       technicalLeadNotes: parsed.technicalLeadNotes || parsed.techNotes || "",
       notReadyNotes: !isTeamReady
