@@ -131,8 +131,7 @@ Your job:
 1) Decide if this requirement is TEAM READY (teamReady true/false) using the definition above.
 2) If teamReady=true, craft a concise, delivery-ready user story and 3-6 acceptance criteria.
 3) Estimate story points (number). If >8, set needsSplit=true and splitNote explaining how it will be divided.
-4) Provide Product Owner notes (clarity/value gaps) and Technical Lead notes (risks, dependencies, constraints).
-5) If not teamReady, DO NOT create a user story or acceptance criteria; instead, give notReadyNotes explaining what is missing.
+4) If not teamReady, DO NOT create a user story or acceptance criteria; instead, give notReadyNotes explaining what is missing from a PO/Tech Lead perspective.
 
 Return ONLY JSON:
 {
@@ -142,8 +141,6 @@ Return ONLY JSON:
   "storyPoints": number,
   "needsSplit": true|false,
   "splitNote": "How to split if needed",
-  "productOwnerNotes": "PO perspective",
-  "technicalLeadNotes": "Tech Lead perspective",
   "notReadyNotes": "Why it is not ready",
   "assignedTeam": "Optional explicit team name"
 }`;
@@ -232,9 +229,6 @@ async function reviewTeamReadyRequirement(
       storyPoints: isTeamReady ? normalizedPoints : undefined,
       needsSplit,
       splitNote,
-      // Allow common alias keys the model may emit
-      productOwnerNotes: parsed.productOwnerNotes || parsed.poNotes || "",
-      technicalLeadNotes: parsed.technicalLeadNotes || parsed.techNotes || "",
       notReadyNotes: !isTeamReady
         ? parsed.notReadyNotes ||
           "Does not meet the team Definition of Ready."

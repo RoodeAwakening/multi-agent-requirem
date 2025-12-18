@@ -216,21 +216,6 @@ export function GradingJobDetail({ job, onJobUpdated }: GradingJobDetailProps) {
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-              {req.productOwnerNotes && (
-                <div className="p-3 rounded-md border bg-muted/50">
-                  <p className="font-medium text-foreground mb-1">Product Owner Notes</p>
-                  <p className="text-muted-foreground">{req.productOwnerNotes}</p>
-                </div>
-              )}
-              {req.technicalLeadNotes && (
-                <div className="p-3 rounded-md border bg-muted/50">
-                  <p className="font-medium text-foreground mb-1">Technical Lead Notes</p>
-                  <p className="text-muted-foreground">{req.technicalLeadNotes}</p>
-                </div>
-              )}
-            </div>
-
             {!req.teamReady && req.notReadyNotes && (
               <div className="mt-3 flex items-center gap-2 text-sm text-amber-700">
                 <Warning size={16} aria-label="Not ready warning" role="img" />

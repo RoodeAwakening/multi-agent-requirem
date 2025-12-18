@@ -98,8 +98,6 @@ export interface TeamReadyRequirement {
   storyPoints?: number;
   needsSplit?: boolean;
   splitNote?: string;
-  productOwnerNotes?: string;
-  technicalLeadNotes?: string;
   notReadyNotes?: string;
   assignedTeam?: string;
 }
