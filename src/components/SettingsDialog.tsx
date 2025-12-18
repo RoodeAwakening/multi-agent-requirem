@@ -1218,10 +1218,21 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemo
                   <p>• {localStorageGradingJobs.length} grading job{localStorageGradingJobs.length !== 1 ? 's' : ''}</p>
                 )}
                 <p className="mt-2">Would you like to migrate all data to file system storage?</p>
-                {!getCachedDirectoryHandle() && (
-                  <p className="mt-3 text-amber-600 dark:text-amber-400 font-medium">
-                    ⚠️ Please select a storage directory using "Select Folder" button below before migrating.
+                {directoryName && (
+                  <p className="mt-3 text-sm text-muted-foreground">
+                    Storage directory: <code className="bg-muted px-1.5 py-0.5 rounded">{directoryName}</code>
                   </p>
+                )}
+                {!getCachedDirectoryHandle() && (
+                  <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                    <p className="text-sm text-amber-800 dark:text-amber-300 font-medium flex items-center gap-2">
+                      <Warning size={16} />
+                      No storage directory selected
+                    </p>
+                    <p className="text-xs text-amber-700 dark:text-amber-400 mt-1">
+                      Please select a folder where your data will be stored.
+                    </p>
+                  </div>
                 )}
               </div>
             </AlertDialogDescription>
@@ -1232,6 +1243,30 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemo
             }}>
               Cancel
             </AlertDialogCancel>
+            {!getCachedDirectoryHandle() && (
+              <Button
+                variant="outline"
+                onClick={async () => {
+                  setIsSelectingDirectory(true);
+                  try {
+                    const handle = await selectStorageDirectory();
+                    if (handle) {
+                      setDirectoryName(handle.name);
+                      toast.success(`Storage directory set to: ${handle.name}`);
+                    }
+                  } catch (error) {
+                    const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+                    toast.error(`Failed to select directory: ${errorMessage}`);
+                  } finally {
+                    setIsSelectingDirectory(false);
+                  }
+                }}
+                disabled={isSelectingDirectory}
+              >
+                <FolderOpen className="mr-2" size={16} />
+                {isSelectingDirectory ? "Selecting..." : "Select Folder"}
+              </Button>
+            )}
             <Button
               variant="outline"
               onClick={() => {
