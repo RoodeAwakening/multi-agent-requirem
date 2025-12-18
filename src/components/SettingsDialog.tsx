@@ -1205,7 +1205,7 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemo
       
       {/* Migration Warning Dialog */}
       <AlertDialog open={showMigrationWarning} onOpenChange={setShowMigrationWarning}>
-        <AlertDialogContent>
+        <AlertDialogContent className="sm:max-w-xl max-h-[85vh] overflow-y-auto">
           <AlertDialogHeader>
             <AlertDialogTitle>Migrate Data to File System?</AlertDialogTitle>
             <AlertDialogDescription asChild>
@@ -1230,7 +1230,7 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemo
                       No storage directory selected
                     </p>
                     <p className="text-xs text-amber-700 dark:text-amber-400 mt-1">
-                      Please select a folder where your data will be stored.
+                      You’ll be asked to pick a folder before migration starts so your data can be saved.
                     </p>
                   </div>
                 )}
@@ -1243,30 +1243,6 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemo
             }}>
               Cancel
             </AlertDialogCancel>
-            {!getCachedDirectoryHandle() && (
-              <Button
-                variant="outline"
-                onClick={async () => {
-                  setIsSelectingDirectory(true);
-                  try {
-                    const handle = await selectStorageDirectory();
-                    if (handle) {
-                      setDirectoryName(handle.name);
-                      toast.success(`Storage directory set to: ${handle.name}`);
-                    }
-                  } catch (error) {
-                    const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
-                    toast.error(`Failed to select directory: ${errorMessage}`);
-                  } finally {
-                    setIsSelectingDirectory(false);
-                  }
-                }}
-                disabled={isSelectingDirectory}
-              >
-                <FolderOpen className="mr-2" size={16} />
-                {isSelectingDirectory ? "Selecting..." : "Select Folder"}
-              </Button>
-            )}
             <Button
               variant="outline"
               onClick={() => {
@@ -1279,16 +1255,38 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemo
             >
               Switch Without Migrating
             </Button>
-            <AlertDialogAction
-              disabled={isMigrating || !getCachedDirectoryHandle()}
+              <AlertDialogAction
+                disabled={isMigrating || isSelectingDirectory}
               onClick={async () => {
-                if (!getCachedDirectoryHandle()) {
-                  toast.error("Please select a storage directory first");
-                  return;
-                }
-                
-                setIsMigrating(true);
+                let shouldCloseDialog = true;
                 try {
+                  let directoryHandle = getCachedDirectoryHandle();
+                  
+                  if (!directoryHandle) {
+                    try {
+                      setIsSelectingDirectory(true);
+                      directoryHandle = await selectStorageDirectory();
+
+                      if (!directoryHandle) {
+                        toast.error("Please select a storage directory to migrate your data.");
+                        shouldCloseDialog = false;
+                        return;
+                      }
+
+                      setDirectoryName(directoryHandle.name);
+                      toast.success(`Storage directory set to: ${directoryHandle.name}`);
+                    } catch (selectionError) {
+                      const selectionErrorMessage =
+                        selectionError instanceof Error ? selectionError.message : "Unknown error";
+                      toast.error(`Failed to select storage directory: ${selectionErrorMessage}`);
+                      shouldCloseDialog = false;
+                      return;
+                    } finally {
+                      setIsSelectingDirectory(false);
+                    }
+                  }
+                  
+                  setIsMigrating(true);
                   let totalMigrated = 0;
                   
                   // Migrate analysis jobs
@@ -1315,11 +1313,18 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemo
                   toast.error(`Migration failed: ${errorMessage}`);
                 } finally {
                   setIsMigrating(false);
-                  setShowMigrationWarning(false);
+                  setIsSelectingDirectory(false);
+                  if (shouldCloseDialog) {
+                    setShowMigrationWarning(false);
+                  }
                 }
               }}
             >
-              {isMigrating ? "Migrating..." : "Migrate All Data"}
+              {isMigrating
+                ? "Migrating..."
+                : isSelectingDirectory
+                  ? "Selecting folder..."
+                  : "Migrate All Data"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
