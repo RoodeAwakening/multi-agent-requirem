@@ -39,10 +39,14 @@ async function preprocessDocument(text: string): Promise<string> {
   }
   
   try {
-    // Get AI model from localStorage (same way as ai-client does)
-    const storedModel = localStorage.getItem("ai-model") as AIModel;
-    const model = storedModel || "gemini-2.0-flash-lite"; // Default to fastest model for preprocessing
-    
+    // Get AI model from localStorage (same way as ai-client does), with SSR-safe guards
+    let model: AIModel = "gemini-2.0-flash-lite"; // Default to fastest model for preprocessing
+    if (typeof window !== "undefined" && typeof window.localStorage !== "undefined") {
+      const storedModel = window.localStorage.getItem("ai-model") as AIModel | null;
+      if (storedModel) {
+        model = storedModel;
+      }
+    }
     console.log('[Preprocessing Agent] Using model:', model);
     
     const prompt = `You are a document preprocessing agent. Your task is to clean and organize the following document to make it easier to parse individual requirements.
