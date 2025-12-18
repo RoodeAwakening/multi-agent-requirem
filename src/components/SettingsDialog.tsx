@@ -22,11 +22,12 @@ import {
   getCachedDirectoryName,
   clearStorageConfig,
   exportJobsToFileSystem,
+  exportGradingJobsToFileSystem,
   getCachedDirectoryHandle,
   StorageMode,
 } from "@/lib/filesystem-storage";
 import { getStoredValue, setStoredValue } from "@/lib/storage";
-import { Job } from "@/lib/types";
+import { Job, GradingJob } from "@/lib/types";
 import {
   Dialog,
   DialogContent,
@@ -130,6 +131,7 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemo
   
   // Get current jobs count for migration warning
   const localStorageJobs = getStoredValue<Job[]>("jobs") || [];
+  const localStorageGradingJobs = getStoredValue<GradingJob[]>("grading-jobs") || [];
 
   useEffect(() => {
     setLocalModel(aiSettings?.model || "gemini-2.5-flash");
@@ -821,8 +823,8 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemo
                       }`}
                       onClick={() => {
                         if (fsSupported && storageMode !== "fileSystem") {
-                          // Show migration warning if there are jobs in localStorage
-                          if (localStorageJobs.length > 0) {
+                          // Show migration warning if there are jobs or grading jobs in localStorage
+                          if (localStorageJobs.length > 0 || localStorageGradingJobs.length > 0) {
                             setShowMigrationWarning(true);
                           } else {
                             setLocalStorageMode("fileSystem");
@@ -1205,10 +1207,16 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemo
       <AlertDialog open={showMigrationWarning} onOpenChange={setShowMigrationWarning}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Migrate Tasks to File System?</AlertDialogTitle>
+            <AlertDialogTitle>Migrate Data to File System?</AlertDialogTitle>
             <AlertDialogDescription>
-              You have {localStorageJobs.length} task{localStorageJobs.length !== 1 ? 's' : ''} stored in browser storage.
-              Would you like to migrate them to file system storage?
+              You have data stored in browser storage:
+              {localStorageJobs.length > 0 && (
+                <div className="mt-2">• {localStorageJobs.length} analysis task{localStorageJobs.length !== 1 ? 's' : ''}</div>
+              )}
+              {localStorageGradingJobs.length > 0 && (
+                <div>• {localStorageGradingJobs.length} grading job{localStorageGradingJobs.length !== 1 ? 's' : ''}</div>
+              )}
+              <div className="mt-2">Would you like to migrate all data to file system storage?</div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col sm:flex-row gap-2">
@@ -1224,7 +1232,7 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemo
                 setLocalStorageMode("fileSystem");
                 setHasChanges(true);
                 setShowMigrationWarning(false);
-                toast.info("Switched to file system storage. Browser tasks were not migrated.");
+                toast.info("Switched to file system storage. Browser data was not migrated.");
               }}
             >
               Switch Without Migrating
@@ -1239,12 +1247,27 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemo
                 
                 setIsMigrating(true);
                 try {
-                  const count = await exportJobsToFileSystem(localStorageJobs);
-                  // Clear localStorage jobs after successful migration
-                  setStoredValue("jobs", []);
+                  let totalMigrated = 0;
+                  
+                  // Migrate analysis jobs
+                  if (localStorageJobs.length > 0) {
+                    const jobCount = await exportJobsToFileSystem(localStorageJobs);
+                    totalMigrated += jobCount;
+                    // Clear localStorage jobs after successful migration
+                    setStoredValue("jobs", []);
+                  }
+                  
+                  // Migrate grading jobs
+                  if (localStorageGradingJobs.length > 0) {
+                    const gradingJobCount = await exportGradingJobsToFileSystem(localStorageGradingJobs);
+                    totalMigrated += gradingJobCount;
+                    // Clear localStorage grading jobs after successful migration
+                    setStoredValue("grading-jobs", []);
+                  }
+                  
                   setLocalStorageMode("fileSystem");
                   setHasChanges(true);
-                  toast.success(`Migrated ${count} task${count !== 1 ? 's' : ''} to file system storage`);
+                  toast.success(`Migrated ${totalMigrated} item${totalMigrated !== 1 ? 's' : ''} to file system storage`);
                 } catch (error) {
                   const errorMessage = error instanceof Error ? error.message : "Unknown error";
                   toast.error(`Migration failed: ${errorMessage}`);
@@ -1254,7 +1277,7 @@ export function SettingsDialog({ open, onOpenChange, onStorageModeChange, onDemo
                 }
               }}
             >
-              {isMigrating ? "Migrating..." : "Migrate Tasks"}
+              {isMigrating ? "Migrating..." : "Migrate All Data"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

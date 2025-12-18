@@ -18,12 +18,17 @@
  *   │   │   └── references/       # Cached reference files
  *   │   └── JOB-20240102-134567/
  *   │       └── ...
+ *   ├── grading-jobs/
+ *   │   ├── GRADE-20240101-123456/
+ *   │   │   └── job.json          # Grading job data
+ *   │   └── GRADE-20240102-134567/
+ *   │       └── job.json
  *   └── settings/
  *       ├── ai-settings.json
  *       └── custom-prompts.json
  */
 
-import { Job } from "./types";
+import { Job, GradingJob } from "./types";
 
 // File System Access API types
 interface FileSystemWritableFileStream extends WritableStream {
@@ -161,6 +166,7 @@ export async function verifyPermission(
 async function initializeStorageDirectory(handle: FileSystemDirectoryHandle): Promise<void> {
   // Create the subdirectories
   await handle.getDirectoryHandle("jobs", { create: true });
+  await handle.getDirectoryHandle("grading-jobs", { create: true });
   await handle.getDirectoryHandle("settings", { create: true });
 
   // Create or update the config file
@@ -721,4 +727,133 @@ export async function exportJobsToFileSystem(jobs: Job[]): Promise<number> {
  */
 export async function importJobsFromFileSystem(): Promise<Job[]> {
   return loadAllJobsFromFileSystem();
+}
+
+// ============================================================
+// Grading Job Storage Functions
+// ============================================================
+
+/**
+ * Save a grading job to the file system
+ */
+export async function saveGradingJobToFileSystem(job: GradingJob): Promise<void> {
+  if (!cachedDirectoryHandle) {
+    throw new Error("No storage directory selected");
+  }
+
+  const hasPermission = await verifyPermission(cachedDirectoryHandle);
+  if (!hasPermission) {
+    throw new Error("Permission denied. Please re-select your storage folder in Settings.");
+  }
+
+  const jobPath = ["grading-jobs", job.id];
+
+  // Save complete grading job data in a single file
+  await writeFile(
+    cachedDirectoryHandle,
+    jobPath,
+    "job.json",
+    JSON.stringify(job, null, 2)
+  );
+}
+
+/**
+ * Load a grading job from the file system
+ */
+export async function loadGradingJobFromFileSystem(jobId: string): Promise<GradingJob | null> {
+  if (!cachedDirectoryHandle) {
+    return null;
+  }
+
+  try {
+    const jobPath = ["grading-jobs", jobId];
+
+    // Read job data
+    const jobContent = await readFile(cachedDirectoryHandle, jobPath, "job.json");
+    if (!jobContent) {
+      return null;
+    }
+
+    const job: GradingJob = JSON.parse(jobContent);
+    return job;
+  } catch (error) {
+    console.error("Failed to load grading job:", error);
+    return null;
+  }
+}
+
+/**
+ * Load all grading jobs from the file system
+ */
+export async function loadAllGradingJobsFromFileSystem(): Promise<GradingJob[]> {
+  if (!cachedDirectoryHandle) {
+    return [];
+  }
+
+  try {
+    const jobIds = await listDirectory(cachedDirectoryHandle, ["grading-jobs"]);
+    
+    // Load all grading jobs concurrently for better performance
+    const jobPromises = jobIds.map((jobId) => loadGradingJobFromFileSystem(jobId));
+    const loadedJobs = await Promise.all(jobPromises);
+    const jobs = loadedJobs.filter((job): job is GradingJob => job !== null);
+
+    // Sort by creation date (newest first)
+    jobs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    return jobs;
+  } catch (error) {
+    console.error("Failed to load grading jobs:", error);
+    return [];
+  }
+}
+
+/**
+ * Delete a grading job from the file system
+ */
+export async function deleteGradingJobFromFileSystem(jobId: string): Promise<void> {
+  if (!cachedDirectoryHandle) {
+    throw new Error("No storage directory selected");
+  }
+
+  const hasPermission = await verifyPermission(cachedDirectoryHandle);
+  if (!hasPermission) {
+    throw new Error("Permission denied to write to storage directory");
+  }
+
+  try {
+    await deleteDirectory(cachedDirectoryHandle, ["grading-jobs"], jobId);
+  } catch (error) {
+    console.error("Failed to delete grading job:", error);
+    throw error;
+  }
+}
+
+/**
+ * Export grading jobs from localStorage to file system
+ */
+export async function exportGradingJobsToFileSystem(jobs: GradingJob[]): Promise<number> {
+  if (!cachedDirectoryHandle) {
+    throw new Error("No storage directory selected");
+  }
+
+  let exportedCount = 0;
+
+  for (const job of jobs) {
+    try {
+      await saveGradingJobToFileSystem(job);
+      exportedCount++;
+    } catch (error) {
+      console.error(`Failed to export grading job ${job.id}:`, error);
+    }
+  }
+
+  return exportedCount;
+}
+
+/**
+ * Import all grading jobs from file system to localStorage format
+ */
+export async function importGradingJobsFromFileSystem(): Promise<GradingJob[]> {
+  return loadAllGradingJobsFromFileSystem();
 }
