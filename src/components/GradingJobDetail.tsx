@@ -8,7 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Play } from "@phosphor-icons/react/dist/csr/Play";
 import { FilePdf } from "@phosphor-icons/react/dist/csr/FilePdf";
 import { Warning } from "@phosphor-icons/react/dist/csr/Warning";
-import { normalizeRequirementName, processGradingJob, processTeamReadyReview } from "@/lib/requirement-grading-agent";
+import { processGradingJob, processTeamReadyReview } from "@/lib/requirement-grading-agent";
 import { toast } from "sonner";
 import { marked } from "marked";
 import { exportGradingJobToPDF, exportTeamReadyToPDF } from "@/lib/pdf-export";

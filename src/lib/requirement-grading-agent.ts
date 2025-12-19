@@ -209,9 +209,8 @@ async function reviewTeamReadyRequirement(
     }
 
     const parsed = JSON.parse(cleanedResponse);
-    const rawStoryPoints = typeof parsed.storyPoints === "number" ? parsed.storyPoints : undefined;
+    const storyPoints = typeof parsed.storyPoints === "number" ? parsed.storyPoints : undefined;
     const needsSplit = Boolean(parsed.needsSplit);
-    const normalizedPoints = rawStoryPoints;
 
     const isTeamReady = Boolean(parsed.teamReady);
     const acceptanceCriteria =
@@ -230,7 +229,7 @@ async function reviewTeamReadyRequirement(
       teamReady: isTeamReady,
       userStory: isTeamReady && parsed.userStory ? String(parsed.userStory).trim() : undefined,
       acceptanceCriteria,
-      storyPoints: isTeamReady ? normalizedPoints : undefined,
+      storyPoints: isTeamReady ? storyPoints : undefined,
       needsSplit,
       splitNote,
       notReadyNotes: !isTeamReady
@@ -245,6 +244,7 @@ async function reviewTeamReadyRequirement(
       id: requirement.id,
       name: requirement.name,
       teamReady: false,
+      originalContent: requirement.content,
       notReadyNotes: `Team-ready review failed: ${error instanceof Error ? error.message : String(error)}`,
       assignedTeam: graded.assignedTeam,
     };
@@ -291,7 +291,6 @@ function generateGradingReport(
     const readyText = req.readyForHandoff ? 'Yes' : 'No';
     const teamText = req.assignedTeam || '-';
     report += `| ${req.id} | ${req.name} | ${req.grade} | ${readyText} | ${teamText} | ${req.explanation} |\n`;
-    report += `> Original: ${req.originalContent.replace(/\n/g, ' ')}\n`;
   });
 
   report += `\n## Recommendations\n\n`;
