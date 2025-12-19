@@ -138,14 +138,40 @@ export function GradingJobDetail({ job, onJobUpdated }: GradingJobDetailProps) {
     }
   };
 
-  const renderReport = () => {
-    if (!job.reportContent) return null;
+  const renderSummaryCard = () => {
+    if (!job.gradedRequirements?.length) return null;
+
+    const total = job.gradedRequirements.length;
+    const ready = job.gradedRequirements.filter((r) => r.readyForHandoff).length;
+    const gradeCounts = ["A", "B", "C", "D", "F"].map((g) => ({
+      grade: g,
+      count: job.gradedRequirements.filter((r) => r.grade === g).length,
+    }));
 
     return (
-      <div 
-        className="prose prose-sm max-w-none dark:prose-invert"
-        dangerouslySetInnerHTML={{ __html: marked(job.reportContent) }}
-      />
+      <Card className="p-4">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h3 className="text-lg font-semibold">Requirements Grading Summary</h3>
+            <p className="text-sm text-muted-foreground">
+              {ready} of {total} ready for handoff
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
+            <span className="px-2 py-1 rounded-md border bg-muted">Total: {total}</span>
+            <span className="px-2 py-1 rounded-md border bg-muted text-green-700">Ready: {ready}</span>
+            <span className="px-2 py-1 rounded-md border bg-muted text-amber-700">Needs work: {total - ready}</span>
+          </div>
+        </div>
+        <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 text-sm">
+          {gradeCounts.map(({ grade, count }) => (
+            <div key={grade} className="rounded-md border bg-muted/50 px-3 py-2">
+              <div className="font-semibold">Grade {grade}</div>
+              <div className="text-muted-foreground">{count}</div>
+            </div>
+          ))}
+        </div>
+      </Card>
     );
   };
 
@@ -402,14 +428,9 @@ export function GradingJobDetail({ job, onJobUpdated }: GradingJobDetailProps) {
             <div className="space-y-6">
               {teamView === "initial" ? (
                 <>
-                  {job.reportContent && (
-                    <div className="bg-muted/50 rounded-lg p-6">
-                      {renderReport()}
-                    </div>
-                  )}
-
                   {job.gradedRequirements && (
                     <div className="space-y-4">
+                      {renderSummaryCard()}
                       <h2 className="text-xl font-bold">Graded Requirements</h2>
                       <div className="space-y-3">
                         {job.gradedRequirements.map((req) => (
