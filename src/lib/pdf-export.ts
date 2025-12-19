@@ -436,21 +436,19 @@ export function exportGradingJobToPDF(job: GradingJob) {
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
       
-      // Grade
       doc.text(`Grade: ${req.grade}`, margin, yPosition);
       yPosition += 6;
-      
-      // Ready for handoff
       doc.text(`Ready for Handoff: ${req.readyForHandoff ? 'Yes' : 'No'}`, margin, yPosition);
       yPosition += 6;
-      
-      // Assigned team
       if (req.assignedTeam) {
         doc.text(`Assigned Team: ${req.assignedTeam}`, margin, yPosition);
         yPosition += 6;
       }
-      
-      // Explanation
+      if (req.originalContent) {
+        const origLines = doc.splitTextToSize(`Original: ${req.originalContent}`, maxWidth);
+        doc.text(origLines, margin, yPosition);
+        yPosition += origLines.length * 6;
+      }
       const explLines = doc.splitTextToSize(`Explanation: ${req.explanation}`, maxWidth);
       doc.text(explLines, margin, yPosition);
       yPosition += explLines.length * 6 + 4;

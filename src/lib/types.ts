@@ -83,6 +83,7 @@ export interface Requirement {
 export interface GradedRequirement {
   id: string;
   name: string;
+  originalContent: string;
   grade: RequirementGrade;
   explanation: string;
   readyForHandoff: boolean;
@@ -100,6 +101,7 @@ export interface TeamReadyRequirement {
   splitNote?: string;
   notReadyNotes?: string;
   assignedTeam?: string;
+  originalContent?: string;
 }
 
 export interface GradingJob {

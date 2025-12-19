@@ -173,6 +173,7 @@ async function gradeRequirement(
     return {
       id: requirement.id,
       name: normalizeRequirementName(requirement.name),
+      originalContent: requirement.content,
       grade: parsed.grade as RequirementGrade,
       explanation: parsed.explanation,
       readyForHandoff: parsed.readyForHandoff,
@@ -225,6 +226,7 @@ async function reviewTeamReadyRequirement(
     return {
       id: requirement.id,
       name: requirement.name,
+      originalContent: requirement.content,
       teamReady: isTeamReady,
       userStory: isTeamReady && parsed.userStory ? String(parsed.userStory).trim() : undefined,
       acceptanceCriteria,
@@ -289,6 +291,7 @@ function generateGradingReport(
     const readyText = req.readyForHandoff ? 'Yes' : 'No';
     const teamText = req.assignedTeam || '-';
     report += `| ${req.id} | ${req.name} | ${req.grade} | ${readyText} | ${teamText} | ${req.explanation} |\n`;
+    report += `> Original: ${req.originalContent.replace(/\n/g, ' ')}\n`;
   });
 
   report += `\n## Recommendations\n\n`;
@@ -405,18 +408,7 @@ export async function processTeamReadyReview(
     .map((graded) => {
       const requirement = job.requirements.find((req) => req.id === graded.id);
       if (!requirement) return null;
-
-      if (!graded.readyForHandoff) {
-        results.push({
-          id: requirement.id,
-          name: requirement.name,
-          teamReady: false,
-          notReadyNotes: `Not eligible for team review (Grade ${graded.grade}): ${graded.explanation}`,
-          assignedTeam: graded.assignedTeam,
-        });
-        return null;
-      }
-
+      if (!graded.readyForHandoff) return null;
       return { requirement, graded };
     })
     .filter((entry): entry is { requirement: Requirement; graded: GradedRequirement } => entry !== null);
@@ -429,7 +421,7 @@ export async function processTeamReadyReview(
     await new Promise((resolve) => setTimeout(resolve, 100));
 
     const reviewed = await reviewTeamReadyRequirement(requirement, graded, job.teams, aiSettings);
-    results.push(reviewed);
+    results.push({ ...reviewed, originalContent: requirement.content });
   }
 
   onProgress?.(total, total, "Finalizing team-ready stories...");
