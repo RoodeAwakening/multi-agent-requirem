@@ -83,10 +83,25 @@ export interface Requirement {
 export interface GradedRequirement {
   id: string;
   name: string;
+  originalContent: string;
   grade: RequirementGrade;
   explanation: string;
   readyForHandoff: boolean;
   assignedTeam?: string;
+}
+
+export interface TeamReadyRequirement {
+  id: string;
+  name: string;
+  teamReady: boolean;
+  userStory?: string;
+  acceptanceCriteria?: string[];
+  storyPoints?: number;
+  needsSplit?: boolean;
+  splitNote?: string;
+  notReadyNotes?: string;
+  assignedTeam?: string;
+  originalContent?: string;
 }
 
 export interface GradingJob {
@@ -100,4 +115,6 @@ export interface GradingJob {
   status: JobStatus;
   gradedRequirements?: GradedRequirement[];
   reportContent?: string; // Full markdown report
+  teamReadyRequirements?: TeamReadyRequirement[];
+  teamReadyStatus?: JobStatus;
 }

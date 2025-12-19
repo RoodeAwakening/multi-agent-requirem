@@ -1,4 +1,4 @@
-import { GradingJob, GradedRequirement, RequirementGrade, Requirement, Team } from "./types";
+import { GradingJob, GradedRequirement, RequirementGrade, Requirement, Team, TeamReadyRequirement } from "./types";
 import { callAI, AISettings } from "./ai-client";
 import { getStoredValue } from "./storage";
 
@@ -59,6 +59,16 @@ export const GRADING_RUBRIC = `
 - **Ready for handoff**: No
 `;
 
+const TEAM_READY_DEFINITION = `
+# Team Ready Definition (Product Owner + Technical Lead)
+- Clear, INVEST-aligned user story (As a... I want... so that...).
+- Acceptance criteria in Given/When/Then that are testable and cover edge cases.
+- Dependencies, assumptions, and non-functional needs are explicit.
+- No unresolved placeholders; scope is well understood.
+- Estimate using Fibonacci sizing. If it feels too large, optionally suggest a sensible split, but do not block readiness solely on size.
+- Only create a user story when the item meets this definition. Otherwise, provide concise notes on what is missing.
+`;
+
 /**
  * Generate the prompt for grading a single requirement
  */
@@ -96,6 +106,48 @@ Return ONLY a valid JSON object with this exact structure (no markdown code fenc
 }`;
 }
 
+function generateTeamReadyPrompt(
+  requirement: Requirement,
+  graded: GradedRequirement,
+  teams: Team[]
+): string {
+  const teamContext = graded.assignedTeam
+    ? `Target Team: ${graded.assignedTeam}`
+    : teams.length > 0
+      ? `Available Teams:\n${teams.map((t) => `- ${t.name}: ${t.description}`).join("\n")}`
+      : "No team assignment provided.";
+
+  return `You are acting as BOTH a Product Owner and a Technical Lead performing a team-level Definition of Ready check.
+
+${TEAM_READY_DEFINITION}
+
+Input requirement:
+- ID: ${requirement.id}
+- Name: ${requirement.name}
+- Content: ${requirement.content}
+- Initial Grade: ${graded.grade} (${graded.readyForHandoff ? "Ready for handoff" : "Not ready"})
+- Initial Notes: ${graded.explanation}
+- ${teamContext}
+
+Your job:
+1) Decide if this requirement is TEAM READY (teamReady true/false) using the definition above.
+2) If teamReady=true, craft a concise, delivery-ready user story and 3-6 acceptance criteria.
+3) Estimate story points (number). If >8, set needsSplit=true and splitNote explaining how it will be divided.
+4) If not teamReady, DO NOT create a user story or acceptance criteria; instead, give notReadyNotes explaining what is missing from a PO/Tech Lead perspective.
+
+Return ONLY JSON:
+{
+  "teamReady": true|false,
+  "userStory": "As a ...",
+  "acceptanceCriteria": ["Given ..."],
+  "storyPoints": number,
+  "needsSplit": true|false,
+  "splitNote": "How to split if needed",
+  "notReadyNotes": "Why it is not ready",
+  "assignedTeam": "Optional explicit team name"
+}`;
+}
+
 /**
  * Grade a single requirement using AI
  */
@@ -121,6 +173,7 @@ async function gradeRequirement(
     return {
       id: requirement.id,
       name: normalizeRequirementName(requirement.name),
+      originalContent: requirement.content,
       grade: parsed.grade as RequirementGrade,
       explanation: parsed.explanation,
       readyForHandoff: parsed.readyForHandoff,
@@ -135,6 +188,65 @@ async function gradeRequirement(
       grade: "F",
       explanation: `Error during grading: ${error instanceof Error ? error.message : String(error)}`,
       readyForHandoff: false,
+    };
+  }
+}
+
+async function reviewTeamReadyRequirement(
+  requirement: Requirement,
+  graded: GradedRequirement,
+  teams: Team[],
+  aiSettings: AISettings
+): Promise<TeamReadyRequirement> {
+  const prompt = generateTeamReadyPrompt(requirement, graded, teams);
+
+  try {
+    const response = await callAI(prompt, aiSettings.model, aiSettings.geminiAuthMode);
+
+    let cleanedResponse = response.trim();
+    if (cleanedResponse.startsWith("```")) {
+      cleanedResponse = cleanedResponse.replace(/^```(?:json)?\s*/g, "").replace(/\s*```$/g, "");
+    }
+
+    const parsed = JSON.parse(cleanedResponse);
+    const storyPoints = typeof parsed.storyPoints === "number" ? parsed.storyPoints : undefined;
+    const needsSplit = Boolean(parsed.needsSplit);
+
+    const isTeamReady = Boolean(parsed.teamReady);
+    const acceptanceCriteria =
+      isTeamReady && Array.isArray(parsed.acceptanceCriteria)
+        ? parsed.acceptanceCriteria.filter((item: unknown) => typeof item === "string" && item.trim().length > 0)
+        : [];
+
+    const splitNote = needsSplit
+      ? parsed.splitNote || "Estimated effort exceeds 8 points; split into two deliverable stories."
+      : undefined;
+
+    return {
+      id: requirement.id,
+      name: requirement.name,
+      originalContent: requirement.content,
+      teamReady: isTeamReady,
+      userStory: isTeamReady && parsed.userStory ? String(parsed.userStory).trim() : undefined,
+      acceptanceCriteria,
+      storyPoints: isTeamReady ? storyPoints : undefined,
+      needsSplit,
+      splitNote,
+      notReadyNotes: !isTeamReady
+        ? parsed.notReadyNotes ||
+          "Does not meet the team Definition of Ready."
+        : undefined,
+      assignedTeam: parsed.assignedTeam || graded.assignedTeam,
+    };
+  } catch (error) {
+    console.error(`Failed to run team-ready review for ${requirement.id}:`, error);
+    return {
+      id: requirement.id,
+      name: requirement.name,
+      teamReady: false,
+      originalContent: requirement.content,
+      notReadyNotes: `Team-ready review failed: ${error instanceof Error ? error.message : String(error)}`,
+      assignedTeam: graded.assignedTeam,
     };
   }
 }
@@ -269,4 +381,54 @@ export async function processGradingJob(
   };
 
   return updatedJob;
+}
+
+export async function processTeamReadyReview(
+  job: GradingJob,
+  onProgress?: (current: number, total: number, currentReq: string) => void
+): Promise<GradingJob> {
+  if (!job.gradedRequirements || job.gradedRequirements.length === 0) {
+    throw new Error("Run grading before the team-ready review.");
+  }
+
+  let aiSettings: AISettings = { model: "gemini-2.5-flash" };
+  try {
+    const savedSettings = getStoredValue<AISettings>("ai-settings");
+    if (savedSettings) {
+      aiSettings = savedSettings;
+    }
+  } catch (error) {
+    console.warn("Failed to load AI settings, using defaults:", error);
+  }
+
+  const results: TeamReadyRequirement[] = [];
+
+  const readyPairs = job.gradedRequirements
+    .map((graded) => {
+      const requirement = job.requirements.find((req) => req.id === graded.id);
+      if (!requirement) return null;
+      if (!graded.readyForHandoff) return null;
+      return { requirement, graded };
+    })
+    .filter((entry): entry is { requirement: Requirement; graded: GradedRequirement } => entry !== null);
+
+  const total = readyPairs.length;
+
+  for (let i = 0; i < total; i++) {
+    const { requirement, graded } = readyPairs[i];
+    onProgress?.(i, total, requirement.name);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    const reviewed = await reviewTeamReadyRequirement(requirement, graded, job.teams, aiSettings);
+    results.push({ ...reviewed, originalContent: requirement.content });
+  }
+
+  onProgress?.(total, total, "Finalizing team-ready stories...");
+
+  return {
+    ...job,
+    teamReadyRequirements: results,
+    teamReadyStatus: "completed",
+    updatedAt: new Date().toISOString(),
+  };
 }
