@@ -1,0 +1,580 @@
+Business Req ID,User Story,Acceptance Criteria,Human Grade,AI Graded,Human Comments,Ai Comments,
+SAW.03.02_US-01,"As a
+Key Wealth User
+I want
+to ensure all servicing workflows that require interactions with Salesforce(B2C) and Envestnet have a defined solution
+So that
+we can ensure our business processes function as needed in future state","Given
+We have compiled a list of all current state servicing workflows
+When
+Reviewed to ensure all required Salesforce (B2C) and Envestnet workflow interactions are accounted for, including:
+Invest
+Divest
+Funding
+Withdrawal
+Termination
+Account Maintenance
+Updating Models
+Then
+We should see those updatesincluded in all future stateworkflows",C,,"Break into smaller stories for each workflows (Invest, Divest, Funding etc). Not testable. Accepatance criteria is too vague",,
+SAW 03.05_US 01,"As a
+Key Wealth User
+I want
+to identify all servicing scenarios that could be improved that are not workflow dependent
+So that
+we can make our processing more efficient","Given
+We have identified all servicing scenarios that could be improved,that are not workflow dependent
+When
+Reviewing future state workflows and an opportunity arises for improvement:
+process driven
+technical enhancements
+Then
+We can make updates to workflowsthat reflect these changes",C,,"Decompose into:
+1. One story per non-workflow dependent enhancement
+2. Add measurable acceptance criteria e.g ""Then  processing time for specific  scenario is reduced by X%",,
+OAO-O1.01_US-03a,"As a 
+KIS FO user
+I want 
+the KIS client user onboarding workflow to create a new SIS document
+So that 
+it can be included in the new account enrollment package.","Given
+Key Investment Services onboarding process workflows are being updated
+When
+an advisor is onboarding a client/new account
+Then
+a new SIS (Statement of Investment Selection) document should be created
+Note: This is a one-time development story for the creation of the new document for the very first time in the future state.",B,,What if no SIS exists?,,
+OAO-01.01_US-03c,"As a
+KIS FO user
+I want
+the KIS client user onboarding workflow to send an email with consent to enroll in e-delivery/paperless statements document
+So that
+it can encourage clients to enroll in e-delivery/paperless statements","Given
+Key wealth onboarding process workflows are being updated
+When
+a new account is being onboarded for a KIS client
+Then
+an email should be sent to clients (as part of campaign trigger) to encourage them for consenting to enroll in e-delivery/paperless statements",B,B,Acceptance Criteria : Email content and triggers,"Explanation: This requirement received a B because it contains all the necessary sections, but the
+acceptance criteria are too high-level and lack the specific details needed for implementation. To achieve an
+A, the criteria must specify the email's trigger, its content/template, and the exact mechanism for how a client
+provides consent.",
+OAO-02.03_US-03ci,,,,,,,
+OAO-02.03_US-03cii,,,,,,,
+CEX-01.05_US-03,,,,,,,
+CEX-01.05_US-05,,,,,,,
+OAO-01.01_US-04,"As a
+Key wealth leader
+I want
+the new documents to be included in the enrollment package
+So that
+the client can sign physically or digitally","Given
+Key wealth onboarding processworkflows are being updated
+When
+the draft account is created inCob 2.0/Net X
+Then
+the SIS document should be included in the new account onboarding package for the clients to sign physically or digitally.
+Note:
+This story is for including SIS in the new account enrollment package",B,A,Add negative scenarios,,
+OAO-01.02_US-01,"As a 
+Wealth Leader
+I want 
+the two-day delay to be made near real-time
+So that 
+client and account information is available to enroll into online banking and access their accounts","Given
+a client with no online banking access is being onboarded
+Or
+the client has online banking but needs access to the new account
+When
+the account is active in Pershing
+Then
+the relevant client information should be made available for IBX real-time
+And
+client should be encouraged to enroll into online banking if they haven’t already.
+And
+have access to the new account in online banking when they enroll.",B,B,Acceptance criteria for failure cases. Near real-time as less than 5 mins etc,"Explanation: The requirement is well-structured with a user story and acceptance criteria that reference specific systems (Pershing, IBX). It earns a B instead of an A because the acceptance criterion 'client should be encouraged to enroll' is ambiguous and needs to specify how this encouragement will be implemented (e.g., via email, a UI prompt).",
+OAO-01.04_US-01,"As a
+Key wealth leader
+I want
+the new Key wealth client user onboarding workflow in Salesforce to pre-fill data wherever possible
+So that
+I do not have to re-keydata.","Given
+an advisor/RM is in Salesforce to create a wealth client/opportunity/prospect
+When
+prior information on the client/opportunity/prospect exists in the wealth instance of Salesforce
+Then
+the existing data should get auto populated and editable, where applicable.",B,B,Can be improved if we add definition of Client/Opportunity and prospect. Add examples of pre-filled fields,"Explanation: The requirement includes all necessary sections, such as a user story and acceptance criteria in the Gherkin format. However, it earns a B because the acceptance criteria are too high-level, using vague phrases like ""prior information"" and ""existing data should get auto populated"" without listing the specific fields.",
+OAO-01.04_US-02a,"As a
+KIS FO user
+I want
+to ensure that the new KIS client account onboarding workflow is able to autopopulate data where applicable, within RSQ
+So that
+I do not have to re-keydata.","Given
+an advisor is onboarding a client
+When
+filling in the RSQ within Salesforce
+If
+a previously completed RSQ exists for the same client
+Then
+appropriate data attributes of the RSQ should be auto populated
+and editable, to eliminate rekeying of data.",B,B,Acceptance criteria too vague. Define appropriate data. Include handling for missing prior RSQ data. ,"Explanation: The requirement has a clear user story and defined scope (RSQ within Salesforce), but the acceptance criteria are too high-level. To reach Grade A, the criteria must specify exactly which ""appropriate data attributes"" should be auto-populated.",
+OAO-01.04_US-03a,"As a
+KIS FO user
+I want
+to ensure that the new KIS client account onboarding workflow is able to autopopulate data where applicable in Right Bridge
+So that
+I do not have to re-keydata.","Given
+an advisor is onboarding a client/account
+When
+in RightBridge for doing Reg BI
+Then
+the client/lead/prospect’s information should be autopopulated in RightBridge whereapplicable, to eliminate re-keying of data.",B,B,"Acceptance criteria too vague. I would assume you do not want to re-key data like demographic, financial, risk etc data which is already captured in SalesForce","Explanation: This requirement earns a B because while it includes a user story and acceptance criteria, the criteria are too high-level. The phrase ""information should be autopopulated... where applicable"" is ambiguous and requires clarification. To achieve an A, the acceptance criteria must be expanded into a detailed list specifying the exact data fields to be mapped from the source system to RightBridge.",
+OAO-02.02_US-01,"As a
+KIS FO user
+I want
+to begin the onboarding process through Salesforce
+So that
+Salesforce becomes the single point of origination","Given
+Key Investment Services onboarding process workflows are being updated
+When
+onboarding a KIS account
+Then
+advisors should be able to initiate that onboarding process only through Salesforce
+And
+Not allowed to begin the process from anywhere else",B,A,Add AC for restricted initiation outside of Salesforce e.g. Envestnet etc.,"Explanation: The requirement is clear, specific, and complete, meeting all criteria for an excellent grade. It contains a standard user story, detailed acceptance criteria in a Given/When/Then format, and a well-defined scope, making it ready for development without ambiguity.",
+OAO-02.03_US-01,"As a
+KIS FO user
+I want
+to create a new or update an existing client/lead/opportunity in Salesforce B2C 
+So that
+the client information can be made available for future servicing.","Given
+Key Investment Services onboarding process workflows are being updated
+When
+creating a new or updating an existing client/lead/opportunity in Salesforce
+Then
+the client record should be created/updated with data entered currently, for future servicing.",B,B,Specify which future servicing uses the data.,"Explanation: This requirement has a well-formed user story and an acceptance criteria section, but the criteria are too high-level. They state the goal without providing specific, verifiable details about which data fields should be created/updated or what constitutes a successful transaction. To reach Grade A, the acceptance criteria need to be broken down into a specific checklist of outcomes.",
+OAO-02.03_US-02c,"As a
+KIS FO user
+I want
+to initiate proposal creation process through Salesforce for a new client being onboarded
+So that
+RSQ can be done","Given
+a new KIS account is being onboarded
+When
+advisor initiates the proposal creation process
+Then
+the advisor should be able to launch the Risk Survey Questionnaire",A,B,,"Explanation: The requirement has a clear user story and acceptance criteria, but the AC is high-level and lacks specific details. To reach an A, the acceptance criteria should be expanded to include more specific scenarios, such as the exact user action to initiate the process (e.g., ""clicks the 'Create Proposal' button"") and the expected system response (e.g., ""a new browser tab opens to the RSQ"").",
+OAO-02.03_US-02d,"As a 
+KIS FO user
+I want 
+to leverage existing RSQ (for a wealth account) on file for a client that has a “Pass” outcome and is less than 29 days old So that 
+the account onboarding process can continue without rerunning RSQ for the client","Given
+a new KIS account is being onboarded
+When
+advisor initiates the proposal creation process
+Then
+the advisor should be able to skip RSQ if there is an existing RSQ (for a wealth account) on file that has a “Pass” outcome and is less than 29 days old for the client",A,B,,"Explanation: The requirement has a clear user story and acceptance criteria, but the single AC is high-level and essentially restates the story's goal. To reach Grade A, the acceptance criteria should be broken down into more specific, testable outcomes detailing how the system finds the RSQ and what the advisor sees and does to skip the step.",
+OAO-02.03_US-02e,"As a
+KIS FO user
+I want
+to run RSQ process through Salesforce for every authorized signatory nominated in the account in the case of an Entity
+So that
+Risk Survey Questionnaire can be done for every single one of them.","Given
+a new KIS account is beingon boarded for an Entity
+When advisor initiates the proposal creation process
+Then
+the advisor should be able to launch the Risk Survey Questionnaire for authorized signatory for the account",B,B,Narrow to specific entity scenarios. Add per-signatory examples.,"Explanation: The requirement has a clear user story and acceptance criteria, but the AC is high-level. To reach grade A, the acceptance criteria needs to be expanded with more specific details, such as the mechanism for launching the questionnaire for multiple signatories and what the expected system response is.",
+OAO-02.03_US-02f,"As a
+KIS FO user
+I want
+the KIS account onboarding workflow to make RSQ process through Salesforce mandatory only for a new account being onboarded
+So that
+the workflow does not make RSQ mandatory when an existing account is being modified.","Given
+an existing KIS account is being modified for adding new product(s)
+When
+advisor initiates the process of editing such account
+Then
+the advisor should be able to SSO into RightBridge, opting not to do RSQ for the existing account.",A,A,,"Explanation: This requirement is excellent as it contains a clear user story, specific acceptance criteria in the Given/When/Then format, and a well-defined scope mentioning key systems like Salesforce and RightBridge. No changes are needed as it is complete and unambiguous for the development team.",
+OAO-02.03_US-03a,"As a
+KIS FO user
+I want
+to see an RSQ pass message on screen when client’s RSQ is a pass
+So that
+the outcome can be captured for audit trail","Given
+advisor has submitted RSQ for aclient
+When
+the client’s RSQ is a pass
+Then
+advisor should see an RSQ pass message on screen.
+And
+the audit record captured for the outcome",A,B,,"Explanation: The requirement contains a user story and acceptance criteria, but the criteria lack specific details. To reach grade A, it must specify the exact content and location of the 'RSQ pass message' and define what data is captured in the audit record.",
+OAO-02.03_US-03b,"As a
+KIS FO user
+I want
+to see an RSQ fail prompt with appropriate reason
+So that
+I am made aware of the reason for the failure and the outcome captured for audit trail","Given
+advisor has submitted RSQ for aclient
+When
+the client’s RSQ is a fail
+Then
+advisor should see an RSQ fail message with reason on screen.
+And
+the audit record captured for theoutcome along with the reasonfor failure.",A,B,,"Explanation: This requirement is good because it contains a clear user story and acceptance criteria in Gherkin format. To reach Grade A, the acceptance criteria should be more specific, detailing the exact content of the 'RSQ fail message' and what constitutes an 'appropriate reason' for the failure.",
+OAO-02.03_US-04a,"As a
+KIS FO user
+I want
+the ability to reinitiate RSQ
+So that
+I can redo the RSQ at any time","Given
+advisor has submitted RSQ
+When
+the outcome of the RSQ is a failure or a pass
+Then
+advisor should be able to launch and complete the RSQ again without any limitations.",A,B,,"Explanation: The requirement has a well-formed user story and acceptance criteria, but the criteria are too high-level. The phrase 'without any limitations' is ambiguous and requires clarification on system behavior, such as what happens to the previous results. To reach grade A, the criteria must specify the exact user interaction and the system's response to re-initiation.",
+OAO-02.03_US-04b,"As a
+KIS FO user
+I want
+the KIS account onboarding workflow to be built to initiate RSQ independently or redo RSQ when it fails
+So that
+I can initiate or redo RSQ at any time","Given
+advisor is editing an existing account to add new products
+Or
+RSQ has failed or expired
+When
+a need arises to initiate RSQ through Salesforce
+Then
+advisor should be able to launch and complete the RSQ without any limitations.",A,B,,"Explanation: This requirement is good because it contains both a user story and acceptance criteria in the correct format. However, the acceptance criterion 'advisor should be able to launch and complete the RSQ without any limitations' is too high-level. To reach Grade A, it needs to specify the exact, testable outcomes of a successful launch and completion.",
+OAO-02.03_US-05a,"As a
+KIS FO user
+I want
+to be notified on screen if I want to SSO into Product Profiler in Right Bridge once the client’s RSQ is a pass in Salesforce
+So that
+I can pause the onboarding temporarily or continue to SSO into RightBridge for Reg BI.","Given
+a new account is being opened/proposed
+When
+the client’s RSQ is a pass in Salesforce
+Then
+I must have the option to SSO onto Rightbridge’s Client Information Shortcuts
+OR
+pause the process and return to it at a later time",A,B,,"Explanation: The requirement includes a user story and acceptance criteria, but the criteria are high-level and lack implementation specifics. To reach grade A, the acceptance criteria should be more detailed, defining what the on-screen notification looks like (e.g., a modal, banner), the exact button text, and the precise behavior of the 'pause' action.",
+OAO-02.03_US-05b,"As a
+KIS FO user
+I want
+to select from a RightBridge short cut menu based on client information
+So that
+the Reg BI questions can be tailored based on the menu selection","Given
+Client’s RSQ is a pass
+When
+Advisor opts to SSO into RightBridge
+Then
+a RightBridge short cut menu must be presented to the user based on client information
+And
+the Reg BI questions should be tailored based on the menu selection.
+Then
+a RightBridge short cut menu must be presented to the user based on client information",A,B,,planation: The requirement includes a proper user story and acceptance criteria in the Gherkin format. HoweveritearnsaBbecausetheacceptancecriteriaarehighlevellackingspecificsonwhat'client,
+OAO-02.03_US-06b,"As a
+KIS FO user
+I want
+Salesforce to have access to Reg BI PDF in RightBridge
+So that
+the Reg BI PDF can be retrieved from RightBridge on demand with in Salesforce","Given
+Reg BI process is completed
+When
+The Reg BI documentation is generated in RightBridge
+Then
+Salesforce must be able to access the PDF from RightBridge on demand.",B,B,"There are multiple documents generated. Product Profiler, Annuity Wizard and Investment wizard.","Explanation: The requirement has a well-formed user story and defines the systems involved (Salesforce, RightBridge). However, the acceptance criteria are too high-level, restating the goal without specifying the mechanism of access, user interactions, or potential error states. To reach an A, the acceptance criteria needs to detail the specific steps a user takes and the exact expected outcomes.",
+OAO-02.03_US-07a,"As a
+KIS FO user
+I want
+to SSO into Envestnet from Salesforce
+So that
+I can begin the proposal creation process for a managed account","Given
+the client has been deemed eligible for a managed account by Reg BI
+When
+Advisor launches proposal creation through Salesforce
+Then
+advisor should be allowed to SSO into an Envestnet proposal page for the new account",B,B,Differentiate managed vs non-managed accounts with examples. ,"Explanation: The requirement includes a standard user story and acceptance criteria, but the criteria are too high-level. To reach grade A, it needs more specific outcomes, such as details on the SSO data transfer, the exact landing page, and error handling for login failures.",
+OAO-02.03_US-11a,"As a
+KIS FO user
+I want
+to be able to provide additional client information in Salesforce
+So that
+this information can be prefilled while creating a Net X draft account","Given
+The client has been deemedeligible for a non-managed
+(brokerage) account by Reg BIprocess
+When
+advisor launches the appropriate screen in Salesforce to SSO into Net X
+Then
+the advisor should be able to enter additional client information before SSO’ing into Net X
+And
+Have that additional information prefilled to create a Net X draft account.
+Note:
+SSO into Cob2.0/Net X can happen only after Reg BI PDF is in Salesforce for a non-managed account.",B,A,AC: examples of pre-fill data including data validation errors,"Explanation: This requirement is graded A because it is complete and unambiguous. It contains a standard user story, detailed acceptance criteria using the Given/When/Then format, and a clearly defined scope referencing specific systems (Salesforce and Net X).",
+OAO-02.03_US-11b,"As a
+KIS FO user
+I want
+to SSO into Net X from Salesforce
+So that
+I can create a draft Net X account for non-managed/brokerage account","Given
+The client has been deemed eligible for a non-managed
+(brokerage) account by Reg BI process
+When
+additional client information is filled in and submitted in a Salesforce page
+Then
+the advisor should be able to SSO into Cob 2.0/Net X to create a draft account
+Note:
+SSO into Cob2.0/Net X canhappen only after Reg BI PDF isin Salesforce for a non-managedaccount.",B,B,AC: examples of pre-fill data including data validation errors,"Explanation: The requirement contains a clear user story and acceptance criteria, defining the systems involved(SalesforceNetX)ItearnsaBinsteadofanAbecausetheacceptancecriteriaarehighlevel",
+OAO-02.03_US-11c,"As a
+KIS FO user
+I want
+the Reg BI PDF data to be sent to Net X from Salesforce at the time of SSO launch into Net X
+So that
+the Reg BI documentation is made available in Net X","Given
+Reg BI process is completed
+When
+advisor SSO’s into Net X fromSalesforce
+Then
+the appropriate client account’s Reg BI data should be sent for accessing the document in NetX",B,B,AC: examples of pre-fill data including data validation errors,"Explanation: The requirement has a clear user story and scope but the acceptance criteria is too high-level. To reach Grade A, the 'Then' clause should be expanded into specific, verifiable outcomes, detailing what 'appropriate client account's Reg BI data' includes and how to confirm it was successfully sent.",
+OAO-02.03_US-13,"As a
+KIS FO user
+I want
+all documentation for opening a new client managed/non-account to be made available within Net X
+So that
+CSG can review them.","Given
+KIS client onboarding workflows are being updated
+When
+all documentation from client and KIS FO user has been completed and returned for opening a managed/non-managed account
+Then
+all such the documentation must be made available in Net X for CSG’s review.",B,B,Specify document types,"Explanation: This requirement earns a B because it contains all the required sections, but the acceptance criteria are too high-level and essentially just restate the story. To reach an A, the criteria must be more specific, detailing exactly what documentation is included, how it's made available in Net X, and what the CSG review interface looks like.",
+OAO-02.03_US-14,"As a
+KIS FO user
+I want
+the ability to pause onboarding process at any time
+So that
+I am able to resume from where I left, at any point intime.","Given
+KIS client onboarding workflows are being updated
+When
+the advisor completes any step in the onboarding process
+Then
+they should be able to pause the onboarding process at any time
+And
+be able to resume from where they left, at any point in time.",A,B,,"Explanation: The requirement has a clear user story and an acceptance criteria section, but the criteria are too high-level. They simply restate the user story's goal rather than providing specific, testable outcomes, such as how a user pauses or what the resume flow looks like. To reach an A, the ACs must detail the specific user actions and system responses (e.g., 'When the user clicks the Save & Exit button, their progress is saved').",
+ARC-01.01_US-01e,"As a 
+Key Wealth User
+I want 
+to identify all of the different unique wealth roles that exist across the FO,MO, and BO, and their capabilities 
+So that 
+I can ensure all roles and capabilities are considered when designing the future state","Given 
+there currently exist various unique roles across Key Wealth and they all have different capabilities 
+When we identify all of these roles and capabilities
+Then we should have full coverage of every single role
+AND know what their job requires them to do
+AND there should not be a single role that isn’t convered",D,F,Sounds more like a spike ,"Explanation: This requirement is graded F because it describes a business analysis or discovery task, not an actionable software feature. The acceptance criteria are untestable goals for a research activity, and the 'want' is not something a development team can build in the software. This discovery work must be completed first to generate specific, buildable user stories.",
+ARC-05.01_US-01,"As a 
+Key Wealth User
+I want 
+to ensure that I can SSO from various applications, directly to Envestnet
+So that 
+I launch directly from those applications to ENV in-context","Given 
+an Envestnet user is in another wealth application
+When 
+a user wants to that application to launch Envestnet
+Then 
+the user should be able to SSO from that application to the appropriate screen in Envestnet",A,C,,"Explanation: This requirement has the correct structure but lacks the necessary detail for a team to begin work, as the scope is undefined. It refers to 'various applications' without listing them and an 'appropriate screen' without defining what that means or under what conditions a user lands there. To reach Grade A, the acceptance criteria must specify each source application and the exact destination screen within Envestnet for each context.","These 3 looks like there was an input error before grading, not counting this against it. "
+ARC-05.02_US-01,"As a 
+Key Wealth FO user
+I want 
+to be able to SSO from an in-progress proposal in SF, directly to that same proposal in Envestnet
+So that 
+I do not have to perform more actions to get from the proposal in SF, to that same proposal in Envestnet","Given
+there is already an in-progress proposal in SF
+When
+the user is in that specific client’s profile in SF
+Then
+they should be able to SSO from the proposal in SF, directly to that same proposal in Envestnet",A,C,,,
+ARC-O5.03_US-01,"As a 
+Key Wealth FO user
+I want 
+to be able to SSO from my SF homepage to a list of all my open proposals, in Envestnet
+So that I can easily access and follow-up on all my ongoing proposals","Given
+the user in Salesforce has open proposals in Envestnet
+When
+that user wishes to see a list of all open Envestnet proposals
+Then
+they should be able to SSO from the SF homepage to a list of all open proposals in Envestnet",A,C,,,
+ARC-06.02_US-05,"As a 
+Key Wealth User
+I want 
+to ensure that data within the DSC including ENV enriched Key data is available to B2C and includes managed flag indicators
+So that 
+actions in other systems can be automatically reconciled within B2C","Given
+Envestnet-enriched Key datais stored within DSC
+When
+this data is required by Salesforce (B2C)
+Then
+this data should be availablefor ingestion from DSC, and includemanage flag indicators",B,B,There are lots of UMP data comes to DSC.,"Explanation: The requirement receives a B because it includes a user story and acceptance criteria, but key details are too high-level for immediate implementation. To reach grade A, the acceptance criteria must specify the data transfer method (e.g., API, batch job), the exact data fields, and define the 'managed flag indicators'.",
+ARC-07.01_US-01,"As a 
+KIS FO User accessing a specific client/household profile in Salesforce
+I want 
+to ensure that I am being notified on Salesforce, MAR was completed
+So that I am notified of an pending due, or overdue MAR ","Given
+a FO user is on a specific client/house hold profile in Salesforce
+Then
+I should be notified on SF see that a new MAR is due
+AND
+the notification should specify in how many days the MAR is due, oris overdue",B,B,"Define type of notification, email, pop-up etc.","Explanation: The requirement has a user story and acceptance criteria, but lacks specific details on how the user should be notified (e.g., a banner, a toast notification, a specific component). To reach Grade A, the acceptance criteria must define the exact type, location, and content of the notification, and the user story should be clarified for better readability.",
+ARC-07.01_US-04,"As a 
+Key FO user
+I want 
+to only be able to complete MARs in Envestnet
+So that 
+there is a single system in which MARs are completed","Given
+MARs capability in Envestnet is fully functional
+When
+I attempt to complete a MAR on SF
+Then
+I should not be able to complete any part of MAR on SF
+AND
+I should only be notified on SF",A,B,,"Explanation: The requirement has a clear user story and acceptance criteria, but lacks some specific details. The criteria 'I should not be able to complete any part of MAR on SF' and 'I should only be notified on SF' are high-level. To reach an 'A', the requirement should specify exactly how the feature is disabled (e.g., buttons removed, fields read-only) and what the notification message on SF should say.",
+ARC-07.01_US-09,"As a
+Key Wealth User
+I want
+the historical records of MARS that will not be migrated to Envestnet, to remain in Salesforce
+So that
+a historical record will persist for audit and compliance purposes","Given
+only MARS post 31/12/2024 will be migrated to Envestnet
+When
+the MARS
+pre
+31/12/2024 are not migrated
+Then
+they should remain in SF in the current form.
+AND should persist as per the required records retention policies",A,B,,"Explanation: The requirement is mostly clear with a proper user story and acceptance criteria. However, it earns a B because the final acceptance criterion, 'should persist as per the required records retention policies', is too high-level and requires the tech team to seek external clarification. To reach an A, the specific retention policies (e.g., 'data must be retained for 7 years') should be explicitly stated.",
+ARC-10.01_US-01,"As a 
+Key Wealth User
+I want 
+to ensure that I cannot override (on SF) information that is being displayed on SF, that is being sourced from a core system
+So that 
+I am not changing information on a consuming system while the core system remains inaccurate","Given 
+there is data being displayed on SF that is sourced from a different core system
+When 
+that data is incorrect
+Then 
+I must not be allowed to overwrite that information in SF
+directly
+AND
+I must be able to update the information in the source core
+system in an authenticated manner",B,C,Add authenticated update paths.,"Explanation: This requirement earns a C because while it has a clear user story, the acceptance criteria are not functional and merely restate the goa lTo reach Grade A it needs specific testable criteri",
+ARC-10.02_US-01,"As a
+Key Wealth User
+I want
+to cleanup all source systems' householding information
+So that
+we can ensure accuracy of the custom householding file that we will feed to Envestnet (one-time activity)","Given
+house holding information currently exists in disparate systems
+AND
+we will be using that information to create the one-time custom householding file that we will be feeding to Envestnet
+Then
+we should clean up all householding data prior to using that same data to establish the one-time custom house holding file",C,C,Examples of clean up data. ,"Explanation: This requirement earns a C because while it has a clear user story, the acceptance criteria are notfunctionalandmerelyrestatethegoalToreachGradeAitneedsspecifictestablecriteriath",
+ARC-10.03_US-01-1,"As a
+Key FO user
+I want
+the Client Contact Record updated in Salesforce when an annual Managed Account Review (MARS) is completed in Envestnet
+So that
+the Client Contact Record is kept up to date with changes to a Client’s account","Given
+An account requires an annual MARS (Managed Account Review)
+When
+The annual MARS (Managed Account Review) has been completed in Envestnet
+Then
+I should see Client Contact Record in Salesforce updated showing the annual MARS(Managed Account Review) was completed",B,B,,"Explanation: The requirement has a clear user story and scope, but the acceptance criteria are too high-level. It states the record should be 'updated' but does not specify which fields, what the new values should be, or the exact trigger. To reach Grade A, the criteria must be specific (e.g., 'Then the 'Last MARS Completion Date' field on the Salesforce Contact record is updated to today's date').",
+ARC-10.03_US-01-2,"As a
+Key FO user
+I want
+the Client Contact Record updated in Salesforce when a financial plan is created in MoneyGuide Pro
+So that
+the Client Contact Record is kept up to date with changes to a Client’s account","Given
+An Advisor needs to create a financial plan for a Client
+When
+A financial plan is created
+Then
+I should see the Client Contact Record in Salesforce updated showing a financial plan was created in MoneyGuide Pro",B,B,,"Explanation: The requirement has a clear user story and scope, but the acceptance criteria are too high-level. To reach an 'A', the criteria must specify exactly which fields on the Salesforce Client Contact Record are updated and what their new values or content should be.",
+ARC-10.03_US-01-3,"As a
+Key Private Client Advisor
+I want
+Salesforce to generate a “to-do” follow-up action to meet with client in
+'X'
+number of days post MARS (ManagedAccount Review) completion,or allow me to manually select a time period for follow-up
+So that
+I am reminded to meet with the Client post-MARS.","Given
+I have completed a MARS
+When
+The Statement of Investment Selection change is completed in Envestnet
+Then
+I should receive a “to-do” follow-up action reminder in Salesforce X number of days post MARS completion or, if I manually chose a number of days to follow-up, I should receive a “to-do” follow-up action reminder based on that selection",B,B,,"Explanation: The requirement includes a user story and acceptance criteria, but contains placeholder language ('X' number of days) for a critical value. To reach Grade A, the default value for 'X' must be defined, and the mechanism for a user to manually select a time period should be specified.",
+ARC-10.03_US-01-4,"As a
+Key FO user
+I want
+the Salesforce Client Contact Record updated if there is a Statement of Investment Selection change event in Envestnet
+So that
+the Client Contact Record is kept up to date with changes to a Client’s account","Given
+There is a change to the Statement of Investment Selection
+When 
+The Statement of Investment Selection change is completed in Envestnet
+Then
+I should see the Client Contact Record in Salesforce updated showing there was a change to the Statement of Investment Selection",B,B,,"Explanation: This requirement has a clear user story and scope, but the acceptance criteria are too high-level. To reach Grade A, the 'Then' clause must be more specific about exactly what fields in the Salesforce record are updated and what information they will contain.",
+ARC-10.04_US-01,"As a 
+Salesforce user
+I want 
+to ensure that all values that I am seeing on Salesforce, are accurate as of when I am seeing them 
+So that 
+there is no discrepancy between values in Salesforce and other
+systems","Given
+a value is being loaded from DSC and being displayed in Salesforce
+When
+that value is being displayed in Salesforce
+Then
+that value should be accurately displayed with the latest information",B,C,,"Explanation: The requirement has the correct structure, but its scope is too broad and undefined, referring to 'all values' in Salesforce. To reach Grade A, it must specify the exact fields, pages, or components to be updated and define 'accurate' with measurable criteria (e.g., data syncs within 5 minutes from system X)",
+ARC-11.02_US-02,"As a 
+Key Wealth User
+I want 
+to capture the ASPV 13-05 and 13-12 records for Agent & Communication information 
+So that 
+we can support the Salesforce and hierarchy file build","Given 
+Key Bank deals in Annuities
+When 
+we receive all the Annuities files
+Then 
+we should capture the ASPV 13-05 and 13-12 records for Agent & Communication information",B,B,List specific fields for accuracy,"Explanation: The requirement has a well-formed user story and an acceptance criteria section is present. However, the acceptance criteria are high-level, merely restating the goal without providing specific, verifiable outcomes. To reach grade A, the AC needs to be expanded with details on how the capture can be verified, such as the target system, specific fields, or success logs.",
+ARC-11.02_US-03,"As a 
+Salesforce user
+I want 
+to ensure that all relevant annuities data is being reflected in Salesforce
+So that 
+I can get an accurate picture of my clients' invested assets","Given
+all required Annuities data exists in DSC
+When
+there are any relevant fields in Salesforce that should be considering Annuities data
+Then
+I would expect Salesforce to consider and reflect Annuities data in all values being presented to the advisor in SF",B,C,List specific fields for accuracy,"Explanation: This requirement receives a 'C' because its scope is undefined, as it refers to ""all relevant annuities data"" and ""any relevant fields"" without specifics. The acceptance criteria are too high-level and simply restate the goal rather than providing testable conditions. To reach an 'A', the requirement must explicitly list the specific Salesforce fields to be updated and the corresponding source data points from the DSC system.",
+ARC-11.03_US-03,"As a 
+Salesforce user
+I want 
+to ensure that all relevant fund direct data is being reflected in Salesforce
+So that 
+I can get an accurate picture of my clients' invested assets","Given
+all required Fund Direct data exists in DSC
+When
+there are any relevant fields in Salesforce that should be considering Fund Directdata
+Then
+I would expect Salesforce to consider and reflect Fund direct data in all values being presented to the advisor in SF",B,C,List specific fields for accuracy,"Explanation: The requirement has a clear user story, but the acceptance criteria and scope are too vague to be actionable. To reach Grade A, it must be updated to specify exactly which data fields from DSC should be reflected in which specific Salesforce components or fields.",
+PMR-02.10_US-04,"As a 
+Front Office User
+I want 
+the capability to easily send my client relevant CIO/Firm collateral education and enrichment materials
+So that 
+they can be informed on products and market trends","Given
+I am a Front Office User
+When
+I need to send my client any relevant CIO/Firm collateral education and enrichment materials
+Then
+I should have the ability to send only information I deem relevant to my Client",B,C,Define relevant via filters or selection UI in Acceptance Criteria. ,"Explanation: The requirement has a clear user story but fails to provide actionable acceptance criteria, instead just restating the user's goal. To reach grade A, the acceptance criteria must be expanded with specific, testable details about the user flow, and the scope needs to be defined by referencing the specific pages or components involved.",
