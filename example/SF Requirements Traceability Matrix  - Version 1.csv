@@ -1,0 +1,575 @@
+Business Req ID,User Story,Acceptance Criteria
+SAW.03.02_US-01,"As a
+Key Wealth User
+I want
+to ensure all servicing workflows that require interactions with Salesforce(B2C) and Envestnet have a defined solution
+So that
+we can ensure our business processes function as needed in future state","Given
+We have compiled a list of all current state servicing workflows
+When
+Reviewed to ensure all required Salesforce (B2C) and Envestnet workflow interactions are accounted for, including:
+Invest
+Divest
+Funding
+Withdrawal
+Termination
+Account Maintenance
+Updating Models
+Then
+We should see those updatesincluded in all future stateworkflows"
+SAW 03.05_US 01,"As a
+Key Wealth User
+I want
+to identify all servicing scenarios that could be improved that are not workflow dependent
+So that
+we can make our processing more efficient","Given
+We have identified all servicing scenarios that could be improved,that are not workflow dependent
+When
+Reviewing future state workflows and an opportunity arises for improvement:
+process driven
+technical enhancements
+Then
+We can make updates to workflowsthat reflect these changes"
+OAO-O1.01_US-03a,"As a 
+KIS FO user
+I want 
+the KIS client user onboarding workflow to create a new SIS document
+So that 
+it can be included in the new account enrollment package.","Given
+Key Investment Services onboarding process workflows are being updated
+When
+an advisor is onboarding a client/new account
+Then
+a new SIS (Statement of Investment Selection) document should be created
+Note: This is a one-time development story for the creation of the new document for the very first time in the future state."
+OAO-01.01_US-03c,"As a
+KIS FO user
+I want
+the KIS client user onboarding workflow to send an email with consent to enroll in e-delivery/paperless statements document
+So that
+it can encourage clients to enroll in e-delivery/paperless statements","Given
+Key wealth onboarding process workflows are being updated
+When
+a new account is being onboarded for a KIS client
+Then
+an email should be sent to clients (as part of campaign trigger) to encourage them for consenting to enroll in e-delivery/paperless statements"
+OAO-02.03_US-03ci,,
+OAO-02.03_US-03cii,,
+CEX-01.05_US-03,,
+CEX-01.05_US-05,,
+OAO-01.01_US-04,"As a
+Key wealth leader
+I want
+the new documents to be included in the enrollment package
+So that
+the client can sign physically or digitally","Given
+Key wealth onboarding processworkflows are being updated
+When
+the draft account is created inCob 2.0/Net X
+Then
+the SIS document should be included in the new account onboarding package for the clients to sign physically or digitally.
+Note:
+This story is for including SIS in the new account enrollment package"
+OAO-01.02_US-01,"As a 
+Wealth Leader
+I want 
+the two-day delay to be made near real-time
+So that 
+client and account information is available to enroll into online banking and access their accounts","Given
+a client with no online banking access is being onboarded
+Or
+the client has online banking but needs access to the new account
+When
+the account is active in Pershing
+Then
+the relevant client information should be made available for IBX real-time
+And
+client should be encouraged to enroll into online banking if they haven’t already.
+And
+have access to the new account in online banking when they enroll."
+OAO-01.04_US-01,"As a
+Key wealth leader
+I want
+the new Key wealth client user onboarding workflow in Salesforce to pre-fill data wherever possible
+So that
+I do not have to re-keydata.","Given
+an advisor/RM is in Salesforce to create a wealth client/opportunity/prospect
+When
+prior information on the client/opportunity/prospect exists in the wealth instance of Salesforce
+Then
+the existing data should get auto populated and editable, where applicable."
+OAO-01.04_US-02a,"As a
+KIS FO user
+I want
+to ensure that the new KIS client account onboarding workflow is able to autopopulate data where applicable, within RSQ
+So that
+I do not have to re-keydata.","Given
+an advisor is onboarding a client
+When
+filling in the RSQ within Salesforce
+If
+a previously completed RSQ exists for the same client
+Then
+appropriate data attributes of the RSQ should be auto populated
+and editable, to eliminate rekeying of data."
+OAO-01.04_US-03a,"As a
+KIS FO user
+I want
+to ensure that the new KIS client account onboarding workflow is able to autopopulate data where applicable in Right Bridge
+So that
+I do not have to re-keydata.","Given
+an advisor is onboarding a client/account
+When
+in RightBridge for doing Reg BI
+Then
+the client/lead/prospect’s information should be autopopulated in RightBridge whereapplicable, to eliminate re-keying of data."
+OAO-02.02_US-01,"As a
+KIS FO user
+I want
+to begin the onboarding process through Salesforce
+So that
+Salesforce becomes the single point of origination","Given
+Key Investment Services onboarding process workflows are being updated
+When
+onboarding a KIS account
+Then
+advisors should be able to initiate that onboarding process only through Salesforce
+And
+Not allowed to begin the process from anywhere else"
+OAO-02.03_US-01,"As a
+KIS FO user
+I want
+to create a new or update an existing client/lead/opportunity in Salesforce B2C 
+So that
+the client information can be made available for future servicing.","Given
+Key Investment Services onboarding process workflows are being updated
+When
+creating a new or updating an existing client/lead/opportunity in Salesforce
+Then
+the client record should be created/updated with data entered currently, for future servicing."
+OAO-02.03_US-02c,"As a
+KIS FO user
+I want
+to initiate proposal creation process through Salesforce for a new client being onboarded
+So that
+RSQ can be done","Given
+a new KIS account is being onboarded
+When
+advisor initiates the proposal creation process
+Then
+the advisor should be able to launch the Risk Survey Questionnaire"
+OAO-02.03_US-02d,"As a 
+KIS FO user
+I want 
+to leverage existing RSQ (for a wealth account) on file for a client that has a “Pass” outcome and is less than 29 days old So that 
+the account onboarding process can continue without rerunning RSQ for the client","Given
+a new KIS account is being onboarded
+When
+advisor initiates the proposal creation process
+Then
+the advisor should be able to skip RSQ if there is an existing RSQ (for a wealth account) on file that has a “Pass” outcome and is less than 29 days old for the client"
+OAO-02.03_US-02e,"As a
+KIS FO user
+I want
+to run RSQ process through Salesforce for every authorized signatory nominated in the account in the case of an Entity
+So that
+Risk Survey Questionnaire can be done for every single one of them.","Given
+a new KIS account is beingon boarded for an Entity
+When advisor initiates the proposal creation process
+Then
+the advisor should be able to launch the Risk Survey Questionnaire for authorized signatory for the account"
+OAO-02.03_US-02f,"As a
+KIS FO user
+I want
+the KIS account onboarding workflow to make RSQ process through Salesforce mandatory only for a new account being onboarded
+So that
+the workflow does not make RSQ mandatory when an existing account is being modified.","Given
+an existing KIS account is being modified for adding new product(s)
+When
+advisor initiates the process of editing such account
+Then
+the advisor should be able to SSO into RightBridge, opting not to do RSQ for the existing account."
+OAO-02.03_US-03a,"As a
+KIS FO user
+I want
+to see an RSQ pass message on screen when client’s RSQ is a pass
+So that
+the outcome can be captured for audit trail","Given
+advisor has submitted RSQ for aclient
+When
+the client’s RSQ is a pass
+Then
+advisor should see an RSQ pass message on screen.
+And
+the audit record captured for the outcome"
+OAO-02.03_US-03b,"As a
+KIS FO user
+I want
+to see an RSQ fail prompt with appropriate reason
+So that
+I am made aware of the reason for the failure and the outcome captured for audit trail","Given
+advisor has submitted RSQ for aclient
+When
+the client’s RSQ is a fail
+Then
+advisor should see an RSQ fail message with reason on screen.
+And
+the audit record captured for theoutcome along with the reasonfor failure."
+OAO-02.03_US-04a,"As a
+KIS FO user
+I want
+the ability to reinitiate RSQ
+So that
+I can redo the RSQ at any time","Given
+advisor has submitted RSQ
+When
+the outcome of the RSQ is a failure or a pass
+Then
+advisor should be able to launch and complete the RSQ again without any limitations."
+OAO-02.03_US-04b,"As a
+KIS FO user
+I want
+the KIS account onboarding workflow to be built to initiate RSQ independently or redo RSQ when it fails
+So that
+I can initiate or redo RSQ at any time","Given
+advisor is editing an existing account to add new products
+Or
+RSQ has failed or expired
+When
+a need arises to initiate RSQ through Salesforce
+Then
+advisor should be able to launch and complete the RSQ without any limitations."
+OAO-02.03_US-05a,"As a
+KIS FO user
+I want
+to be notified on screen if I want to SSO into Product Profiler in Right Bridge once the client’s RSQ is a pass in Salesforce
+So that
+I can pause the onboarding temporarily or continue to SSO into RightBridge for Reg BI.","Given
+a new account is being opened/proposed
+When
+the client’s RSQ is a pass in Salesforce
+Then
+I must have the option to SSO onto Rightbridge’s Client Information Shortcuts
+OR
+pause the process and return to it at a later time"
+OAO-02.03_US-05b,"As a
+KIS FO user
+I want
+to select from a RightBridge short cut menu based on client information
+So that
+the Reg BI questions can be tailored based on the menu selection","Given
+Client’s RSQ is a pass
+When
+Advisor opts to SSO into RightBridge
+Then
+a RightBridge short cut menu must be presented to the user based on client information
+And
+the Reg BI questions should be tailored based on the menu selection.
+Then
+a RightBridge short cut menu must be presented to the user based on client information"
+OAO-02.03_US-06b,"As a
+KIS FO user
+I want
+Salesforce to have access to Reg BI PDF in RightBridge
+So that
+the Reg BI PDF can be retrieved from RightBridge on demand with in Salesforce","Given
+Reg BI process is completed
+When
+The Reg BI documentation is generated in RightBridge
+Then
+Salesforce must be able to access the PDF from RightBridge on demand."
+OAO-02.03_US-07a,"As a
+KIS FO user
+I want
+to SSO into Envestnet from Salesforce
+So that
+I can begin the proposal creation process for a managed account","Given
+the client has been deemed eligible for a managed account by Reg BI
+When
+Advisor launches proposal creation through Salesforce
+Then
+advisor should be allowed to SSO into an Envestnet proposal page for the new account"
+OAO-02.03_US-11a,"As a
+KIS FO user
+I want
+to be able to provide additional client information in Salesforce
+So that
+this information can be prefilled while creating a Net X draft account","Given
+The client has been deemedeligible for a non-managed
+(brokerage) account by Reg BIprocess
+When
+advisor launches the appropriate screen in Salesforce to SSO into Net X
+Then
+the advisor should be able to enter additional client information before SSO’ing into Net X
+And
+Have that additional information prefilled to create a Net X draft account.
+Note:
+SSO into Cob2.0/Net X can happen only after Reg BI PDF is in Salesforce for a non-managed account."
+OAO-02.03_US-11b,"As a
+KIS FO user
+I want
+to SSO into Net X from Salesforce
+So that
+I can create a draft Net X account for non-managed/brokerage account","Given
+The client has been deemed eligible for a non-managed
+(brokerage) account by Reg BI process
+When
+additional client information is filled in and submitted in a Salesforce page
+Then
+the advisor should be able to SSO into Cob 2.0/Net X to create a draft account
+Note:
+SSO into Cob2.0/Net X canhappen only after Reg BI PDF isin Salesforce for a non-managedaccount."
+OAO-02.03_US-11c,"As a
+KIS FO user
+I want
+the Reg BI PDF data to be sent to Net X from Salesforce at the time of SSO launch into Net X
+So that
+the Reg BI documentation is made available in Net X","Given
+Reg BI process is completed
+When
+advisor SSO’s into Net X fromSalesforce
+Then
+the appropriate client account’s Reg BI data should be sent for accessing the document in NetX"
+OAO-02.03_US-13,"As a
+KIS FO user
+I want
+all documentation for opening a new client managed/non-account to be made available within Net X
+So that
+CSG can review them.","Given
+KIS client onboarding workflows are being updated
+When
+all documentation from client and KIS FO user has been completed and returned for opening a managed/non-managed account
+Then
+all such the documentation must be made available in Net X for CSG’s review."
+OAO-02.03_US-14,"As a
+KIS FO user
+I want
+the ability to pause onboarding process at any time
+So that
+I am able to resume from where I left, at any point intime.","Given
+KIS client onboarding workflows are being updated
+When
+the advisor completes any step in the onboarding process
+Then
+they should be able to pause the onboarding process at any time
+And
+be able to resume from where they left, at any point in time."
+ARC-01.01_US-01e,"As a 
+Key Wealth User
+I want 
+to identify all of the different unique wealth roles that exist across the FO,MO, and BO, and their capabilities 
+So that 
+I can ensure all roles and capabilities are considered when designing the future state","Given 
+there currently exist various unique roles across Key Wealth and they all have different capabilities 
+When we identify all of these roles and capabilities
+Then we should have full coverage of every single role
+AND know what their job requires them to do
+AND there should not be a single role that isn’t convered"
+ARC-05.01_US-01,"As a 
+Key Wealth User
+I want 
+to ensure that I can SSO from various applications, directly to Envestnet
+So that 
+I launch directly from those applications to ENV in-context","Given 
+an Envestnet user is in another wealth application
+When 
+a user wants to that application to launch Envestnet
+Then 
+the user should be able to SSO from that application to the appropriate screen in Envestnet"
+ARC-05.02_US-01,"As a 
+Key Wealth FO user
+I want 
+to be able to SSO from an in-progress proposal in SF, directly to that same proposal in Envestnet
+So that 
+I do not have to perform more actions to get from the proposal in SF, to that same proposal in Envestnet","Given
+there is already an in-progress proposal in SF
+When
+the user is in that specific client’s profile in SF
+Then
+they should be able to SSO from the proposal in SF, directly to that same proposal in Envestnet"
+ARC-O5.03_US-01,"As a 
+Key Wealth FO user
+I want 
+to be able to SSO from my SF homepage to a list of all my open proposals, in Envestnet
+So that I can easily access and follow-up on all my ongoing proposals","Given
+the user in Salesforce has open proposals in Envestnet
+When
+that user wishes to see a list of all open Envestnet proposals
+Then
+they should be able to SSO from the SF homepage to a list of all open proposals in Envestnet"
+ARC-06.02_US-05,"As a 
+Key Wealth User
+I want 
+to ensure that data within the DSC including ENV enriched Key data is available to B2C and includes managed flag indicators
+So that 
+actions in other systems can be automatically reconciled within B2C","Given
+Envestnet-enriched Key datais stored within DSC
+When
+this data is required by Salesforce (B2C)
+Then
+this data should be availablefor ingestion from DSC, and includemanage flag indicators"
+ARC-07.01_US-01,"As a 
+KIS FO User accessing a specific client/household profile in Salesforce
+I want 
+to ensure that I am being notified on Salesforce, MAR was completed
+So that I am notified of an pending due, or overdue MAR ","Given
+a FO user is on a specific client/house hold profile in Salesforce
+Then
+I should be notified on SF see that a new MAR is due
+AND
+the notification should specify in how many days the MAR is due, oris overdue"
+ARC-07.01_US-04,"As a 
+Key FO user
+I want 
+to only be able to complete MARs in Envestnet
+So that 
+there is a single system in which MARs are completed","Given
+MARs capability in Envestnet is fully functional
+When
+I attempt to complete a MAR on SF
+Then
+I should not be able to complete any part of MAR on SF
+AND
+I should only be notified on SF"
+ARC-07.01_US-09,"As a
+Key Wealth User
+I want
+the historical records of MARS that will not be migrated to Envestnet, to remain in Salesforce
+So that
+a historical record will persist for audit and compliance purposes","Given
+only MARS post 31/12/2024 will be migrated to Envestnet
+When
+the MARS
+pre
+31/12/2024 are not migrated
+Then
+they should remain in SF in the current form.
+AND should persist as per the required records retention policies"
+ARC-10.01_US-01,"As a 
+Key Wealth User
+I want 
+to ensure that I cannot override (on SF) information that is being displayed on SF, that is being sourced from a core system
+So that 
+I am not changing information on a consuming system while the core system remains inaccurate","Given 
+there is data being displayed on SF that is sourced from a different core system
+When 
+that data is incorrect
+Then 
+I must not be allowed to overwrite that information in SF
+directly
+AND
+I must be able to update the information in the source core
+system in an authenticated manner"
+ARC-10.02_US-01,"As a
+Key Wealth User
+I want
+to cleanup all source systems' householding information
+So that
+we can ensure accuracy of the custom householding file that we will feed to Envestnet (one-time activity)","Given
+house holding information currently exists in disparate systems
+AND
+we will be using that information to create the one-time custom householding file that we will be feeding to Envestnet
+Then
+we should clean up all householding data prior to using that same data to establish the one-time custom house holding file"
+ARC-10.03_US-01-1,"As a
+Key FO user
+I want
+the Client Contact Record updated in Salesforce when an annual Managed Account Review (MARS) is completed in Envestnet
+So that
+the Client Contact Record is kept up to date with changes to a Client’s account","Given
+An account requires an annual MARS (Managed Account Review)
+When
+The annual MARS (Managed Account Review) has been completed in Envestnet
+Then
+I should see Client Contact Record in Salesforce updated showing the annual MARS(Managed Account Review) was completed"
+ARC-10.03_US-01-2,"As a
+Key FO user
+I want
+the Client Contact Record updated in Salesforce when a financial plan is created in MoneyGuide Pro
+So that
+the Client Contact Record is kept up to date with changes to a Client’s account","Given
+An Advisor needs to create a financial plan for a Client
+When
+A financial plan is created
+Then
+I should see the Client Contact Record in Salesforce updated showing a financial plan was created in MoneyGuide Pro"
+ARC-10.03_US-01-3,"As a
+Key Private Client Advisor
+I want
+Salesforce to generate a “to-do” follow-up action to meet with client in
+'X'
+number of days post MARS (ManagedAccount Review) completion,or allow me to manually select a time period for follow-up
+So that
+I am reminded to meet with the Client post-MARS.","Given
+I have completed a MARS
+When
+The Statement of Investment Selection change is completed in Envestnet
+Then
+I should receive a “to-do” follow-up action reminder in Salesforce X number of days post MARS completion or, if I manually chose a number of days to follow-up, I should receive a “to-do” follow-up action reminder based on that selection"
+ARC-10.03_US-01-4,"As a
+Key FO user
+I want
+the Salesforce Client Contact Record updated if there is a Statement of Investment Selection change event in Envestnet
+So that
+the Client Contact Record is kept up to date with changes to a Client’s account","Given
+There is a change to the Statement of Investment Selection
+When 
+The Statement of Investment Selection change is completed in Envestnet
+Then
+I should see the Client Contact Record in Salesforce updated showing there was a change to the Statement of Investment Selection"
+ARC-10.04_US-01,"As a 
+Salesforce user
+I want 
+to ensure that all values that I am seeing on Salesforce, are accurate as of when I am seeing them 
+So that 
+there is no discrepancy between values in Salesforce and other
+systems","Given
+a value is being loaded from DSC and being displayed in Salesforce
+When
+that value is being displayed in Salesforce
+Then
+that value should be accurately displayed with the latest information"
+ARC-11.02_US-02,"As a 
+Key Wealth User
+I want 
+to capture the ASPV 13-05 and 13-12 records for Agent & Communication information 
+So that 
+we can support the Salesforce and hierarchy file build","Given 
+Key Bank deals in Annuities
+When 
+we receive all the Annuities files
+Then 
+we should capture the ASPV 13-05 and 13-12 records for Agent & Communication information"
+ARC-11.02_US-03,"As a 
+Salesforce user
+I want 
+to ensure that all relevant annuities data is being reflected in Salesforce
+So that 
+I can get an accurate picture of my clients' invested assets","Given
+all required Annuities data exists in DSC
+When
+there are any relevant fields in Salesforce that should be considering Annuities data
+Then
+I would expect Salesforce to consider and reflect Annuities data in all values being presented to the advisor in SF"
+ARC-11.03_US-03,"As a 
+Salesforce user
+I want 
+to ensure that all relevant fund direct data is being reflected in Salesforce
+So that 
+I can get an accurate picture of my clients' invested assets","Given
+all required Fund Direct data exists in DSC
+When
+there are any relevant fields in Salesforce that should be considering Fund Directdata
+Then
+I would expect Salesforce to consider and reflect Fund direct data in all values being presented to the advisor in SF"
+PMR-02.10_US-04,"As a 
+Front Office User
+I want 
+the capability to easily send my client relevant CIO/Firm collateral education and enrichment materials
+So that 
+they can be informed on products and market trends","Given
+I am a Front Office User
+When
+I need to send my client any relevant CIO/Firm collateral education and enrichment materials
+Then
+I should have the ability to send only information I deem relevant to my Client"
